@@ -171,12 +171,14 @@ export const useEditorStore = create<EditorState>()(
             ...stage,
           }
           state.project.stages.push(newStage)
+          state.isDirty = true
         }),
 
         updateStage: (id, updates) => set((state) => {
           const stage = state.project.stages.find(s => s.id === id)
           if (stage) {
             Object.assign(stage, updates)
+            state.isDirty = true
           }
         }),
 
@@ -186,6 +188,7 @@ export const useEditorStore = create<EditorState>()(
             state.currentStageId = state.project.stages[0]?.id || null
             state.currentChapterId = state.project.stages[0]?.chapters[0]?.id || null
           }
+          state.isDirty = true
         }),
 
         setCurrentStage: (stageId) => set((state) => {
@@ -209,6 +212,7 @@ export const useEditorStore = create<EditorState>()(
               ...chapter,
             }
             stage.chapters.push(newChapter)
+            state.isDirty = true
           }
         }),
 
@@ -217,6 +221,7 @@ export const useEditorStore = create<EditorState>()(
           const chapter = stage?.chapters.find(c => c.id === chapterId)
           if (chapter) {
             Object.assign(chapter, updates)
+            state.isDirty = true
           }
         }),
 
@@ -227,6 +232,7 @@ export const useEditorStore = create<EditorState>()(
             if (state.currentChapterId === chapterId) {
               state.currentChapterId = stage.chapters[0]?.id || null
             }
+            state.isDirty = true
           }
         }),
 
@@ -284,6 +290,7 @@ export const useEditorStore = create<EditorState>()(
               if (type === 'start') {
                 chapter.startNodeId = newNode.id
               }
+              state.isDirty = true
             }
           })
 
@@ -296,6 +303,7 @@ export const useEditorStore = create<EditorState>()(
           const node = chapter?.nodes.find(n => n.id === nodeId)
           if (node && chapter) {
             Object.assign(node, updates)
+            state.isDirty = true
 
             // 데이터 바인딩 동기화: 이 노드를 소스로 하는 바인딩들 찾아서 값 전파
             chapter.nodes.forEach(targetNode => {
@@ -342,6 +350,7 @@ export const useEditorStore = create<EditorState>()(
               chapter.startNodeId = chapter.nodes[0]?.id || ''
             }
             state.selectedNodeIds = state.selectedNodeIds.filter(id => id !== nodeId)
+            state.isDirty = true
           }
         }),
 
@@ -379,6 +388,7 @@ export const useEditorStore = create<EditorState>()(
               chapter.startNodeId = chapter.nodes[0]?.id || ''
             }
             state.selectedNodeIds = []
+            state.isDirty = true
           }
         }),
 
@@ -453,6 +463,7 @@ export const useEditorStore = create<EditorState>()(
             const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
             if (chapter) {
               chapter.nodes.push(...newNodes)
+              state.isDirty = true
             }
             state.selectedNodeIds = newIds
           })
@@ -493,6 +504,7 @@ export const useEditorStore = create<EditorState>()(
             }
           }
           Object.assign(state.project.gameSettings, settings)
+          state.isDirty = true
         }),
 
         addCustomTheme: (theme) => set((state) => {
@@ -507,6 +519,7 @@ export const useEditorStore = create<EditorState>()(
             state.project.gameSettings.customThemes = []
           }
           state.project.gameSettings.customThemes.push(theme)
+          state.isDirty = true
         }),
 
         updateCustomTheme: (themeId, updates) => set((state) => {
@@ -515,6 +528,7 @@ export const useEditorStore = create<EditorState>()(
             const index = themes.findIndex(t => t.id === themeId)
             if (index !== -1) {
               Object.assign(themes[index], updates)
+              state.isDirty = true
             }
           }
         }),
@@ -525,6 +539,7 @@ export const useEditorStore = create<EditorState>()(
             const index = themes.findIndex(t => t.id === themeId)
             if (index !== -1) {
               themes.splice(index, 1)
+              state.isDirty = true
             }
           }
         }),
@@ -539,6 +554,7 @@ export const useEditorStore = create<EditorState>()(
             resource.id = generateResourceId()
           }
           state.project.resources.push(resource)
+          state.isDirty = true
         }),
 
         updateResource: (resourceId, updates) => set((state) => {
@@ -547,6 +563,7 @@ export const useEditorStore = create<EditorState>()(
             const index = resources.findIndex(r => r.id === resourceId)
             if (index !== -1) {
               Object.assign(resources[index], updates)
+              state.isDirty = true
             }
           }
         }),
@@ -556,6 +573,7 @@ export const useEditorStore = create<EditorState>()(
             const index = state.project.resources.findIndex(r => r.id === resourceId)
             if (index !== -1) {
               state.project.resources.splice(index, 1)
+              state.isDirty = true
             }
           }
         }),
@@ -609,6 +627,7 @@ export const useEditorStore = create<EditorState>()(
                 chapter.commentNodes = []
               }
               chapter.commentNodes.push(newComment)
+              state.isDirty = true
             }
           })
 
@@ -621,6 +640,7 @@ export const useEditorStore = create<EditorState>()(
           const comment = chapter?.commentNodes?.find(c => c.id === commentId)
           if (comment) {
             Object.assign(comment.data, updates)
+            state.isDirty = true
           }
         }),
 
@@ -630,6 +650,7 @@ export const useEditorStore = create<EditorState>()(
           const comment = chapter?.commentNodes?.find(c => c.id === commentId)
           if (comment) {
             comment.position = position
+            state.isDirty = true
           }
         }),
 
@@ -638,6 +659,7 @@ export const useEditorStore = create<EditorState>()(
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
           if (chapter && chapter.commentNodes) {
             chapter.commentNodes = chapter.commentNodes.filter(c => c.id !== commentId)
+            state.isDirty = true
           }
         }),
 
@@ -736,6 +758,7 @@ export const useEditorStore = create<EditorState>()(
                 chapter.commentNodes = []
               }
               chapter.commentNodes.push(newComment)
+              state.isDirty = true
             }
           })
 

@@ -336,6 +336,17 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       const target = e.target as HTMLElement
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
 
+      // F12: 개발자 도구 (개발 모드에서만)
+      if (e.key === 'F12' && import.meta.env.DEV) {
+        e.preventDefault()
+        if (isTauri()) {
+          import('@tauri-apps/api/core').then(({ invoke }) => {
+            invoke('toggle_devtools')
+          })
+        }
+        return
+      }
+
       // Cmd+Shift+S: 다른 이름으로 저장
       if (isMod && isShift && e.key === 's') {
         e.preventDefault()
@@ -420,6 +431,14 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         return
       }
 
+      // Cmd+A: 모든 노드 선택 (입력 필드 체크 전에 처리)
+      if (isMod && e.key.toLowerCase() === 'a' && !isInputFocused) {
+        console.log('[Shortcut] Cmd+A triggered, selecting all nodes')
+        e.preventDefault()
+        selectAllNodes()
+        return
+      }
+
       // 입력 필드에 포커스가 있으면 아래 단축키는 무시
       if (isInputFocused) return
 
@@ -434,13 +453,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if (isMod && e.key === 'v') {
         e.preventDefault()
         handlePaste()
-        return
-      }
-
-      // Cmd+A: 모든 노드 선택
-      if (isMod && e.key === 'a') {
-        e.preventDefault()
-        selectAllNodes()
         return
       }
 

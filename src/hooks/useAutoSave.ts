@@ -11,6 +11,7 @@ import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
  */
 export function useAutoSave() {
   const project = useEditorStore((state) => state.project)
+  const markClean = useEditorStore((state) => state.markClean)
   const { settings } = useSettingsStore()
 
   const lastSavedRef = useRef<string>('')
@@ -39,11 +40,12 @@ export function useAutoSave() {
     try {
       await saveProjectToFolder(lastProjectPath, project)
       lastSavedRef.current = currentState
+      markClean() // 자동 저장 후 isDirty를 false로
       console.log('[AutoSave] Project saved automatically')
     } catch (error) {
       console.error('[AutoSave] Failed to save:', error)
     }
-  }, [project, lastProjectPath])
+  }, [project, lastProjectPath, markClean])
 
   // onChange 모드: 프로젝트 변경 감지
   useEffect(() => {

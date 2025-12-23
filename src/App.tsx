@@ -7,6 +7,7 @@ import { SearchModal } from './components/common/SearchModal'
 import { GameModal } from './features/game/components'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useAutoSave } from './hooks/useAutoSave'
+import { useUnsavedChangesWarning } from './hooks/useUnsavedChangesWarning'
 import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
 import { useSearchStore } from './stores/searchStore'
@@ -28,6 +29,9 @@ function App() {
 
   // 자동 저장 활성화
   useAutoSave()
+
+  // 저장하지 않은 변경사항 경고
+  useUnsavedChangesWarning()
 
   // 앱 시작 시 설정 로드
   useEffect(() => {

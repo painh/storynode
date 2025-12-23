@@ -18,7 +18,7 @@ import styles from './Header.module.css'
 let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
 
 export function Header() {
-  const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject } = useEditorStore()
+  const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject, markClean } = useEditorStore()
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
   const { openGame, status: gameStatus } = useGameStore()
@@ -105,6 +105,7 @@ export function Header() {
       try {
         await saveProjectToFolder(lastPath, project)
         addRecentProject(lastPath, project.name)
+        markClean() // 저장 후 isDirty를 false로
       } catch (error) {
         alert('Failed to save project: ' + (error as Error).message)
       }
@@ -132,6 +133,7 @@ export function Header() {
       if (selected && typeof selected === 'string') {
         await saveProjectToFolder(selected, project)
         addRecentProject(selected, project.name)
+        markClean() // 저장 후 isDirty를 false로
       }
     } catch (error) {
       alert('Failed to save project: ' + (error as Error).message)
