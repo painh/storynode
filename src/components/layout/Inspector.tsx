@@ -241,6 +241,21 @@ export function Inspector() {
             )}
           </>
         )}
+
+        {/* JavaScript: code */}
+        {selectedNode.type === 'javascript' && (
+          <div className={styles.field}>
+            <label className={styles.label}>JavaScript Code</label>
+            <textarea
+              className={`${styles.textarea} ${styles.codeEditor}`}
+              value={selectedNode.javascriptCode || ''}
+              onChange={(e) => handleChange('javascriptCode', e.target.value)}
+              placeholder="// Enter JavaScript code here...&#10;// Available: gameState, setFlag, getFlag, etc."
+              rows={10}
+              spellCheck={false}
+            />
+          </div>
+        )}
       </div>
     </aside>
   )

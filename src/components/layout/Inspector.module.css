@@ -216,3 +216,15 @@
 .fieldRow .field {
   flex: 1;
 }
+
+.codeEditor {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  min-height: 200px;
+  background: #1e1e1e;
+  color: #f0db4f;
+  tab-size: 2;
+  white-space: pre;
+  overflow-x: auto;
+}
