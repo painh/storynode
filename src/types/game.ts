@@ -11,6 +11,9 @@ export interface ActiveImage {
   alignment: ImageAlignment
   x?: number
   y?: number
+  flipHorizontal?: boolean
+  effect?: string          // 이미지 효과 (fadeIn, shake 등)
+  effectDuration?: number  // 효과 지속 시간 (ms)
 }
 
 // 게임 실행 상태
@@ -37,6 +40,14 @@ export interface GameHistoryEntry {
   speaker?: string
   timestamp: number
   choiceText?: string // 선택지였다면 선택한 텍스트
+  // 이미지 노드용 정보 (텍스트 어드벤처 모드에서 인라인 표시)
+  imageData?: {
+    resourcePath: string
+    layer: string
+    isRemoval?: boolean // 이미지 제거인 경우 true
+    effect?: string
+    effectDuration?: number
+  }
 }
 
 // 게임 상태 (세이브/로드용)

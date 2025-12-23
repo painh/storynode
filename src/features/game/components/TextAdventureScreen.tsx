@@ -1,9 +1,9 @@
 // 텍스트 어드벤처 스타일 게임 화면 컴포넌트
-// "모험가 이야기" 스타일의 스크롤링 로그 UI
+// 스크롤링 로그 UI
 
 import { useRef, useEffect, useCallback } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
-import type { GameTheme } from '../../../types/game'
+import type { GameTheme, GameHistoryEntry } from '../../../types/game'
 import styles from '../styles/TextAdventureScreen.module.css'
 
 interface TextAdventureScreenProps {
@@ -80,23 +80,80 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
     )
   }
 
+  // 효과 클래스 가져오기
+  const getEffectClass = (effect?: string): string => {
+    if (!effect || effect === 'none') return ''
+    switch (effect) {
+      case 'fadeIn': return styles.effectFadeIn
+      case 'shake': return styles.effectShake
+      case 'slideLeft': return styles.effectSlideLeft
+      case 'slideRight': return styles.effectSlideRight
+      case 'slideUp': return styles.effectSlideUp
+      case 'slideDown': return styles.effectSlideDown
+      case 'zoomIn': return styles.effectZoomIn
+      case 'zoomOut': return styles.effectZoomOut
+      case 'bounce': return styles.effectBounce
+      case 'flash': return styles.effectFlash
+      case 'pulse': return styles.effectPulse
+      default: return ''
+    }
+  }
+
+  // 이미지 로그 항목 렌더링
+  const renderImageEntry = (entry: GameHistoryEntry, index: number) => {
+    if (!entry.imageData) return null
+
+    if (entry.imageData.isRemoval) {
+      return (
+        <div key={index} className={`${styles.logEntry} ${styles.imageRemovalEntry}`}>
+          <span className={styles.logText}>{entry.content}</span>
+        </div>
+      )
+    }
+
+    const effectStyle: React.CSSProperties = entry.imageData.effectDuration
+      ? { animationDuration: `${entry.imageData.effectDuration}ms` }
+      : {}
+
+    return (
+      <div key={index} className={`${styles.logEntry} ${styles.imageLogEntry}`}>
+        <div className={styles.imageWrapper}>
+          <img
+            src={entry.imageData.resourcePath}
+            alt=""
+            className={`${styles.inlineImage} ${getEffectClass(entry.imageData.effect)}`}
+            style={effectStyle}
+          />
+        </div>
+      </div>
+    )
+  }
+
   // 히스토리 로그 렌더링
   const renderLog = () => {
     if (!gameState?.history) return null
 
     return (
       <div className={styles.logContainer}>
-        {gameState.history.map((entry, index) => (
-          <div key={index} className={styles.logEntry}>
-            {entry.speaker && (
-              <span className={styles.logSpeaker}>{entry.speaker}: </span>
-            )}
-            <span className={styles.logText}>{entry.content}</span>
-            {entry.choiceText && (
-              <span className={styles.logChoice}> → {entry.choiceText}</span>
-            )}
-          </div>
-        ))}
+        {gameState.history.map((entry, index) => {
+          // 이미지 타입 항목
+          if (entry.type === 'image') {
+            return renderImageEntry(entry, index)
+          }
+
+          // 일반 텍스트 항목
+          return (
+            <div key={index} className={styles.logEntry}>
+              {entry.speaker && (
+                <span className={styles.logSpeaker}>{entry.speaker}: </span>
+              )}
+              <span className={styles.logText}>{entry.content}</span>
+              {entry.choiceText && (
+                <span className={styles.logChoice}> → {entry.choiceText}</span>
+              )}
+            </div>
+          )
+        })}
         <div ref={logEndRef} />
       </div>
     )

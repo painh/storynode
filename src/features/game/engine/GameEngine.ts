@@ -136,16 +136,34 @@ export class GameEngine {
       }
     }
 
-    // image 노드면 이미지 레이어 업데이트 후 자동 진행
+    // image 노드면 이미지 레이어 업데이트 후 효과 재생
     if (node.type === 'image') {
       this.processImageNode(node)
+      // 히스토리에 이미지 추가 (텍스트 어드벤처 모드용)
+      this.addImageToHistory(node)
+
+      // 효과가 있으면 효과 완료 후 진행, 없으면 즉시 진행
+      const effectDuration = node.imageData?.effectDuration || 0
+      const hasEffect = node.imageData?.effect && node.imageData.effect !== 'none'
+
+      if (hasEffect && effectDuration > 0 && node.nextNodeId) {
+        // 효과 재생 중에는 대기, 완료 후 다음 노드로
+        setTimeout(() => {
+          if (node.nextNodeId) {
+            this.goToNode(node.nextNodeId)
+          }
+        }, effectDuration)
+        return
+      }
+
+      // 효과가 없거나 duration이 0이면 즉시 진행
       if (node.nextNodeId) {
         this.goToNode(node.nextNodeId)
         return
       }
     }
 
-    // 히스토리에 추가 (variable, condition, image 제외)
+    // 히스토리에 추가 (variable, condition 제외, image는 별도 처리)
     if (node.type !== 'variable' && node.type !== 'condition' && node.type !== 'image') {
       this.addToHistory(node)
     }
@@ -155,7 +173,7 @@ export class GameEngine {
   private processImageNode(node: StoryNode): void {
     if (!node.imageData) return
 
-    const { resourcePath, layer, layerOrder, alignment, x, y } = node.imageData
+    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effectDuration } = node.imageData
 
     // 빈 리소스 경로면 해당 레이어의 이미지 제거
     if (!resourcePath) {
@@ -174,6 +192,9 @@ export class GameEngine {
       alignment,
       x,
       y,
+      flipHorizontal,
+      effect,
+      effectDuration,
     }
 
     // 같은 레이어+순서에 있는 기존 이미지 제거 후 새 이미지 추가
@@ -183,6 +204,33 @@ export class GameEngine {
       ),
       newImage,
     ]
+  }
+
+  // 이미지를 히스토리에 추가 (텍스트 어드벤처 모드용)
+  private addImageToHistory(node: StoryNode): void {
+    if (!node.imageData) return
+
+    const { resourcePath, layer, effect, effectDuration } = node.imageData
+    const isRemoval = !resourcePath
+
+    this.state.history.push({
+      nodeId: node.id,
+      type: 'image',
+      content: isRemoval ? `[이미지 제거: ${layer}]` : '',
+      timestamp: Date.now(),
+      imageData: {
+        resourcePath: resourcePath || '',
+        layer,
+        isRemoval,
+        effect,
+        effectDuration,
+      },
+    })
+
+    // 최대 100개까지만 유지
+    if (this.state.history.length > 100) {
+      this.state.history = this.state.history.slice(-100)
+    }
   }
 
   // 다음 노드로 진행 (dialogue, event 등에서 클릭 시)

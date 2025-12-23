@@ -9,6 +9,25 @@ interface GameScreenProps {
   theme: GameTheme
 }
 
+// 효과 클래스 가져오기
+const getEffectClass = (effect?: string): string => {
+  if (!effect || effect === 'none') return ''
+  switch (effect) {
+    case 'fadeIn': return styles.effectFadeIn
+    case 'shake': return styles.effectShake
+    case 'slideLeft': return styles.effectSlideLeft
+    case 'slideRight': return styles.effectSlideRight
+    case 'slideUp': return styles.effectSlideUp
+    case 'slideDown': return styles.effectSlideDown
+    case 'zoomIn': return styles.effectZoomIn
+    case 'zoomOut': return styles.effectZoomOut
+    case 'bounce': return styles.effectBounce
+    case 'flash': return styles.effectFlash
+    case 'pulse': return styles.effectPulse
+    default: return ''
+  }
+}
+
 // 이미지 레이어 컴포넌트
 function ImageLayers({ images }: { images: ActiveImage[] }) {
   // 레이어 순서로 정렬 (background가 가장 뒤, 그 다음 character)
@@ -40,6 +59,12 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
       if (img.x !== undefined) style.left = `${img.x}%`
       if (img.y !== undefined) style.top = `${img.y}%`
     }
+    if (img.flipHorizontal) {
+      style.transform = (style.transform || '') + ' scaleX(-1)'
+    }
+    if (img.effectDuration) {
+      style.animationDuration = `${img.effectDuration}ms`
+    }
     return style
   }
 
@@ -52,7 +77,7 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
           key={img.id}
           src={img.resourcePath}
           alt=""
-          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)}`}
+          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${getEffectClass(img.effect)}`}
           style={getImageStyle(img)}
         />
       ))}

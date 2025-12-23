@@ -1,5 +1,5 @@
-import { memo, useCallback, useRef, useState, useEffect } from 'react'
-import { type NodeProps, type Node, NodeResizer } from '@xyflow/react'
+import { memo, useCallback, useRef, useState, useEffect, useMemo } from 'react'
+import { type NodeProps, type Node, NodeResizer, useViewport } from '@xyflow/react'
 import type { EditorNodeData, CommentNodeData } from '../../types/editor'
 import { useEditorStore } from '../../stores/editorStore'
 import styles from './CommentNode.module.css'
@@ -23,6 +23,17 @@ export const CommentNode = memo(function CommentNode({
   const setSelectedComment = useEditorStore((s) => s.setSelectedComment)
   const [isEditing, setIsEditing] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
+  const { zoom } = useViewport()
+
+  // 줌아웃 시 타이틀 폰트 크기를 키워서 가독성 향상
+  // 줌 1.0 기준 1x, 줌 0.5일 때 약 1.5x, 줌 0.25일 때 약 2x
+  const titleScale = useMemo(() => {
+    // 줌이 1 이상이면 스케일 1 유지
+    if (zoom >= 1) return 1
+    // 줌이 줄어들수록 스케일 증가 (최대 3배)
+    const scale = Math.min(3, 1 / Math.sqrt(zoom))
+    return scale
+  }, [zoom])
 
   // 노드가 선택되면 인스펙터에도 반영
   // selectedCommentId를 의존성에서 제거하여 무한 루프 방지
@@ -102,9 +113,20 @@ export const CommentNode = memo(function CommentNode({
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
             onKeyDown={handleTitleKeyDown}
+            style={{
+              fontSize: `${13 * titleScale}px`,
+              transformOrigin: 'left center',
+            }}
           />
         ) : (
-          <span className={styles.title} onDoubleClick={handleTitleDoubleClick}>
+          <span
+            className={styles.title}
+            onDoubleClick={handleTitleDoubleClick}
+            style={{
+              fontSize: `${13 * titleScale}px`,
+              transformOrigin: 'left center',
+            }}
+          >
             {commentData.title}
           </span>
         )}
