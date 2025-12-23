@@ -74,7 +74,8 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
     <div className={styles.imageLayerContainer}>
       {sortedImages.map((img) => (
         <img
-          key={img.id}
+          // 이미지 ID + 효과가 변경될 때 애니메이션이 재생되도록 키 변경
+          key={`${img.id}-${img.effect || 'none'}-${img.resourcePath}`}
           src={img.resourcePath}
           alt=""
           className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${getEffectClass(img.effect)}`}

@@ -12,12 +12,14 @@ interface TextAdventureScreenProps {
 
 export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
   const { currentNode, gameState, status, advance, selectChoice } = useGameStore()
-  const logEndRef = useRef<HTMLDivElement>(null)
+  const mainAreaRef = useRef<HTMLDivElement>(null)
 
   // 로그 맨 아래로 자동 스크롤
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [gameState?.history])
+    if (mainAreaRef.current) {
+      mainAreaRef.current.scrollTop = mainAreaRef.current.scrollHeight
+    }
+  }, [gameState?.history?.length])
 
   // 자동 진행이 필요한 노드인지 확인
   const shouldAutoAdvance = useCallback(() => {
@@ -154,7 +156,6 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
             </div>
           )
         })}
-        <div ref={logEndRef} />
       </div>
     )
   }
@@ -294,7 +295,7 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
       {renderStatsBar()}
 
       {/* 메인 로그 영역 */}
-      <div className={styles.mainArea}>
+      <div ref={mainAreaRef} className={styles.mainArea}>
         {renderLog()}
       </div>
 

@@ -26,13 +26,11 @@ export const CommentNode = memo(function CommentNode({
   const { zoom } = useViewport()
 
   // 줌아웃 시 타이틀 폰트 크기를 키워서 가독성 향상
-  // 줌 1.0 기준 1x, 줌 0.5일 때 약 1.5x, 줌 0.25일 때 약 2x
+  // 줌 1.0 기준 1x, 줌 0.5일 때 약 1.4x, 줌 0.25일 때 2x, 줌 0.1일 때 약 3.16x
   const titleScale = useMemo(() => {
-    // 줌이 1 이상이면 스케일 1 유지
+    console.log('[CommentNode] zoom:', zoom)
     if (zoom >= 1) return 1
-    // 줌이 줄어들수록 스케일 증가 (최대 3배)
-    const scale = Math.min(3, 1 / Math.sqrt(zoom))
-    return scale
+    return 1 / Math.sqrt(zoom)
   }, [zoom])
 
   // 노드가 선택되면 인스펙터에도 반영
