@@ -39,6 +39,24 @@ export function Header() {
   const canUndo = pastStates.length > 0
   const canRedo = futureStates.length > 0
 
+  // 메뉴 외부 클릭 시 닫기
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowFileMenu(false)
+        setShowEditMenu(false)
+        setShowViewMenu(false)
+        setShowHelpMenu(false)
+        setShowRecentSubmenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   // Tauri 환경 감지 및 dialog 로드
   useEffect(() => {
     const checkTauri = async () => {
@@ -256,7 +274,7 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.left}>
         <div className={styles.logo}>StoryNode</div>
-        <div className={styles.menu}>
+        <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}
           <div className={styles.menuWrapper}>
             <button

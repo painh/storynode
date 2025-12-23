@@ -88,12 +88,11 @@
   border: 2px solid var(--bg-secondary) !important;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   cursor: crosshair;
-  transition: transform 0.1s, filter 0.1s;
+  transition: filter 0.1s;
 }
 
 .execHandle:hover {
-  transform: scale(1.2);
-  filter: drop-shadow(0 0 4px var(--selection-border));
+  filter: drop-shadow(0 0 4px var(--selection-border)) brightness(1.2);
 }
 
 /* Handle positioning override */

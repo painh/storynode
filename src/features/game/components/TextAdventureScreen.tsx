@@ -1,7 +1,7 @@
 // 텍스트 어드벤처 스타일 게임 화면 컴포넌트
 // 스크롤링 로그 UI
 
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
 import type { GameTheme, GameHistoryEntry } from '../../../types/game'
 import styles from '../styles/TextAdventureScreen.module.css'
@@ -13,6 +13,55 @@ interface TextAdventureScreenProps {
 export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
   const { currentNode, gameState, status, advance, selectChoice } = useGameStore()
   const mainAreaRef = useRef<HTMLDivElement>(null)
+  const [displayedText, setDisplayedText] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const lastHistoryLengthRef = useRef(0)
+
+  // 마지막 히스토리 항목에 대한 타이프라이터 효과
+  useEffect(() => {
+    const history = gameState?.history || []
+    const lastEntry = history[history.length - 1]
+
+    // 새 항목이 추가되지 않았으면 무시
+    if (history.length <= lastHistoryLengthRef.current) {
+      lastHistoryLengthRef.current = history.length
+      return
+    }
+    lastHistoryLengthRef.current = history.length
+
+    // 이미지 타입이거나 텍스트가 없으면 타이핑 효과 없음
+    if (!lastEntry || lastEntry.type === 'image' || !lastEntry.content) {
+      setDisplayedText('')
+      setIsTyping(false)
+      return
+    }
+
+    const fullText = lastEntry.content
+
+    // instant 모드면 바로 표시
+    if (theme.effects.dialogueAnimation === 'instant') {
+      setDisplayedText(fullText)
+      setIsTyping(false)
+      return
+    }
+
+    // 타이프라이터 효과
+    setDisplayedText('')
+    setIsTyping(true)
+    let index = 0
+
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setDisplayedText(fullText.slice(0, index + 1))
+        index++
+      } else {
+        setIsTyping(false)
+        clearInterval(interval)
+      }
+    }, theme.effects.typewriterSpeed)
+
+    return () => clearInterval(interval)
+  }, [gameState?.history?.length, theme.effects])
 
   // 로그 맨 아래로 자동 스크롤
   useEffect(() => {
@@ -39,14 +88,16 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
   // 텍스트 어드벤처 모드: 선택지/특수 노드까지 자동 진행
   useEffect(() => {
     if (!shouldAutoAdvance()) return
+    // 타이핑 중이면 대기
+    if (isTyping) return
 
-    // 약간의 딜레이 후 자동 진행 (로그가 쌓이는 것을 볼 수 있도록)
+    // 타이핑 완료 후 약간의 딜레이 후 자동 진행
     const timer = setTimeout(() => {
       advance()
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [currentNode?.id, shouldAutoAdvance, advance])
+  }, [currentNode?.id, shouldAutoAdvance, advance, isTyping])
 
   // 선택지 선택
   const handleSelectChoice = (index: number) => {
@@ -135,13 +186,20 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
   const renderLog = () => {
     if (!gameState?.history) return null
 
+    const historyLength = gameState.history.length
+
     return (
       <div className={styles.logContainer}>
         {gameState.history.map((entry, index) => {
+          const isLastEntry = index === historyLength - 1
+
           // 이미지 타입 항목
           if (entry.type === 'image') {
             return renderImageEntry(entry, index)
           }
+
+          // 마지막 항목이고 타이핑 중이면 타이핑 효과 적용
+          const textToShow = isLastEntry && isTyping ? displayedText : entry.content
 
           // 일반 텍스트 항목
           return (
@@ -149,7 +207,8 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
               {entry.speaker && (
                 <span className={styles.logSpeaker}>{entry.speaker}: </span>
               )}
-              <span className={styles.logText}>{entry.content}</span>
+              <span className={styles.logText}>{textToShow}</span>
+              {isLastEntry && isTyping && <span className={styles.cursor}>|</span>}
               {entry.choiceText && (
                 <span className={styles.logChoice}> → {entry.choiceText}</span>
               )}

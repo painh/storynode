@@ -3,10 +3,9 @@
   border: 2px dashed var(--comment-color);
   border-radius: 8px;
   font-family: 'Segoe UI', system-ui, sans-serif;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  z-index: -1;
 }
 
 .comment.selected {
@@ -43,6 +42,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  overflow: visible;
 }
 
 .collapseBtn {
@@ -71,8 +71,22 @@
   cursor: text;
   flex: 1;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+/* 줌아웃 시에도 잘 보이는 플로팅 타이틀 */
+.floatingTitle {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .titleInput {

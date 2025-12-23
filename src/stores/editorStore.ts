@@ -8,6 +8,11 @@ interface EditorState {
   // 프로젝트 데이터
   project: StoryProject
 
+  // 변경사항 추적
+  isDirty: boolean
+  setDirty: (dirty: boolean) => void
+  markClean: () => void
+
   // 현재 선택 상태
   currentStageId: string | null
   currentChapterId: string | null
@@ -131,6 +136,10 @@ export const useEditorStore = create<EditorState>()(
         currentChapterId: 'chapter_1',
         selectedNodeIds: [],
         selectedCommentId: null,
+        isDirty: false,
+
+        setDirty: (dirty) => set({ isDirty: dirty }),
+        markClean: () => set({ isDirty: false }),
 
         setProject: (project) => set({
           project: {
@@ -148,6 +157,7 @@ export const useEditorStore = create<EditorState>()(
           currentChapterId: project.stages[0]?.chapters[0]?.id || null,
           selectedNodeIds: [],
           selectedCommentId: null,
+          isDirty: false, // 프로젝트 로드 시 clean 상태
         }),
 
         // Stage CRUD

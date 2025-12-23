@@ -147,9 +147,19 @@ export class GameEngine {
       const effectDuration = node.imageData?.effectDuration || 0
       const hasEffect = node.imageData?.effect && node.imageData.effect !== 'none'
 
+      console.log('[GameEngine] Image node processing:', {
+        nodeId: node.id,
+        effect: node.imageData?.effect,
+        effectDuration,
+        hasEffect,
+        nextNodeId: node.nextNodeId,
+      })
+
       if (hasEffect && effectDuration > 0 && node.nextNodeId) {
+        console.log(`[GameEngine] Waiting ${effectDuration}ms for effect: ${node.imageData?.effect}`)
         // 효과 재생 중에는 대기, 완료 후 다음 노드로
         setTimeout(() => {
+          console.log(`[GameEngine] Effect timer completed, advancing to: ${node.nextNodeId}`)
           if (node.nextNodeId) {
             this.goToNode(node.nextNodeId)
           }
@@ -158,6 +168,7 @@ export class GameEngine {
       }
 
       // 효과가 없거나 duration이 0이면 즉시 진행
+      console.log('[GameEngine] No effect or duration=0, advancing immediately')
       if (node.nextNodeId) {
         this.goToNode(node.nextNodeId)
         return

@@ -26,11 +26,10 @@ export const CommentNode = memo(function CommentNode({
   const { zoom } = useViewport()
 
   // 줌아웃 시 타이틀 폰트 크기를 키워서 가독성 향상
-  // 줌 1.0 기준 1x, 줌 0.5일 때 약 1.4x, 줌 0.25일 때 2x, 줌 0.1일 때 약 3.16x
+  // 줌 1.0 기준 1x, 줌 0.5일 때 2x, 줌 0.25일 때 4x, 줌 0.1일 때 10x
   const titleScale = useMemo(() => {
-    console.log('[CommentNode] zoom:', zoom)
     if (zoom >= 1) return 1
-    return 1 / Math.sqrt(zoom)
+    return 1 / zoom
   }, [zoom])
 
   // 노드가 선택되면 인스펙터에도 반영
@@ -85,6 +84,16 @@ export const CommentNode = memo(function CommentNode({
         height: isCollapsed ? 'auto' : commentData.height,
       } as React.CSSProperties}
     >
+      {/* 줌아웃 시에도 잘 보이는 플로팅 타이틀 */}
+      <div
+        className={styles.floatingTitle}
+        style={{
+          transform: `scale(${titleScale})`,
+          transformOrigin: 'top left',
+        }}
+      >
+        {commentData.title}
+      </div>
       <NodeResizer
         minWidth={150}
         minHeight={100}
@@ -111,20 +120,9 @@ export const CommentNode = memo(function CommentNode({
             onChange={handleTitleChange}
             onBlur={handleTitleBlur}
             onKeyDown={handleTitleKeyDown}
-            style={{
-              fontSize: `${13 * titleScale}px`,
-              transformOrigin: 'left center',
-            }}
           />
         ) : (
-          <span
-            className={styles.title}
-            onDoubleClick={handleTitleDoubleClick}
-            style={{
-              fontSize: `${13 * titleScale}px`,
-              transformOrigin: 'left center',
-            }}
-          >
+          <span className={styles.title} onDoubleClick={handleTitleDoubleClick}>
             {commentData.title}
           </span>
         )}
