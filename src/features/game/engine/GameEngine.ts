@@ -22,6 +22,7 @@ export class GameEngine {
   private project: StoryProject
   private state: GameState
   private options: GameEngineOptions
+  private imageInstanceCounter = 0  // 이미지 인스턴스 카운터 (애니메이션 재생용)
 
   constructor(project: StoryProject, options: GameEngineOptions = {}) {
     this.project = project
@@ -183,9 +184,11 @@ export class GameEngine {
       return
     }
 
-    // 새 이미지 객체
+    // 새 이미지 객체 (instanceId로 애니메이션 재생 보장)
+    this.imageInstanceCounter++
     const newImage: ActiveImage = {
       id: node.id,
+      instanceId: this.imageInstanceCounter,
       resourcePath,
       layer,
       layerOrder,
