@@ -96,7 +96,6 @@ export function Header() {
       if (selected && typeof selected === 'string') {
         await saveProjectToFolder(selected, project)
         addRecentProject(selected, project.name)
-        alert('Project saved successfully!')
       }
     } catch (error) {
       alert('Failed to save project: ' + (error as Error).message)

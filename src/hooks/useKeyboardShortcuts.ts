@@ -223,7 +223,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if (selected && typeof selected === 'string') {
         await saveProjectToFolder(selected, project)
         useSettingsStore.getState().addRecentProject(selected, project.name)
-        alert('Project saved!')
       }
     } catch (error) {
       alert('Failed to save: ' + (error as Error).message)
