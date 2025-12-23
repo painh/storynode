@@ -4,7 +4,6 @@ import { useSettingsStore } from '../../stores/settingsStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
 import type { StoryNodeType } from '../../types/story'
 import { useTranslation } from '../../i18n'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { isTauri, createDirectory } from '../../utils/fileUtils'
 import styles from './Sidebar.module.css'
 
@@ -128,16 +127,6 @@ export function Sidebar() {
     }
   }
 
-  // 이미지 경로를 Tauri에서 사용 가능한 URL로 변환
-  const getImageSrc = (path: string) => {
-    if (path.startsWith('data:') || path.startsWith('http') || path.startsWith('/')) {
-      return path
-    }
-    if (isTauri()) {
-      return convertFileSrc(path)
-    }
-    return path
-  }
 
   const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => {
     const filteredTypes = nodeTypes.filter(type => {
@@ -339,7 +328,7 @@ export function Sidebar() {
             {filteredCharacters.map((resource) => (
               <div key={resource.id} className={styles.resourceItem}>
                 <img
-                  src={getImageSrc(resource.path)}
+                  src={resource.path}
                   alt={resource.name}
                   className={styles.resourceThumbnail}
                 />
@@ -377,7 +366,7 @@ export function Sidebar() {
             {filteredBackgrounds.map((resource) => (
               <div key={resource.id} className={styles.resourceItem}>
                 <img
-                  src={getImageSrc(resource.path)}
+                  src={resource.path}
                   alt={resource.name}
                   className={styles.resourceThumbnail}
                 />

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
+import { useCanvasStore } from '../../stores/canvasStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSearchStore } from '../../stores/searchStore'
 import { useGameStore } from '../../stores/gameStore'

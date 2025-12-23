@@ -124,6 +124,7 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
     stages: project.stages.map(s => s.id),
     gameSettings: project.gameSettings,
     resources: project.resources,
+    editorData: project.editorData,
   }
   await writeStoryFile(`${projectDir}/project.json`, JSON.stringify(projectMeta, null, 2))
 
@@ -217,6 +218,7 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     stages,
     gameSettings: projectMeta.gameSettings,
     resources,
+    editorData: projectMeta.editorData,
   }
 }
 

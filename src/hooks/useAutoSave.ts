@@ -23,12 +23,25 @@ export function useAutoSave() {
   const saveProject = useCallback(async () => {
     if (!isTauri() || !lastProjectPath) return
 
+    // canvasStore에서 최신 데이터 가져오기
+    const canvasState = useCanvasStore.getState()
+    const currentNodePositions = canvasState.nodePositions
+    const currentCommentNodes = canvasState.commentNodes
+
     // 변경사항 확인
-    const currentState = JSON.stringify({ project, nodePositions })
+    const currentState = JSON.stringify({ project, nodePositions: currentNodePositions, commentNodes: currentCommentNodes })
     if (currentState === lastSavedRef.current) return
 
     try {
-      await saveProjectToFolder(lastProjectPath, project)
+      // editorData를 포함한 프로젝트 저장
+      const projectWithEditorData = {
+        ...project,
+        editorData: {
+          nodePositions: currentNodePositions,
+          commentNodes: currentCommentNodes,
+        }
+      }
+      await saveProjectToFolder(lastProjectPath, projectWithEditorData)
       lastSavedRef.current = currentState
       console.log('[AutoSave] Project saved automatically')
     } catch (error) {
