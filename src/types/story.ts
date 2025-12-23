@@ -133,6 +133,18 @@ export interface StoryStage {
   chapters: StoryChapter[]
 }
 
+// 리소스 타입
+export type ResourceType = 'character' | 'background'
+
+// 프로젝트 리소스 (캐릭터, 배경 등)
+export interface ProjectResource {
+  id: string
+  name: string
+  type: ResourceType
+  path: string  // 상대 경로 또는 URL
+  thumbnail?: string
+}
+
 // 게임 설정 (프로젝트에 저장, 익스포트 시 포함)
 export interface GameSettings {
   // 기본 게임 모드
@@ -172,6 +184,24 @@ export interface CustomTheme {
   }
 }
 
+// 에디터 전용 데이터 (노드 위치, 코멘트 등)
+export interface EditorData {
+  // 노드 위치 (챕터별)
+  nodePositions?: Record<string, Record<string, { x: number; y: number }>>
+  // 코멘트 노드 (챕터별)
+  commentNodes?: Record<string, Array<{
+    id: string
+    position: { x: number; y: number }
+    data: {
+      title: string
+      description: string
+      color: string
+      width: number
+      height: number
+    }
+  }>>
+}
+
 // 프로젝트 전체 구조
 export interface StoryProject {
   name: string
@@ -179,4 +209,8 @@ export interface StoryProject {
   stages: StoryStage[]
   // 게임 설정 (익스포트 시 포함)
   gameSettings?: GameSettings
+  // 프로젝트 리소스 (캐릭터, 배경 등)
+  resources?: ProjectResource[]
+  // 에디터 전용 데이터 (저장/로드 시 사용)
+  editorData?: EditorData
 }

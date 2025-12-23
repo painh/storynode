@@ -265,13 +265,16 @@ function CanvasInner() {
 
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
-    (_: React.MouseEvent, node: Node) => {
+    (_: React.MouseEvent, _node: Node, draggedNodes: Node[]) => {
       if (currentChapterId) {
-        if (node.type === 'comment') {
-          updateCommentPosition(currentChapterId, node.id, node.position)
-        } else {
-          updateNodePosition(currentChapterId, node.id, node.position)
-        }
+        // 드래그된 모든 노드의 위치 저장
+        draggedNodes.forEach((draggedNode) => {
+          if (draggedNode.type === 'comment') {
+            updateCommentPosition(currentChapterId, draggedNode.id, draggedNode.position)
+          } else {
+            updateNodePosition(currentChapterId, draggedNode.id, draggedNode.position)
+          }
+        })
       }
     },
     [currentChapterId, updateNodePosition, updateCommentPosition]

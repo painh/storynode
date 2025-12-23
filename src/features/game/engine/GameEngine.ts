@@ -62,16 +62,25 @@ export class GameEngine {
       return
     }
 
+    // startNodeId가 비어있으면 첫 번째 노드 또는 start 타입 노드 찾기
+    let startNodeId = chapter.startNodeId
+    if (!startNodeId && chapter.nodes.length > 0) {
+      const startNode = chapter.nodes.find(n => n.type === 'start')
+      startNodeId = startNode?.id || chapter.nodes[0].id
+    }
+
     this.state = {
       ...this.createInitialState(),
       currentStageId: stage.id,
       currentChapterId: chapter.id,
-      currentNodeId: chapter.startNodeId,
+      currentNodeId: startNodeId,
     }
 
     const currentNode = this.getCurrentNode()
     if (currentNode) {
       this.processNodeEntry(currentNode)
+    } else {
+      console.warn('No start node found in chapter. Add a Start node to begin the story.')
     }
 
     this.notifyStateChange()

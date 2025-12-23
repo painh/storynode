@@ -89,6 +89,68 @@ fn delete_path(path: String) -> Result<(), String> {
     }
 }
 
+// Image resource info with base64 data
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ImageResource {
+    pub name: String,
+    pub path: String,
+    pub data_url: String,
+}
+
+// List image files in a directory with base64 data
+#[tauri::command]
+fn list_image_files(dir: String) -> Result<Vec<ImageResource>, String> {
+    let path = Path::new(&dir);
+    if !path.exists() {
+        return Ok(vec![]);
+    }
+
+    let entries = fs::read_dir(path).map_err(|e| format!("Failed to read directory: {}", e))?;
+
+    let mut files = Vec::new();
+    for entry in entries {
+        if let Ok(entry) = entry {
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            let file_path = entry.path().to_string_lossy().to_string();
+            let is_dir = entry.file_type().map(|t| t.is_dir()).unwrap_or(false);
+
+            // Filter for image files only
+            if !is_dir {
+                let lower_name = file_name.to_lowercase();
+                let mime_type = if lower_name.ends_with(".png") {
+                    Some("image/png")
+                } else if lower_name.ends_with(".jpg") || lower_name.ends_with(".jpeg") {
+                    Some("image/jpeg")
+                } else if lower_name.ends_with(".gif") {
+                    Some("image/gif")
+                } else if lower_name.ends_with(".webp") {
+                    Some("image/webp")
+                } else {
+                    None
+                };
+
+                if let Some(mime) = mime_type {
+                    // Read file and convert to base64
+                    if let Ok(data) = fs::read(&entry.path()) {
+                        use base64::{Engine as _, engine::general_purpose::STANDARD};
+                        let base64_data = STANDARD.encode(&data);
+                        let data_url = format!("data:{};base64,{}", mime, base64_data);
+
+                        files.push(ImageResource {
+                            name: file_name,
+                            path: file_path,
+                            data_url,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    files.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(files)
+}
+
 // Get the app config directory path
 #[tauri::command]
 fn get_config_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
@@ -121,12 +183,25 @@ pub fn run() {
             read_story_file,
             write_story_file,
             list_story_files,
+            list_image_files,
             file_exists,
             create_directory,
             delete_path,
             get_config_dir,
             toggle_devtools
         ])
+        .setup(|app| {
+            #[cfg(debug_assertions)]
+            {
+                // 디버그 모드에서 자동으로 개발자 도구 열기
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                    println!("[Tauri] DevTools opened automatically");
+                }
+            }
+            println!("[Tauri] App started");
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

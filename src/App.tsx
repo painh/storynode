@@ -21,6 +21,8 @@ function App() {
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
   const { isModalOpen: isGameModalOpen, closeGame } = useGameStore()
 
+  console.log('[App] Render - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
+
   // 전역 단축키 활성화
   useKeyboardShortcuts()
 
@@ -29,28 +31,34 @@ function App() {
 
   // 앱 시작 시 설정 로드
   useEffect(() => {
+    console.log('[App] Loading settings...')
     loadSettings()
   }, [loadSettings])
 
   // 설정 로드 후 마지막 프로젝트 자동 열기
   useEffect(() => {
+    console.log('[App] Settings effect - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
     if (!isLoaded || isInitialized) return
 
     const autoOpenLastProject = async () => {
+      console.log('[App] autoOpenLastProject - isTauri:', isTauri())
+      console.log('[App] settings:', settings)
       if (
         isTauri() &&
         settings.openLastProjectOnStartup &&
         settings.lastProjectPath
       ) {
         try {
+          console.log('[App] Loading project from:', settings.lastProjectPath)
           const project = await loadProjectFromFolder(settings.lastProjectPath)
           setProject(project)
-          console.log('Auto-opened last project:', settings.lastProjectPath)
+          console.log('[App] Auto-opened last project:', settings.lastProjectPath)
         } catch (error) {
-          console.warn('Failed to auto-open last project:', error)
+          console.warn('[App] Failed to auto-open last project:', error)
           // 실패해도 앱은 정상 시작
         }
       }
+      console.log('[App] Setting isInitialized to true')
       setIsInitialized(true)
     }
 

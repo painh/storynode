@@ -55,6 +55,24 @@ export function Header() {
     checkTauri()
   }, [])
 
+  // 프로젝트 리로드 이벤트 리스너
+  useEffect(() => {
+    const handleReloadProject = async () => {
+      const lastPath = settings.lastProjectPath
+      if (lastPath && isTauri()) {
+        try {
+          const loadedProject = await loadProjectFromFolder(lastPath)
+          setProject(loadedProject)
+        } catch (error) {
+          console.error('Failed to reload project:', error)
+        }
+      }
+    }
+
+    window.addEventListener('storynode:reload-project', handleReloadProject)
+    return () => window.removeEventListener('storynode:reload-project', handleReloadProject)
+  }, [settings.lastProjectPath, setProject])
+
   // 저장 (Tauri) - lastProjectPath가 있으면 바로 저장, 없으면 Save As
   const handleSave = async () => {
     setShowFileMenu(false)

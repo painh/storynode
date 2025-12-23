@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
+import { useSettingsStore } from '../../stores/settingsStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
 import type { StoryNodeType } from '../../types/story'
 import { useTranslation } from '../../i18n'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { isTauri, createDirectory } from '../../utils/fileUtils'
 import styles from './Sidebar.module.css'
 
 // 노드 카테고리
@@ -11,6 +14,22 @@ const NODE_CATEGORIES = {
   content: ['dialogue', 'choice', 'battle', 'shop', 'event'] as StoryNodeType[],
   logic: ['variable', 'condition'] as StoryNodeType[],
   editor: ['comment'] as AllNodeType[],
+}
+
+type SidebarTab = 'story' | 'nodes' | 'resources'
+
+// 간단한 fuzzy 매칭 함수
+function fuzzyMatch(text: string, pattern: string): boolean {
+  if (!pattern) return true
+  const lowerText = text.toLowerCase()
+  const lowerPattern = pattern.toLowerCase()
+  let patternIdx = 0
+  for (let i = 0; i < lowerText.length && patternIdx < lowerPattern.length; i++) {
+    if (lowerText[i] === lowerPattern[patternIdx]) {
+      patternIdx++
+    }
+  }
+  return patternIdx === lowerPattern.length
 }
 
 export function Sidebar() {
@@ -30,13 +49,21 @@ export function Sidebar() {
     getCurrentStage,
   } = useEditorStore()
 
+  const { settings } = useSettingsStore()
   const { nodes, sidebar } = useTranslation()
 
+  const [activeTab, setActiveTab] = useState<SidebarTab>('story')
   const [editingStageId, setEditingStageId] = useState<string | null>(null)
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
+  const [nodeFilter, setNodeFilter] = useState('')
+  const [resourceFilter, setResourceFilter] = useState('')
 
   const currentStage = getCurrentStage()
+
+  // 리소스 분류
+  const characters = (project.resources || []).filter(r => r.type === 'character')
+  const backgrounds = (project.resources || []).filter(r => r.type === 'background')
 
   const handleDragStart = (e: React.DragEvent, nodeType: AllNodeType) => {
     e.dataTransfer.setData('application/storynode-type', nodeType)
@@ -101,29 +128,48 @@ export function Sidebar() {
     }
   }
 
-  const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => (
-    <div className={styles.nodeCategory}>
-      <div className={styles.categoryTitle}>{title}</div>
-      <div className={styles.nodeList}>
-        {nodeTypes.map((type) => (
-          <div
-            key={type}
-            className={styles.nodeItem}
-            style={{ '--node-color': NODE_COLORS[type] } as React.CSSProperties}
-            draggable
-            onDragStart={(e) => handleDragStart(e, type)}
-            onClick={() => handleClick(type)}
-          >
-            <span className={styles.nodeIcon}>{NODE_ICONS[type]}</span>
-            <span className={styles.nodeLabel}>{nodes[type as keyof typeof nodes] || type}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  // 이미지 경로를 Tauri에서 사용 가능한 URL로 변환
+  const getImageSrc = (path: string) => {
+    if (path.startsWith('data:') || path.startsWith('http') || path.startsWith('/')) {
+      return path
+    }
+    if (isTauri()) {
+      return convertFileSrc(path)
+    }
+    return path
+  }
 
-  return (
-    <aside className={styles.sidebar}>
+  const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => {
+    const filteredTypes = nodeTypes.filter(type => {
+      const label = nodes[type as keyof typeof nodes] || type
+      return fuzzyMatch(label, nodeFilter) || fuzzyMatch(type, nodeFilter)
+    })
+    if (filteredTypes.length === 0) return null
+    return (
+      <div className={styles.nodeCategory}>
+        <div className={styles.categoryTitle}>{title}</div>
+        <div className={styles.nodeList}>
+          {filteredTypes.map((type) => (
+            <div
+              key={type}
+              className={styles.nodeItem}
+              style={{ '--node-color': NODE_COLORS[type] } as React.CSSProperties}
+              draggable
+              onDragStart={(e) => handleDragStart(e, type)}
+              onClick={() => handleClick(type)}
+            >
+              <span className={styles.nodeIcon}>{NODE_ICONS[type]}</span>
+              <span className={styles.nodeLabel}>{nodes[type as keyof typeof nodes] || type}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Story 탭 컨텐츠
+  const renderStoryTab = () => (
+    <>
       {/* Stages 섹션 */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
@@ -220,14 +266,183 @@ export function Sidebar() {
           ))}
         </div>
       </div>
+    </>
+  )
 
-      {/* Nodes 섹션 */}
+  // Nodes 탭 컨텐츠
+  const renderNodesTab = () => (
+    <div className={styles.section}>
+      <input
+        type="text"
+        className={styles.filterInput}
+        placeholder="Filter nodes..."
+        value={nodeFilter}
+        onChange={(e) => setNodeFilter(e.target.value)}
+      />
+      {renderNodeCategory(sidebar.flow, NODE_CATEGORIES.flow)}
+      {renderNodeCategory(sidebar.content, NODE_CATEGORIES.content)}
+      {renderNodeCategory(sidebar.logic, NODE_CATEGORIES.logic)}
+      {renderNodeCategory(sidebar.editor || 'Editor', NODE_CATEGORIES.editor)}
+    </div>
+  )
+
+  // 리소스 폴더 생성
+  const handleCreateResourceFolder = async (folderName: 'characters' | 'backgrounds') => {
+    const projectPath = settings.lastProjectPath
+    if (!projectPath || !isTauri()) return
+
+    try {
+      await createDirectory(`${projectPath}/${folderName}`)
+      alert(`Created ${folderName}/ folder. Add images and reload the project.`)
+    } catch (error) {
+      alert(`Failed to create folder: ${(error as Error).message}`)
+    }
+  }
+
+  // 리소스 새로고침
+  const handleRefreshResources = () => {
+    // 프로젝트 다시 로드하기 위해 이벤트 발생
+    window.dispatchEvent(new CustomEvent('storynode:reload-project'))
+  }
+
+  // Resources 탭 컨텐츠
+  const renderResourcesTab = () => {
+    const filteredCharacters = characters.filter(r => fuzzyMatch(r.name, resourceFilter))
+    const filteredBackgrounds = backgrounds.filter(r => fuzzyMatch(r.name, resourceFilter))
+    const projectPath = settings.lastProjectPath
+
+    return (
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>{sidebar.nodeLibrary}</div>
-        {renderNodeCategory(sidebar.flow, NODE_CATEGORIES.flow)}
-        {renderNodeCategory(sidebar.content, NODE_CATEGORIES.content)}
-        {renderNodeCategory(sidebar.logic, NODE_CATEGORIES.logic)}
-        {renderNodeCategory(sidebar.editor || 'Editor', NODE_CATEGORIES.editor)}
+        <div className={styles.filterRow}>
+          <input
+            type="text"
+            className={styles.filterInput}
+            placeholder="Filter resources..."
+            value={resourceFilter}
+            onChange={(e) => setResourceFilter(e.target.value)}
+          />
+          {projectPath && (
+            <button
+              className={styles.refreshButton}
+              onClick={handleRefreshResources}
+              title="Refresh resources"
+            >
+              ↻
+            </button>
+          )}
+        </div>
+
+        {/* Characters */}
+        <div className={styles.nodeCategory}>
+          <div className={styles.categoryTitle}>Characters</div>
+          <div className={styles.resourceList}>
+            {filteredCharacters.map((resource) => (
+              <div key={resource.id} className={styles.resourceItem}>
+                <img
+                  src={getImageSrc(resource.path)}
+                  alt={resource.name}
+                  className={styles.resourceThumbnail}
+                />
+                <span className={styles.resourceName}>{resource.name}</span>
+              </div>
+            ))}
+            {filteredCharacters.length === 0 && (
+              <div className={styles.emptyState}>
+                {characters.length === 0 ? (
+                  projectPath ? (
+                    <>
+                      <div className={styles.emptyText}>Add images to characters/ folder</div>
+                      <button
+                        className={styles.createFolderButton}
+                        onClick={() => handleCreateResourceFolder('characters')}
+                      >
+                        Create characters/ folder
+                      </button>
+                    </>
+                  ) : (
+                    <div className={styles.emptyText}>Save project first</div>
+                  )
+                ) : (
+                  <div className={styles.emptyText}>No matches</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Backgrounds */}
+        <div className={styles.nodeCategory}>
+          <div className={styles.categoryTitle}>Backgrounds</div>
+          <div className={styles.resourceList}>
+            {filteredBackgrounds.map((resource) => (
+              <div key={resource.id} className={styles.resourceItem}>
+                <img
+                  src={getImageSrc(resource.path)}
+                  alt={resource.name}
+                  className={styles.resourceThumbnail}
+                />
+                <span className={styles.resourceName}>{resource.name}</span>
+              </div>
+            ))}
+            {filteredBackgrounds.length === 0 && (
+              <div className={styles.emptyState}>
+                {backgrounds.length === 0 ? (
+                  projectPath ? (
+                    <>
+                      <div className={styles.emptyText}>Add images to backgrounds/ folder</div>
+                      <button
+                        className={styles.createFolderButton}
+                        onClick={() => handleCreateResourceFolder('backgrounds')}
+                      >
+                        Create backgrounds/ folder
+                      </button>
+                    </>
+                  ) : (
+                    <div className={styles.emptyText}>Save project first</div>
+                  )
+                ) : (
+                  <div className={styles.emptyText}>No matches</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <aside className={styles.sidebar}>
+      {/* 탭 헤더 */}
+      <div className={styles.tabHeader}>
+        <button
+          className={`${styles.tab} ${activeTab === 'story' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('story')}
+          title="Story Structure"
+        >
+          📚
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'nodes' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('nodes')}
+          title="Node Library"
+        >
+          🧩
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'resources' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('resources')}
+          title="Resources"
+        >
+          🖼️
+        </button>
+      </div>
+
+      {/* 탭 컨텐츠 */}
+      <div className={styles.tabContent}>
+        {activeTab === 'story' && renderStoryTab()}
+        {activeTab === 'nodes' && renderNodesTab()}
+        {activeTab === 'resources' && renderResourcesTab()}
       </div>
     </aside>
   )

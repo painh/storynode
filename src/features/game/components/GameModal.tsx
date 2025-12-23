@@ -30,7 +30,8 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
   } = useGameStore()
 
   const updateGameSettings = useEditorStore((state) => state.updateGameSettings)
-  const customThemes = useEditorStore((state) => state.project.gameSettings?.customThemes || [])
+  const customThemesFromStore = useEditorStore((state) => state.project.gameSettings?.customThemes)
+  const customThemes = customThemesFromStore ?? []
 
   const theme = useMemo(() => getThemeById(currentThemeId), [currentThemeId])
 

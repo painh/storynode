@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { temporal } from 'zundo'
 import type { Node, Edge, Viewport } from '@xyflow/react'
 import type { EditorNodeData, CommentNodeData } from '../types/editor'
@@ -68,9 +67,8 @@ interface CanvasState {
 const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
 export const useCanvasStore = create<CanvasState>()(
-  persist(
-    temporal(
-      (set, get) => ({
+  temporal(
+    (set, get) => ({
       nodes: [],
       edges: [],
       viewport: { x: 0, y: 0, zoom: 1 },
@@ -165,27 +163,17 @@ export const useCanvasStore = create<CanvasState>()(
       setShowGrid: (show) => set({ showGrid: show }),
 
       clearCanvas: () => set({ nodes: [], edges: [] }),
-      }),
-      {
-        // Undo/Redo 설정 - nodePositions와 commentNodes만 추적
-        limit: 50,
-        partialize: (state) => ({
-          nodePositions: state.nodePositions,
-          commentNodes: state.commentNodes,
-        }),
-        equality: (pastState, currentState) => {
-          return JSON.stringify(pastState) === JSON.stringify(currentState)
-        },
-      }
-    ),
+    }),
     {
-      name: 'storynode-canvas',
+      // Undo/Redo 설정 - nodePositions와 commentNodes만 추적
+      limit: 50,
       partialize: (state) => ({
         nodePositions: state.nodePositions,
         commentNodes: state.commentNodes,
-        snapGrid: state.snapGrid,
-        showGrid: state.showGrid,
       }),
+      equality: (pastState, currentState) => {
+        return JSON.stringify(pastState) === JSON.stringify(currentState)
+      },
     }
   )
 )

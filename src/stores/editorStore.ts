@@ -1,8 +1,7 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 import { temporal } from 'zundo'
-import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType } from '../types/story'
 
 interface EditorState {
   // 프로젝트 데이터
@@ -49,9 +48,39 @@ interface EditorState {
   addCustomTheme: (theme: CustomTheme) => void
   updateCustomTheme: (themeId: string, updates: Partial<CustomTheme>) => void
   deleteCustomTheme: (themeId: string) => void
+
+  // Resources
+  addResource: (resource: ProjectResource) => void
+  updateResource: (resourceId: string, updates: Partial<ProjectResource>) => void
+  deleteResource: (resourceId: string) => void
+  getResourcesByType: (type: ResourceType) => ProjectResource[]
+  loadTemplateResources: () => Promise<void>
 }
 
 const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+const generateResourceId = () => `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+
+// 기본 템플릿 리소스
+const defaultTemplateResources: ProjectResource[] = [
+  {
+    id: 'char_1',
+    name: 'Character 1',
+    type: 'character',
+    path: '/templates/default/characters/char1.png',
+  },
+  {
+    id: 'char_2',
+    name: 'Character 2',
+    type: 'character',
+    path: '/templates/default/characters/char2.png',
+  },
+  {
+    id: 'bg_1',
+    name: 'Background',
+    type: 'background',
+    path: '/templates/default/backgrounds/background.png',
+  },
+]
 
 const createDefaultProject = (): StoryProject => ({
   name: 'New Story Project',
@@ -78,19 +107,29 @@ const createDefaultProject = (): StoryProject => ({
     defaultThemeId: 'dark',
     customThemes: [],
   },
+  resources: [...defaultTemplateResources],
 })
 
 export const useEditorStore = create<EditorState>()(
-  persist(
-    temporal(
-      immer((set, get) => ({
+  temporal(
+    immer((set, get) => ({
         project: createDefaultProject(),
         currentStageId: 'stage_1',
         currentChapterId: 'chapter_1',
         selectedNodeIds: [],
 
         setProject: (project) => set({
-          project,
+          project: {
+            ...project,
+            // resources가 없으면 기본 템플릿 리소스로 초기화
+            resources: project.resources || [...defaultTemplateResources],
+            // gameSettings가 없으면 기본값으로 초기화
+            gameSettings: project.gameSettings || {
+              defaultGameMode: 'visualNovel',
+              defaultThemeId: 'dark',
+              customThemes: [],
+            },
+          },
           currentStageId: project.stages[0]?.id || null,
           currentChapterId: project.stages[0]?.chapters[0]?.id || null,
           selectedNodeIds: [],
@@ -433,28 +472,70 @@ export const useEditorStore = create<EditorState>()(
             }
           }
         }),
+
+        // Resources
+        addResource: (resource) => set((state) => {
+          if (!state.project.resources) {
+            state.project.resources = []
+          }
+          // ID가 없으면 생성
+          if (!resource.id) {
+            resource.id = generateResourceId()
+          }
+          state.project.resources.push(resource)
+        }),
+
+        updateResource: (resourceId, updates) => set((state) => {
+          const resources = state.project.resources
+          if (resources) {
+            const index = resources.findIndex(r => r.id === resourceId)
+            if (index !== -1) {
+              Object.assign(resources[index], updates)
+            }
+          }
+        }),
+
+        deleteResource: (resourceId) => set((state) => {
+          if (state.project.resources) {
+            const index = state.project.resources.findIndex(r => r.id === resourceId)
+            if (index !== -1) {
+              state.project.resources.splice(index, 1)
+            }
+          }
+        }),
+
+        getResourcesByType: (type) => {
+          const state = get()
+          return (state.project.resources || []).filter(r => r.type === type)
+        },
+
+        loadTemplateResources: async () => {
+          set((state) => {
+            if (!state.project.resources) {
+              state.project.resources = []
+            }
+            // 템플릿 리소스 중 아직 없는 것만 추가
+            defaultTemplateResources.forEach(template => {
+              const exists = state.project.resources!.some(r => r.path === template.path)
+              if (!exists) {
+                state.project.resources!.push({ ...template })
+              }
+            })
+          })
+        },
       })),
-      {
-        // Undo/Redo 설정
-        limit: 50, // 최대 50개 히스토리
-        partialize: (state) => {
-          // project 데이터만 Undo/Redo 대상으로
-          const { project } = state
-          return { project }
-        },
-        equality: (pastState, currentState) => {
-          // 깊은 비교로 실제 변경만 기록
-          return JSON.stringify(pastState) === JSON.stringify(currentState)
-        },
-      }
-    ),
     {
-      name: 'storynode-editor',
-      partialize: (state) => ({
-        project: state.project,
-        currentStageId: state.currentStageId,
-        currentChapterId: state.currentChapterId,
-      }),
+      // Undo/Redo 설정
+      limit: 50, // 최대 50개 히스토리
+      partialize: (state) => {
+        // project 데이터만 Undo/Redo 대상으로
+        const { project } = state
+        return { project }
+      },
+      equality: (pastState, currentState) => {
+        // 깊은 비교로 실제 변경만 기록
+        return JSON.stringify(pastState) === JSON.stringify(currentState)
+      },
     }
   )
 )

@@ -1,10 +1,16 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { StoryProject, StoryStage, StoryChapter } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource, EditorData } from '../types/story'
 
 export interface FileInfo {
   name: string
   path: string
   is_directory: boolean
+}
+
+export interface ImageResource {
+  name: string
+  path: string
+  data_url: string
 }
 
 // Check if running in Tauri environment
@@ -64,6 +70,14 @@ export async function deletePath(path: string): Promise<void> {
   throw new Error('File operations are only available in Tauri environment')
 }
 
+// List image files in a directory (returns with base64 data)
+export async function listImageFiles(dir: string): Promise<ImageResource[]> {
+  if (isTauri()) {
+    return await invoke<ImageResource[]>('list_image_files', { dir })
+  }
+  return []
+}
+
 // ============================================
 // 폴더 기반 프로젝트 저장/로드
 // ============================================
@@ -72,6 +86,9 @@ interface ProjectMeta {
   name: string
   version: string
   stages: string[] // stage IDs
+  gameSettings?: GameSettings
+  resources?: ProjectResource[]
+  editorData?: EditorData
 }
 
 interface StageMeta {
@@ -105,6 +122,8 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
     name: project.name,
     version: project.version,
     stages: project.stages.map(s => s.id),
+    gameSettings: project.gameSettings,
+    resources: project.resources,
   }
   await writeStoryFile(`${projectDir}/project.json`, JSON.stringify(projectMeta, null, 2))
 
@@ -167,10 +186,37 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     })
   }
 
+  // 3. 리소스 폴더 스캔
+  const resources: ProjectResource[] = []
+
+  // characters 폴더 스캔
+  const characterFiles = await listImageFiles(`${projectDir}/characters`)
+  for (const file of characterFiles) {
+    resources.push({
+      id: `char_${file.name.replace(/\.[^/.]+$/, '')}`,
+      name: file.name.replace(/\.[^/.]+$/, ''),
+      type: 'character',
+      path: file.data_url, // base64 data URL 사용
+    })
+  }
+
+  // backgrounds 폴더 스캔
+  const backgroundFiles = await listImageFiles(`${projectDir}/backgrounds`)
+  for (const file of backgroundFiles) {
+    resources.push({
+      id: `bg_${file.name.replace(/\.[^/.]+$/, '')}`,
+      name: file.name.replace(/\.[^/.]+$/, ''),
+      type: 'background',
+      path: file.data_url, // base64 data URL 사용
+    })
+  }
+
   return {
     name: projectMeta.name,
     version: projectMeta.version,
     stages,
+    gameSettings: projectMeta.gameSettings,
+    resources,
   }
 }
 

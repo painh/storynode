@@ -76,25 +76,19 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   isLoaded: false,
 
   loadSettings: async () => {
+    console.log('[SettingsStore] loadSettings called, isTauri:', isTauri())
     if (!isTauri()) {
-      // 웹 환경에서는 localStorage 사용
-      try {
-        const stored = localStorage.getItem('storynode-settings')
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          set({ settings: { ...defaultSettings, ...parsed }, isLoaded: true })
-        } else {
-          set({ isLoaded: true })
-        }
-      } catch {
-        set({ isLoaded: true })
-      }
+      // 웹 환경에서는 기본 설정 사용 (localStorage 사용 안 함)
+      console.log('[SettingsStore] Not Tauri, setting isLoaded to true')
+      set({ isLoaded: true })
       return
     }
 
     try {
       // config 디렉토리 가져오기
+      console.log('[SettingsStore] Getting config dir...')
       const configDir = await invoke<string>('get_config_dir')
+      console.log('[SettingsStore] Config dir:', configDir)
       const configPath = `${configDir}/settings.json`
 
       // 디렉토리 생성 (없으면)
@@ -104,17 +98,21 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       // 설정 파일 읽기
       try {
+        console.log('[SettingsStore] Reading settings file:', configPath)
         const content = await readStoryFile(configPath)
         const parsed = JSON.parse(content)
+        console.log('[SettingsStore] Loaded settings:', parsed)
         set({ settings: { ...defaultSettings, ...parsed }, isLoaded: true })
-      } catch {
+        console.log('[SettingsStore] Settings loaded successfully')
+      } catch (e) {
         // 파일이 없으면 기본값 사용
+        console.log('[SettingsStore] No settings file, using defaults:', e)
         set({ isLoaded: true })
         // 기본 설정 저장
         await get().saveSettings()
       }
     } catch (error) {
-      console.error('Failed to load settings:', error)
+      console.error('[SettingsStore] Failed to load settings:', error)
       set({ isLoaded: true })
     }
   },
@@ -123,8 +121,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const { settings, configPath } = get()
 
     if (!isTauri()) {
-      // 웹 환경에서는 localStorage 사용
-      localStorage.setItem('storynode-settings', JSON.stringify(settings))
+      // 웹 환경에서는 저장하지 않음
       return
     }
 

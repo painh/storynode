@@ -17,11 +17,16 @@
         "width": 1400,
         "height": 900,
         "minWidth": 1024,
-        "minHeight": 768
+        "minHeight": 768,
+        "dragDropEnabled": false
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {
