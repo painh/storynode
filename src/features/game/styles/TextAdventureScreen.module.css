@@ -195,6 +195,20 @@
   font-weight: 500;
 }
 
+/* 자동 진행 중 표시 */
+.autoAdvancing {
+  text-align: center;
+  color: var(--ta-secondary, #888);
+  font-size: 13px;
+  padding: 8px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 /* 빈 상태 */
 .emptyState {
   display: flex;

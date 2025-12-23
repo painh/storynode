@@ -19,29 +19,32 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [gameState?.history])
 
-  // 클릭/스페이스로 진행
-  const handleAdvance = useCallback(() => {
-    if (status !== 'playing') return
-    if (!currentNode) return
+  // 자동 진행이 필요한 노드인지 확인
+  const shouldAutoAdvance = useCallback(() => {
+    if (status !== 'playing') return false
+    if (!currentNode) return false
 
-    // choice 노드면 진행 불가
-    if (currentNode.type === 'choice') return
+    // 선택지 노드는 사용자 입력 대기
+    if (currentNode.type === 'choice') return false
 
-    advance()
-  }, [status, currentNode, advance])
+    // 특수 노드들 (전투, 상점, 이벤트, 챕터 종료)는 사용자 입력 대기
+    if (['battle', 'shop', 'event', 'chapter_end'].includes(currentNode.type)) return false
 
-  // 키보드 이벤트
+    // 그 외 노드들 (dialogue, start, condition, variable)은 자동 진행
+    return true
+  }, [status, currentNode])
+
+  // 텍스트 어드벤처 모드: 선택지/특수 노드까지 자동 진행
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault()
-        handleAdvance()
-      }
-    }
+    if (!shouldAutoAdvance()) return
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleAdvance])
+    // 약간의 딜레이 후 자동 진행 (로그가 쌓이는 것을 볼 수 있도록)
+    const timer = setTimeout(() => {
+      advance()
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [currentNode?.id, shouldAutoAdvance, advance])
 
   // 선택지 선택
   const handleSelectChoice = (index: number) => {
@@ -99,12 +102,23 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
     )
   }
 
-  // 현재 노드 렌더링
+  // 특수 노드 진행 핸들러
+  const handleSpecialAdvance = useCallback(() => {
+    if (status !== 'playing') return
+    advance()
+  }, [status, advance])
+
+  // 현재 노드 렌더링 (선택지/특수 노드만 표시)
   const renderCurrentNode = () => {
     if (!currentNode) {
+      return null
+    }
+
+    // 자동 진행되는 노드는 하단에 표시하지 않음
+    if (shouldAutoAdvance()) {
       return (
-        <div className={styles.emptyState}>
-          <span className={styles.emptyText}>No node to display</span>
+        <div className={styles.currentSection}>
+          <div className={styles.autoAdvancing}>진행 중...</div>
         </div>
       )
     }
@@ -119,7 +133,7 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
               전투 발생{currentNode.battleGroupId ? `: ${currentNode.battleGroupId}` : ''}
             </span>
           </div>
-          <button className={styles.actionButton} onClick={handleAdvance}>
+          <button className={styles.actionButton} onClick={handleSpecialAdvance}>
             전투 진행
           </button>
         </div>
@@ -133,7 +147,7 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
             <span className={styles.specialIcon}>🏪</span>
             <span className={styles.specialText}>상점에 도착했습니다.</span>
           </div>
-          <button className={styles.actionButton} onClick={handleAdvance}>
+          <button className={styles.actionButton} onClick={handleSpecialAdvance}>
             상점 이용
           </button>
         </div>
@@ -149,7 +163,7 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
               이벤트{currentNode.eventId ? `: ${currentNode.eventId}` : ''}
             </span>
           </div>
-          <button className={styles.actionButton} onClick={handleAdvance}>
+          <button className={styles.actionButton} onClick={handleSpecialAdvance}>
             계속
           </button>
         </div>
@@ -165,30 +179,28 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
               {currentNode.text || '챕터가 종료되었습니다.'}
             </span>
           </div>
-          <button className={styles.actionButton} onClick={handleAdvance}>
+          <button className={styles.actionButton} onClick={handleSpecialAdvance}>
             종료
           </button>
         </div>
       )
     }
 
-    // 일반 대사 / 선택지 노드
-    const isChoiceNode = currentNode.type === 'choice'
+    // 선택지 노드
+    if (currentNode.type === 'choice' && currentNode.choices && currentNode.choices.length > 0) {
+      return (
+        <div className={styles.currentSection}>
+          {/* 선택지 질문 텍스트 */}
+          {currentNode.text && (
+            <div className={styles.currentText}>
+              {currentNode.speaker && (
+                <span className={styles.currentSpeaker}>{currentNode.speaker}: </span>
+              )}
+              <span>{currentNode.text}</span>
+            </div>
+          )}
 
-    return (
-      <div className={styles.currentSection}>
-        {/* 현재 대사 */}
-        {currentNode.text && (
-          <div className={styles.currentText}>
-            {currentNode.speaker && (
-              <span className={styles.currentSpeaker}>{currentNode.speaker}: </span>
-            )}
-            <span>{currentNode.text}</span>
-          </div>
-        )}
-
-        {/* 선택지 */}
-        {isChoiceNode && currentNode.choices && currentNode.choices.length > 0 ? (
+          {/* 선택지 */}
           <div className={styles.choicesArea}>
             <div className={styles.choicesLabel}>선택하세요:</div>
             {currentNode.choices.map((choice, index) => (
@@ -202,13 +214,11 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
               </button>
             ))}
           </div>
-        ) : (
-          <button className={styles.actionButton} onClick={handleAdvance}>
-            계속 ▶
-          </button>
-        )}
-      </div>
-    )
+        </div>
+      )
+    }
+
+    return null
   }
 
   return (
