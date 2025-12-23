@@ -1,7 +1,8 @@
 import { memo, type ReactNode } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { StoryNodeType } from '../../types/story'
-import { NODE_COLORS, NODE_ICONS, NODE_LABELS } from '../../types/editor'
+import { NODE_COLORS, NODE_ICONS } from '../../types/editor'
+import { useTranslation } from '../../i18n'
 import styles from './BaseNode.module.css'
 
 interface BaseNodeProps {
@@ -19,9 +20,10 @@ export const BaseNode = memo(function BaseNode({
   hasInputExec = true,
   hasOutputExec = true,
 }: BaseNodeProps) {
+  const { nodes } = useTranslation()
   const headerColor = NODE_COLORS[nodeType]
   const icon = NODE_ICONS[nodeType]
-  const label = NODE_LABELS[nodeType]
+  const label = nodes[nodeType]
 
   return (
     <div

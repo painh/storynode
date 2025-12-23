@@ -1,0 +1,75 @@
+.content {
+  min-width: 160px;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.branches {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.branch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.conditionText {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--text-primary);
+  background: rgba(0, 121, 107, 0.2);
+  padding: 3px 6px;
+  border-radius: 3px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.handleWrapper {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+.conditionHandle {
+  width: 10px !important;
+  height: 10px !important;
+  background: #00796B !important;
+  border: 2px solid #fff !important;
+  right: -6px !important;
+}
+
+.defaultBranch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.defaultLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.defaultHandle {
+  width: 10px !important;
+  height: 10px !important;
+  background: #666 !important;
+  border: 2px solid #fff !important;
+  right: -6px !important;
+}

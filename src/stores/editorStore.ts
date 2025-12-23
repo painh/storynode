@@ -76,7 +76,12 @@ export const useEditorStore = create<EditorState>()(
         currentChapterId: 'chapter_1',
         selectedNodeIds: [],
 
-        setProject: (project) => set({ project }),
+        setProject: (project) => set({
+          project,
+          currentStageId: project.stages[0]?.id || null,
+          currentChapterId: project.stages[0]?.chapters[0]?.id || null,
+          selectedNodeIds: [],
+        }),
 
         // Stage CRUD
         createStage: (stage) => set((state) => {
@@ -153,7 +158,7 @@ export const useEditorStore = create<EditorState>()(
         }),
 
         // Node CRUD
-        createNode: (type, position) => {
+        createNode: (type, _position) => {
           const state = get()
           const stage = state.project.stages.find(s => s.id === state.currentStageId)
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
@@ -174,14 +179,22 @@ export const useEditorStore = create<EditorState>()(
           } else if (type === 'chapter_end') {
             newNode.text = ''
           }
+          // start 노드는 추가 속성 없음
 
           set((state) => {
             const stage = state.project.stages.find(s => s.id === state.currentStageId)
             const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
             if (chapter) {
+              // start 노드는 챕터당 1개만 허용
+              if (type === 'start') {
+                const existingStart = chapter.nodes.find(n => n.type === 'start')
+                if (existingStart) {
+                  return // 이미 start 노드가 있으면 추가하지 않음
+                }
+              }
               chapter.nodes.push(newNode)
-              // 첫 노드면 startNodeId로 설정
-              if (chapter.nodes.length === 1) {
+              // start 노드면 startNodeId로 설정
+              if (type === 'start') {
                 chapter.startNodeId = newNode.id
               }
             }
@@ -274,11 +287,11 @@ export const useEditorStore = create<EditorState>()(
 
 // Undo/Redo 훅 export
 export const useTemporalStore = <T>(
-  selector: (state: {
+  _selector: (state: {
     pastStates: EditorState[]
     futureStates: EditorState[]
     undo: () => void
     redo: () => void
     clear: () => void
   }) => T
-) => useEditorStore.temporal(selector)
+) => useEditorStore.temporal.getState() as T

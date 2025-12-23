@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -88,6 +89,16 @@ fn delete_path(path: String) -> Result<(), String> {
     }
 }
 
+// Get the app config directory path
+#[tauri::command]
+fn get_config_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
+    app_handle
+        .path()
+        .app_config_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .map_err(|e| format!("Failed to get config dir: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -99,7 +110,8 @@ pub fn run() {
             list_story_files,
             file_exists,
             create_directory,
-            delete_path
+            delete_path,
+            get_config_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

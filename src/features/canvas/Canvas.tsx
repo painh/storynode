@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   ReactFlow,
   Background,
@@ -7,6 +7,7 @@ import {
   addEdge,
   useNodesState,
   useEdgesState,
+  SelectionMode,
   type Connection,
   type Edge,
   type Node,
@@ -17,9 +18,15 @@ import '@xyflow/react/dist/style.css'
 import { useEditorStore } from '../../stores/editorStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { nodeTypes } from '../nodes/nodeRegistry'
+import { SmartEdge } from '../edges/SmartEdge'
+import { autoLayoutNodes } from '../../utils/autoLayout'
 import type { EditorNodeData } from '../../types/editor'
 import type { StoryNodeType } from '../../types/story'
 import styles from './Canvas.module.css'
+
+const edgeTypes = {
+  smart: SmartEdge,
+}
 
 export function Canvas() {
   const {
@@ -34,16 +41,25 @@ export function Canvas() {
   const { getNodePosition, updateNodePosition } = useCanvasStore()
 
   const chapter = getCurrentChapter()
+  const setNodesRef = useRef<typeof setNodes | null>(null)
 
   // StoryNode를 React Flow Node로 변환
   const initialNodes = useMemo((): Node<EditorNodeData>[] => {
     if (!chapter) return []
 
-    return chapter.nodes.map((storyNode, index) => {
-      const position = getNodePosition(chapter.id, storyNode.id) || {
-        x: 100 + (index % 4) * 280,
-        y: 100 + Math.floor(index / 4) * 200,
-      }
+    // 저장된 위치가 없는 노드가 있는지 확인
+    const hasUnsavedPositions = chapter.nodes.some(
+      node => !getNodePosition(chapter.id, node.id)
+    )
+
+    // 저장된 위치가 없으면 자동 레이아웃 계산
+    const autoPositions = hasUnsavedPositions
+      ? autoLayoutNodes(chapter.nodes, chapter.startNodeId)
+      : {}
+
+    return chapter.nodes.map((storyNode) => {
+      const savedPosition = getNodePosition(chapter.id, storyNode.id)
+      const position = savedPosition || autoPositions[storyNode.id] || { x: 100, y: 100 }
 
       return {
         id: storyNode.id,
@@ -90,6 +106,32 @@ export function Canvas() {
           }
         })
       }
+
+      // condition 분기 연결
+      if (node.conditionBranches) {
+        node.conditionBranches.forEach((branch, index) => {
+          if (branch.nextNodeId) {
+            edges.push({
+              id: `${node.id}-condition-${index}-${branch.nextNodeId}`,
+              source: node.id,
+              target: branch.nextNodeId,
+              sourceHandle: `condition-${index}`,
+              targetHandle: 'exec-in',
+            })
+          }
+        })
+      }
+
+      // condition default 연결
+      if (node.defaultNextNodeId) {
+        edges.push({
+          id: `${node.id}-default-${node.defaultNextNodeId}`,
+          source: node.id,
+          target: node.defaultNextNodeId,
+          sourceHandle: 'default',
+          targetHandle: 'exec-in',
+        })
+      }
     })
 
     return edges
@@ -98,11 +140,44 @@ export function Canvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
+  // setNodes ref 저장
+  useEffect(() => {
+    setNodesRef.current = setNodes
+  }, [setNodes])
+
   // 챕터 변경 시 노드/엣지 업데이트
   useEffect(() => {
     setNodes(initialNodes)
     setEdges(initialEdges)
   }, [currentChapterId, chapter?.nodes, setNodes, setEdges, initialNodes, initialEdges])
+
+  // 자동 정렬 이벤트 리스너
+  useEffect(() => {
+    const handleAutoLayout = () => {
+      if (!chapter || !setNodesRef.current) return
+
+      const autoPositions = autoLayoutNodes(chapter.nodes, chapter.startNodeId)
+
+      // 모든 노드 위치 업데이트
+      setNodesRef.current((nds) =>
+        nds.map((node) => {
+          const newPos = autoPositions[node.id]
+          if (newPos && currentChapterId) {
+            updateNodePosition(currentChapterId, node.id, newPos)
+          }
+          return {
+            ...node,
+            position: newPos || node.position,
+          }
+        })
+      )
+    }
+
+    window.addEventListener('storynode:auto-layout', handleAutoLayout)
+    return () => {
+      window.removeEventListener('storynode:auto-layout', handleAutoLayout)
+    }
+  }, [chapter, currentChapterId, updateNodePosition])
 
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
@@ -133,8 +208,26 @@ export function Canvas() {
           }
           updateNode(connection.source, { choices })
         }
-      } else {
-        // 일반 exec-out 연결
+      }
+      // condition 핸들인 경우
+      else if (sourceHandle.startsWith('condition-')) {
+        const conditionIndex = parseInt(sourceHandle.split('-')[1])
+        const sourceNode = chapter?.nodes.find(n => n.id === connection.source)
+        if (sourceNode?.conditionBranches?.[conditionIndex]) {
+          const branches = [...sourceNode.conditionBranches]
+          branches[conditionIndex] = {
+            ...branches[conditionIndex],
+            nextNodeId: connection.target,
+          }
+          updateNode(connection.source, { conditionBranches: branches })
+        }
+      }
+      // condition default 핸들인 경우
+      else if (sourceHandle === 'default') {
+        updateNode(connection.source, { defaultNextNodeId: connection.target })
+      }
+      // 일반 exec-out 연결
+      else {
         updateNode(connection.source, { nextNodeId: connection.target })
       }
 
@@ -192,11 +285,15 @@ export function Canvas() {
         onDragOver={onDragOver}
         onDrop={onDrop}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         snapToGrid
         snapGrid={[20, 20]}
+        panOnDrag={[1, 2]}
+        selectionOnDrag
+        selectionMode={SelectionMode.Partial}
         defaultEdgeOptions={{
-          type: 'smoothstep',
+          type: 'smart',
           style: { stroke: '#fff', strokeWidth: 2 },
         }}
       >
@@ -210,12 +307,15 @@ export function Canvas() {
         <MiniMap
           nodeColor={(node) => {
             const colors: Record<string, string> = {
+              start: '#4CAF50',
               dialogue: '#4A6FA5',
               choice: '#8B4A6B',
               battle: '#C62828',
               shop: '#2E7D32',
               event: '#F9A825',
               chapter_end: '#37474F',
+              variable: '#7B1FA2',
+              condition: '#00796B',
             }
             return colors[node.type || 'dialogue'] || '#666'
           }}

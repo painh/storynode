@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
 import styles from './ChoiceNode.module.css'
@@ -7,7 +7,7 @@ import styles from './ChoiceNode.module.css'
 export const ChoiceNode = memo(function ChoiceNode({
   data,
   selected,
-}: NodeProps<EditorNodeData>) {
+}: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
   const choices = storyNode.choices || []
 

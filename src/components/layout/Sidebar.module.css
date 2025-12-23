@@ -183,3 +183,18 @@
   font-size: 12px;
   outline: none;
 }
+
+/* Node Category */
+.nodeCategory {
+  margin-bottom: 12px;
+}
+
+.categoryTitle {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  padding-left: 4px;
+}

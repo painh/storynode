@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
-import { NODE_COLORS, NODE_ICONS, NODE_LABELS } from '../../types/editor'
+import { NODE_COLORS, NODE_ICONS } from '../../types/editor'
 import type { StoryNodeType } from '../../types/story'
+import { useTranslation } from '../../i18n'
 import styles from './Sidebar.module.css'
 
-const NODE_TYPES: StoryNodeType[] = ['dialogue', 'choice', 'battle', 'shop', 'event', 'chapter_end']
-
-// MVP에서 활성화된 노드 타입
-const ENABLED_TYPES: StoryNodeType[] = ['dialogue', 'choice']
+// 노드 카테고리
+const NODE_CATEGORIES = {
+  flow: ['start', 'chapter_end'] as StoryNodeType[],
+  content: ['dialogue', 'choice', 'battle', 'shop', 'event'] as StoryNodeType[],
+  logic: ['variable', 'condition'] as StoryNodeType[],
+}
 
 export function Sidebar() {
   const {
@@ -25,6 +28,8 @@ export function Sidebar() {
     setCurrentChapter,
     getCurrentStage,
   } = useEditorStore()
+
+  const { nodes, sidebar } = useTranslation()
 
   const [editingStageId, setEditingStageId] = useState<string | null>(null)
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null)
@@ -92,6 +97,27 @@ export function Sidebar() {
       deleteChapter(currentStageId, chapterId)
     }
   }
+
+  const renderNodeCategory = (title: string, nodeTypes: StoryNodeType[]) => (
+    <div className={styles.nodeCategory}>
+      <div className={styles.categoryTitle}>{title}</div>
+      <div className={styles.nodeList}>
+        {nodeTypes.map((type) => (
+          <div
+            key={type}
+            className={styles.nodeItem}
+            style={{ '--node-color': NODE_COLORS[type] } as React.CSSProperties}
+            draggable
+            onDragStart={(e) => handleDragStart(e, type)}
+            onClick={() => handleClick(type)}
+          >
+            <span className={styles.nodeIcon}>{NODE_ICONS[type]}</span>
+            <span className={styles.nodeLabel}>{nodes[type]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <aside className={styles.sidebar}>
@@ -194,26 +220,10 @@ export function Sidebar() {
 
       {/* Nodes 섹션 */}
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>Nodes</div>
-        <div className={styles.nodeList}>
-          {NODE_TYPES.map((type) => {
-            const isEnabled = ENABLED_TYPES.includes(type)
-            return (
-              <div
-                key={type}
-                className={`${styles.nodeItem} ${!isEnabled ? styles.disabled : ''}`}
-                style={{ '--node-color': NODE_COLORS[type] } as React.CSSProperties}
-                draggable={isEnabled}
-                onDragStart={(e) => isEnabled && handleDragStart(e, type)}
-                onClick={() => isEnabled && handleClick(type)}
-              >
-                <span className={styles.nodeIcon}>{NODE_ICONS[type]}</span>
-                <span className={styles.nodeLabel}>{NODE_LABELS[type]}</span>
-                {!isEnabled && <span className={styles.badge}>Soon</span>}
-              </div>
-            )
-          })}
-        </div>
+        <div className={styles.sectionTitle}>{sidebar.nodeLibrary}</div>
+        {renderNodeCategory(sidebar.flow, NODE_CATEGORIES.flow)}
+        {renderNodeCategory(sidebar.content, NODE_CATEGORIES.content)}
+        {renderNodeCategory(sidebar.logic, NODE_CATEGORIES.logic)}
       </div>
     </aside>
   )

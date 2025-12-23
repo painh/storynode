@@ -2,9 +2,9 @@ import { memo } from 'react'
 import type { NodeProps, Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
-import styles from './DialogueNode.module.css'
+import styles from './ChapterEndNode.module.css'
 
-export const DialogueNode = memo(function DialogueNode({
+export const ChapterEndNode = memo(function ChapterEndNode({
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -12,18 +12,15 @@ export const DialogueNode = memo(function DialogueNode({
 
   return (
     <BaseNode
-      nodeType="dialogue"
+      nodeType="chapter_end"
       selected={selected}
       hasInputExec={true}
-      hasOutputExec={true}
+      hasOutputExec={false}
     >
       <div className={styles.content}>
-        {storyNode.speaker && (
-          <div className={styles.speaker}>{storyNode.speaker}</div>
-        )}
         <div className={styles.text}>
-          {storyNode.text?.substring(0, 60) || '(empty)'}
-          {(storyNode.text?.length || 0) > 60 && '...'}
+          {storyNode.text?.substring(0, 50) || 'End'}
+          {(storyNode.text?.length || 0) > 50 && '...'}
         </div>
       </div>
     </BaseNode>

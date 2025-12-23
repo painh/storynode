@@ -2,12 +2,6 @@ import { create } from 'zustand'
 import type { Node, Edge, Viewport } from '@xyflow/react'
 import type { EditorNodeData } from '../types/editor'
 
-interface NodePosition {
-  nodeId: string
-  x: number
-  y: number
-}
-
 interface CanvasState {
   // React Flow 상태
   nodes: Node<EditorNodeData>[]

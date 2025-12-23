@@ -1,0 +1,11 @@
+.content {
+  min-width: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.icon {
+  font-size: 24px;
+}

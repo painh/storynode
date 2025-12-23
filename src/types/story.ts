@@ -1,7 +1,10 @@
 // 스토리 모드 타입 정의 (gosunideckbuilding 호환)
 
 // 스토리 노드 타입
-export type StoryNodeType = 'dialogue' | 'battle' | 'shop' | 'event' | 'choice' | 'chapter_end'
+export type StoryNodeType =
+  | 'start' | 'dialogue' | 'choice' | 'chapter_end'
+  | 'battle' | 'shop' | 'event'
+  | 'variable' | 'condition'
 
 // 캐릭터 ID 타입
 export type CharacterId = 'kairen' | 'zed' | 'lyra' | 'elise'
@@ -59,6 +62,26 @@ export interface StoryBattleReward {
   goldRange?: { min: number; max: number }
 }
 
+// Variable 노드용 타입
+export type VariableAction = 'set' | 'add' | 'subtract' | 'multiply'
+export type VariableTarget = 'flag' | 'gold' | 'hp' | 'affection' | 'reputation'
+
+export interface VariableOperation {
+  target: VariableTarget
+  action: VariableAction
+  key?: string              // flag용
+  characterId?: CharacterId // affection용
+  factionId?: FactionId     // reputation용
+  value: number | string | boolean
+}
+
+// Condition 노드용 - 다중 출력
+export interface ConditionBranch {
+  id: string
+  condition: StoryCondition
+  nextNodeId?: string
+}
+
 // 스토리 노드
 export interface StoryNode {
   id: string
@@ -72,6 +95,13 @@ export interface StoryNode {
   eventId?: string
   characterReactions?: CharacterReaction[]
   onEnterEffects?: StoryChoiceEffect
+
+  // variable 노드용
+  variableOperations?: VariableOperation[]
+
+  // condition 노드용
+  conditionBranches?: ConditionBranch[]
+  defaultNextNodeId?: string  // 어떤 조건도 안 맞을 때
 }
 
 // 스토리 챕터
