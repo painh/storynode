@@ -40,9 +40,12 @@ function CanvasInner() {
     updateNode,
     selectedNodeIds,
     setSelectedNodes,
+    getCommentNodes,
+    createCommentNode,
+    updateCommentPosition,
   } = useEditorStore()
 
-  const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition, snapGrid, showGrid, setSnapGrid, setShowGrid } = useCanvasStore()
+  const { snapGrid, showGrid, setSnapGrid, setShowGrid } = useCanvasStore()
   const [isShiftPressed, setIsShiftPressed] = useState(false)
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { status: gameStatus, gameState } = useGameStore()
@@ -55,7 +58,7 @@ function CanvasInner() {
   const setNodesRef = useRef<typeof setNodes | null>(null)
 
   // Comment 노드들을 안정적으로 가져오기 (무한 루프 방지)
-  const commentNodes = currentChapterId ? getCommentNodes(currentChapterId) : []
+  const commentNodes = getCommentNodes()
   const commentNodesKey = JSON.stringify(commentNodes.map(c => ({ id: c.id, pos: c.position, data: c.data })))
 
   // StoryNode를 React Flow Node로 변환
@@ -63,9 +66,7 @@ function CanvasInner() {
     if (!chapter) return []
 
     // 저장된 위치가 없는 노드가 있는지 확인
-    const hasUnsavedPositions = chapter.nodes.some(
-      node => !getNodePosition(chapter.id, node.id)
-    )
+    const hasUnsavedPositions = chapter.nodes.some(node => !node.position)
 
     // 저장된 위치가 없으면 자동 레이아웃 계산
     const autoPositions = hasUnsavedPositions
@@ -74,8 +75,7 @@ function CanvasInner() {
 
     // Story 노드들
     const storyNodes: Node<EditorNodeData>[] = chapter.nodes.map((storyNode) => {
-      const savedPosition = getNodePosition(chapter.id, storyNode.id)
-      const position = savedPosition || autoPositions[storyNode.id] || { x: 100, y: 100 }
+      const position = storyNode.position || autoPositions[storyNode.id] || { x: 100, y: 100 }
 
       return {
         id: storyNode.id,
@@ -105,7 +105,7 @@ function CanvasInner() {
 
     return [...commentFlowNodes, ...storyNodes]
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter, selectedNodeIds, getNodePosition, commentNodesKey, playingNodeId])
+  }, [chapter, selectedNodeIds, commentNodesKey, playingNodeId])
 
   // 연결 정보를 Edge로 변환
   const initialEdges = useMemo((): Edge[] => {
@@ -196,8 +196,9 @@ function CanvasInner() {
       setNodesRef.current((nds) =>
         nds.map((node) => {
           const newPos = autoPositions[node.id]
-          if (newPos && currentChapterId) {
-            updateNodePosition(currentChapterId, node.id, newPos)
+          if (newPos && node.type !== 'comment') {
+            // editorStore에 노드 위치 저장
+            updateNode(node.id, { position: newPos })
           }
           return {
             ...node,
@@ -211,23 +212,17 @@ function CanvasInner() {
     return () => {
       window.removeEventListener('storynode:auto-layout', handleAutoLayout)
     }
-  }, [chapter, currentChapterId, updateNodePosition])
+  }, [chapter, updateNode])
 
   // 검색 결과로 이동 (highlightedNodeId 또는 navigateTimestamp 변경 시)
   useEffect(() => {
-    console.log('[Search Navigate] Effect triggered:', {
-      highlightedNodeId,
-      navigateTimestamp,
-      currentChapterId,
-    })
-
-    if (!highlightedNodeId || !currentChapterId || !navigateTimestamp) {
-      console.log('[Search Navigate] Early return - missing values')
+    if (!highlightedNodeId || !chapter || !navigateTimestamp) {
       return
     }
 
-    const nodePosition = getNodePosition(currentChapterId, highlightedNodeId)
-    console.log('[Search Navigate] Node position:', nodePosition)
+    // 노드에서 직접 위치 가져오기
+    const targetNode = chapter.nodes.find(n => n.id === highlightedNodeId)
+    const nodePosition = targetNode?.position
 
     if (nodePosition) {
       const targetViewport = {
@@ -235,17 +230,13 @@ function CanvasInner() {
         y: -nodePosition.y + 300,
         zoom: 1,
       }
-      console.log('[Search Navigate] Setting viewport to:', targetViewport)
 
       // 약간의 딜레이 후 뷰포트 이동 (챕터 전환 시 렌더링 대기)
       setTimeout(() => {
-        console.log('[Search Navigate] Calling setViewport now')
         setViewport(targetViewport, { duration: 300 })
       }, 100)
-    } else {
-      console.log('[Search Navigate] No position found for node')
     }
-  }, [highlightedNodeId, navigateTimestamp, currentChapterId, getNodePosition, setViewport])
+  }, [highlightedNodeId, navigateTimestamp, chapter, setViewport])
 
   // Shift 키 감지 (스냅 그리드 활성화용)
   useEffect(() => {
@@ -266,18 +257,17 @@ function CanvasInner() {
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
     (_: React.MouseEvent, _node: Node, draggedNodes: Node[]) => {
-      if (currentChapterId) {
-        // 드래그된 모든 노드의 위치 저장
-        draggedNodes.forEach((draggedNode) => {
-          if (draggedNode.type === 'comment') {
-            updateCommentPosition(currentChapterId, draggedNode.id, draggedNode.position)
-          } else {
-            updateNodePosition(currentChapterId, draggedNode.id, draggedNode.position)
-          }
-        })
-      }
+      // 드래그된 모든 노드의 위치 저장
+      draggedNodes.forEach((draggedNode) => {
+        if (draggedNode.type === 'comment') {
+          updateCommentPosition(draggedNode.id, draggedNode.position)
+        } else {
+          // StoryNode의 position 필드 업데이트
+          updateNode(draggedNode.id, { position: draggedNode.position })
+        }
+      })
     },
-    [currentChapterId, updateNodePosition, updateCommentPosition]
+    [updateNode, updateCommentPosition]
   )
 
   // 연결 생성
@@ -356,17 +346,18 @@ function CanvasInner() {
 
       // Comment 노드 처리
       if (nodeType === 'comment') {
-        createCommentNode(currentChapterId, position)
+        createCommentNode(position)
         return
       }
 
-      // Story 노드 처리
+      // Story 노드 처리 - position을 노드에 직접 저장
       const newNode = createNode(nodeType as StoryNodeType, position)
       if (newNode) {
-        updateNodePosition(currentChapterId, newNode.id, position)
+        // createNode에서 position이 저장되지 않으면 여기서 업데이트
+        updateNode(newNode.id, { position })
       }
     },
-    [createNode, currentChapterId, updateNodePosition, screenToFlowPosition, createCommentNode]
+    [createNode, currentChapterId, updateNode, screenToFlowPosition, createCommentNode]
   )
 
   return (

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { temporal } from 'zundo'
-import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode } from '../types/story'
 
 interface EditorState {
   // 프로젝트 데이터
@@ -55,10 +55,19 @@ interface EditorState {
   deleteResource: (resourceId: string) => void
   getResourcesByType: (type: ResourceType) => ProjectResource[]
   loadTemplateResources: () => Promise<void>
+
+  // Comment Nodes (에디터용)
+  createCommentNode: (position: { x: number; y: number }) => string | null
+  updateCommentNode: (commentId: string, updates: Partial<CommentNode['data']>) => void
+  updateCommentPosition: (commentId: string, position: { x: number; y: number }) => void
+  deleteCommentNode: (commentId: string) => void
+  getCommentNodes: () => CommentNode[]
+  wrapNodesWithComment: () => string | null
 }
 
 const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 const generateResourceId = () => `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
 // 기본 템플릿 리소스
 const defaultTemplateResources: ProjectResource[] = [
@@ -522,6 +531,149 @@ export const useEditorStore = create<EditorState>()(
               }
             })
           })
+        },
+
+        // Comment Nodes
+        createCommentNode: (position) => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+
+          if (!chapter) return null
+
+          const id = generateCommentId()
+          const newComment: CommentNode = {
+            id,
+            position,
+            data: {
+              title: 'Comment',
+              description: '',
+              color: '#5C6BC0',
+              width: 300,
+              height: 200,
+            }
+          }
+
+          set((state) => {
+            const stage = state.project.stages.find(s => s.id === state.currentStageId)
+            const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+            if (chapter) {
+              if (!chapter.commentNodes) {
+                chapter.commentNodes = []
+              }
+              chapter.commentNodes.push(newComment)
+            }
+          })
+
+          return id
+        },
+
+        updateCommentNode: (commentId, updates) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          const comment = chapter?.commentNodes?.find(c => c.id === commentId)
+          if (comment) {
+            Object.assign(comment.data, updates)
+          }
+        }),
+
+        updateCommentPosition: (commentId, position) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          const comment = chapter?.commentNodes?.find(c => c.id === commentId)
+          if (comment) {
+            comment.position = position
+          }
+        }),
+
+        deleteCommentNode: (commentId) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          if (chapter && chapter.commentNodes) {
+            chapter.commentNodes = chapter.commentNodes.filter(c => c.id !== commentId)
+          }
+        }),
+
+        getCommentNodes: () => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          return chapter?.commentNodes || []
+        },
+
+        // 선택된 노드들을 Comment로 감싸기
+        wrapNodesWithComment: () => {
+          const state = get()
+          const { selectedNodeIds, currentStageId, currentChapterId } = state
+
+          if (selectedNodeIds.length === 0) return null
+
+          const stage = state.project.stages.find(s => s.id === currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === currentChapterId)
+
+          if (!chapter) return null
+
+          // 선택된 노드들의 위치 수집 (story 노드와 comment 노드 모두)
+          const positions: Array<{ x: number; y: number; width: number; height: number }> = []
+
+          // Story 노드들의 위치
+          chapter.nodes.forEach(node => {
+            if (selectedNodeIds.includes(node.id) && node.position) {
+              positions.push({
+                x: node.position.x,
+                y: node.position.y,
+                width: 250, // 기본 노드 너비
+                height: 150, // 기본 노드 높이
+              })
+            }
+          })
+
+          // Comment 노드들의 위치
+          chapter.commentNodes?.forEach(comment => {
+            if (selectedNodeIds.includes(comment.id)) {
+              positions.push({
+                x: comment.position.x,
+                y: comment.position.y,
+                width: comment.data.width,
+                height: comment.data.height,
+              })
+            }
+          })
+
+          if (positions.length === 0) return null
+
+          // 바운딩 박스 계산 (패딩 포함)
+          const padding = 40
+          const minX = Math.min(...positions.map(p => p.x)) - padding
+          const minY = Math.min(...positions.map(p => p.y)) - padding
+          const maxX = Math.max(...positions.map(p => p.x + p.width)) + padding
+          const maxY = Math.max(...positions.map(p => p.y + p.height)) + padding
+
+          const id = generateCommentId()
+          const newComment: CommentNode = {
+            id,
+            position: { x: minX, y: minY },
+            data: {
+              title: 'Comment',
+              description: '',
+              color: '#5C6BC0',
+              width: maxX - minX,
+              height: maxY - minY,
+            }
+          }
+
+          set((state) => {
+            const stage = state.project.stages.find(s => s.id === state.currentStageId)
+            const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+            if (chapter) {
+              if (!chapter.commentNodes) {
+                chapter.commentNodes = []
+              }
+              chapter.commentNodes.push(newComment)
+            }
+          })
+
+          return id
         },
       })),
     {

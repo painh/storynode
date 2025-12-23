@@ -9,7 +9,6 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useAutoSave } from './hooks/useAutoSave'
 import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
-import { useCanvasStore } from './stores/canvasStore'
 import { useSearchStore } from './stores/searchStore'
 import { useGameStore } from './stores/gameStore'
 import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
@@ -53,24 +52,6 @@ function App() {
           console.log('[App] Loading project from:', settings.lastProjectPath)
           const project = await loadProjectFromFolder(settings.lastProjectPath)
           setProject(project)
-
-          // editorData가 있으면 canvasStore에 복원
-          if (project.editorData) {
-            const canvasStore = useCanvasStore.getState()
-            if (project.editorData.nodePositions) {
-              // nodePositions 복원
-              Object.entries(project.editorData.nodePositions).forEach(([chapterId, positions]) => {
-                Object.entries(positions).forEach(([nodeId, position]) => {
-                  canvasStore.updateNodePosition(chapterId, nodeId, position)
-                })
-              })
-            }
-            if (project.editorData.commentNodes) {
-              // commentNodes 복원 - 직접 상태 설정
-              useCanvasStore.setState({ commentNodes: project.editorData.commentNodes })
-            }
-          }
-
           console.log('[App] Auto-opened last project:', settings.lastProjectPath)
         } catch (error) {
           console.warn('[App] Failed to auto-open last project:', error)

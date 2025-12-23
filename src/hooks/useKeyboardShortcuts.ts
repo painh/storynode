@@ -96,6 +96,12 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     }
   }, [])
 
+  // Ctrl+/ 또는 Cmd+/: 선택된 노드들을 Comment로 감싸기
+  const handleWrapWithComment = useCallback(() => {
+    const { wrapNodesWithComment } = useEditorStore.getState()
+    wrapNodesWithComment()
+  }, [])
+
   // Cmd+C: 복사
   const handleCopy = useCallback(() => {
     const { selectedNodeIds, getCurrentChapter } = useEditorStore.getState()
@@ -390,6 +396,13 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         return
       }
 
+      // Cmd+/: 선택된 노드들을 Comment로 감싸기
+      if (isMod && e.key === '/') {
+        e.preventDefault()
+        handleWrapWithComment()
+        return
+      }
+
       // 입력 필드에 포커스가 있으면 아래 단축키는 무시
       if (isInputFocused) return
 
@@ -447,6 +460,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handlePlayGame,
     handleCopy,
     handlePaste,
+    handleWrapWithComment,
   ])
 
   return {
@@ -465,5 +479,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handlePlayGame,
     handleCopy,
     handlePaste,
+    handleWrapWithComment,
   }
 }

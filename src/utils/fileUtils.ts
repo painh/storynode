@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource, EditorData } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource } from '../types/story'
 
 export interface FileInfo {
   name: string
@@ -88,7 +88,6 @@ interface ProjectMeta {
   stages: string[] // stage IDs
   gameSettings?: GameSettings
   resources?: ProjectResource[]
-  editorData?: EditorData
 }
 
 interface StageMeta {
@@ -124,7 +123,6 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
     stages: project.stages.map(s => s.id),
     gameSettings: project.gameSettings,
     resources: project.resources,
-    editorData: project.editorData,
   }
   await writeStoryFile(`${projectDir}/project.json`, JSON.stringify(projectMeta, null, 2))
 
@@ -218,7 +216,6 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     stages,
     gameSettings: projectMeta.gameSettings,
     resources,
-    editorData: projectMeta.editorData,
   }
 }
 

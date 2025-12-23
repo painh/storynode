@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useEditorStore } from '../stores/editorStore'
 import { useSettingsStore } from '../stores/settingsStore'
-import { useCanvasStore } from '../stores/canvasStore'
 import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
 
 /**
@@ -12,7 +11,6 @@ import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
  */
 export function useAutoSave() {
   const project = useEditorStore((state) => state.project)
-  const nodePositions = useCanvasStore((state) => state.nodePositions)
   const { settings } = useSettingsStore()
 
   const lastSavedRef = useRef<string>('')
@@ -23,31 +21,18 @@ export function useAutoSave() {
   const saveProject = useCallback(async () => {
     if (!isTauri() || !lastProjectPath) return
 
-    // canvasStore에서 최신 데이터 가져오기
-    const canvasState = useCanvasStore.getState()
-    const currentNodePositions = canvasState.nodePositions
-    const currentCommentNodes = canvasState.commentNodes
-
     // 변경사항 확인
-    const currentState = JSON.stringify({ project, nodePositions: currentNodePositions, commentNodes: currentCommentNodes })
+    const currentState = JSON.stringify(project)
     if (currentState === lastSavedRef.current) return
 
     try {
-      // editorData를 포함한 프로젝트 저장
-      const projectWithEditorData = {
-        ...project,
-        editorData: {
-          nodePositions: currentNodePositions,
-          commentNodes: currentCommentNodes,
-        }
-      }
-      await saveProjectToFolder(lastProjectPath, projectWithEditorData)
+      await saveProjectToFolder(lastProjectPath, project)
       lastSavedRef.current = currentState
       console.log('[AutoSave] Project saved automatically')
     } catch (error) {
       console.error('[AutoSave] Failed to save:', error)
     }
-  }, [project, nodePositions, lastProjectPath])
+  }, [project, lastProjectPath])
 
   // onChange 모드: 프로젝트 변경 감지
   useEffect(() => {

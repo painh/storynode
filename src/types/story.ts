@@ -86,6 +86,7 @@ export interface ConditionBranch {
 export interface StoryNode {
   id: string
   type: StoryNodeType
+  position?: { x: number; y: number }  // 노드 위치 (캔버스에서)
   speaker?: string
   text?: string
   nextNodeId?: string
@@ -104,6 +105,19 @@ export interface StoryNode {
   defaultNextNodeId?: string  // 어떤 조건도 안 맞을 때
 }
 
+// 코멘트 노드 (에디터용)
+export interface CommentNode {
+  id: string
+  position: { x: number; y: number }
+  data: {
+    title: string
+    description: string
+    color: string
+    width: number
+    height: number
+  }
+}
+
 // 스토리 챕터
 export interface StoryChapter {
   id: string
@@ -117,6 +131,8 @@ export interface StoryChapter {
     cardId?: string
     relicId?: string
   }
+  // 에디터용 코멘트 노드
+  commentNodes?: CommentNode[]
 }
 
 // 스토리 스테이지 (챕터 묶음)
@@ -184,24 +200,6 @@ export interface CustomTheme {
   }
 }
 
-// 에디터 전용 데이터 (노드 위치, 코멘트 등)
-export interface EditorData {
-  // 노드 위치 (챕터별)
-  nodePositions?: Record<string, Record<string, { x: number; y: number }>>
-  // 코멘트 노드 (챕터별)
-  commentNodes?: Record<string, Array<{
-    id: string
-    position: { x: number; y: number }
-    data: {
-      title: string
-      description: string
-      color: string
-      width: number
-      height: number
-    }
-  }>>
-}
-
 // 프로젝트 전체 구조
 export interface StoryProject {
   name: string
@@ -211,6 +209,4 @@ export interface StoryProject {
   gameSettings?: GameSettings
   // 프로젝트 리소스 (캐릭터, 배경 등)
   resources?: ProjectResource[]
-  // 에디터 전용 데이터 (저장/로드 시 사용)
-  editorData?: EditorData
 }
