@@ -71,15 +71,35 @@ fn file_exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+// Create a directory
+#[tauri::command]
+fn create_directory(path: String) -> Result<(), String> {
+    fs::create_dir_all(&path).map_err(|e| format!("Failed to create directory: {}", e))
+}
+
+// Delete a file or directory
+#[tauri::command]
+fn delete_path(path: String) -> Result<(), String> {
+    let p = Path::new(&path);
+    if p.is_dir() {
+        fs::remove_dir_all(p).map_err(|e| format!("Failed to delete directory: {}", e))
+    } else {
+        fs::remove_file(p).map_err(|e| format!("Failed to delete file: {}", e))
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             read_story_file,
             write_story_file,
             list_story_files,
-            file_exists
+            file_exists,
+            create_directory,
+            delete_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

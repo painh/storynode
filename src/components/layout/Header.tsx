@@ -1,7 +1,21 @@
 import { useState, useRef } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
-import { downloadJson, isTauri, saveProject, loadProject, exportForGame } from '../../utils/fileUtils'
+import {
+  downloadJson,
+  isTauri,
+  exportForGame,
+  saveProjectToFolder,
+  loadProjectFromFolder,
+} from '../../utils/fileUtils'
 import styles from './Header.module.css'
+
+// Tauri dialog import (조건부)
+let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
+if (isTauri()) {
+  import('@tauri-apps/plugin-dialog').then((mod) => {
+    openDialog = mod.open
+  })
+}
 
 export function Header() {
   const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject } = useEditorStore()
@@ -9,19 +23,71 @@ export function Header() {
   const [showFileMenu, setShowFileMenu] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleExport = () => {
+  // 폴더 저장 (Tauri)
+  const handleSaveToFolder = async () => {
+    setShowFileMenu(false)
+    if (!isTauri() || !openDialog) {
+      alert('Folder save is only available in desktop app')
+      return
+    }
+
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: 'Select folder to save project',
+      })
+
+      if (selected && typeof selected === 'string') {
+        await saveProjectToFolder(selected, project)
+        alert('Project saved successfully!')
+      }
+    } catch (error) {
+      alert('Failed to save project: ' + (error as Error).message)
+    }
+  }
+
+  // 폴더 열기 (Tauri)
+  const handleOpenFolder = async () => {
+    setShowFileMenu(false)
+    if (!isTauri() || !openDialog) {
+      alert('Folder open is only available in desktop app')
+      return
+    }
+
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: 'Select project folder to open',
+      })
+
+      if (selected && typeof selected === 'string') {
+        const loadedProject = await loadProjectFromFolder(selected)
+        setProject(loadedProject)
+        alert('Project loaded successfully!')
+      }
+    } catch (error) {
+      alert('Failed to load project: ' + (error as Error).message)
+    }
+  }
+
+  // 단일 JSON 내보내기 (웹 폴백)
+  const handleExportJson = () => {
     const json = JSON.stringify(project, null, 2)
     downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
     setShowFileMenu(false)
   }
 
+  // 게임용 내보내기
   const handleExportForGame = () => {
     const json = exportForGame(project)
     downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.json`)
     setShowFileMenu(false)
   }
 
-  const handleImport = () => {
+  // 단일 JSON 가져오기 (웹 폴백)
+  const handleImportJson = () => {
     fileInputRef.current?.click()
     setShowFileMenu(false)
   }
@@ -81,6 +147,8 @@ export function Header() {
     setShowFileMenu(false)
   }
 
+  const isDesktop = isTauri()
+
   return (
     <header className={styles.header}>
       <div className={styles.left}>
@@ -96,9 +164,17 @@ export function Header() {
             {showFileMenu && (
               <div className={styles.dropdown}>
                 <button onClick={handleNew}>New Project</button>
-                <button onClick={handleImport}>Import JSON...</button>
                 <div className={styles.divider} />
-                <button onClick={handleExport}>Export Project</button>
+                {isDesktop ? (
+                  <>
+                    <button onClick={handleOpenFolder}>Open Folder...</button>
+                    <button onClick={handleSaveToFolder}>Save to Folder...</button>
+                    <div className={styles.divider} />
+                  </>
+                ) : null}
+                <button onClick={handleImportJson}>Import JSON...</button>
+                <button onClick={handleExportJson}>Export as JSON</button>
+                <div className={styles.divider} />
                 <button onClick={handleExportForGame}>Export for Game</button>
               </div>
             )}
