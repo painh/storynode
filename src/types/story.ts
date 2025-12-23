@@ -14,7 +14,19 @@ export type ImageAlignment = 'left' | 'center' | 'right' | 'custom'
 export type ImageLayer = 'background' | 'character' | string
 
 // 이미지 효과 타입
-export type ImageEffect = 'none' | 'fadeIn' | 'shake'
+export type ImageEffect =
+  | 'none'
+  | 'fadeIn'
+  | 'shake'
+  | 'slideLeft'
+  | 'slideRight'
+  | 'slideUp'
+  | 'slideDown'
+  | 'zoomIn'
+  | 'zoomOut'
+  | 'bounce'
+  | 'flash'
+  | 'pulse'
 
 // 이미지 노드 데이터
 export interface ImageNodeData {

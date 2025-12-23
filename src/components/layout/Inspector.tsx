@@ -456,8 +456,25 @@ export function Inspector() {
                 onChange={(e) => handleImageDataChange('effect', e.target.value as ImageEffect)}
               >
                 <option value="none">None</option>
-                <option value="fadeIn">Fade In</option>
-                <option value="shake">Shake</option>
+                <optgroup label="Fade">
+                  <option value="fadeIn">Fade In</option>
+                </optgroup>
+                <optgroup label="Slide">
+                  <option value="slideLeft">Slide Left</option>
+                  <option value="slideRight">Slide Right</option>
+                  <option value="slideUp">Slide Up</option>
+                  <option value="slideDown">Slide Down</option>
+                </optgroup>
+                <optgroup label="Zoom">
+                  <option value="zoomIn">Zoom In</option>
+                  <option value="zoomOut">Zoom Out</option>
+                </optgroup>
+                <optgroup label="Motion">
+                  <option value="shake">Shake</option>
+                  <option value="bounce">Bounce</option>
+                  <option value="pulse">Pulse</option>
+                  <option value="flash">Flash</option>
+                </optgroup>
               </select>
             </div>
 

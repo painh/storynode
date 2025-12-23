@@ -32,7 +32,16 @@ export const ImageNode = memo(function ImageNode({
     switch (imageData.effect) {
       case 'fadeIn': return '✨'
       case 'shake': return '〰️'
-      default: return null
+      case 'slideLeft': return '⬅️'
+      case 'slideRight': return '➡️'
+      case 'slideUp': return '⬆️'
+      case 'slideDown': return '⬇️'
+      case 'zoomIn': return '🔍'
+      case 'zoomOut': return '🔎'
+      case 'bounce': return '⚡'
+      case 'flash': return '💥'
+      case 'pulse': return '💓'
+      default: return '🎬'
     }
   }
 
