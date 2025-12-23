@@ -45,7 +45,7 @@ function CanvasInner() {
     updateCommentPosition,
   } = useEditorStore()
 
-  const { snapGrid, showGrid, setSnapGrid, setShowGrid } = useCanvasStore()
+  const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes } = useCanvasStore()
   const [isShiftPressed, setIsShiftPressed] = useState(false)
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { status: gameStatus, gameState } = useGameStore()
@@ -192,6 +192,11 @@ function CanvasInner() {
     setEdges(initialEdges)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChapterId, commentNodesKey, initialNodes, initialEdges])
+
+  // React Flow nodes를 canvasStore에 동기화 (measured 크기 포함)
+  useEffect(() => {
+    setCanvasNodes(nodes)
+  }, [nodes, setCanvasNodes])
 
   // 자동 정렬 이벤트 리스너
   useEffect(() => {
@@ -548,6 +553,7 @@ function CanvasInner() {
             variable: '#7B1FA2',
             condition: '#00796B',
             image: '#00BCD4',
+            javascript: '#F0DB4F',
             comment: '#5C6BC0',
           }
           return colors[node.type || 'dialogue'] || '#666'

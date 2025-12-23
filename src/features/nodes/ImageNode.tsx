@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import type { NodeProps, Node } from '@xyflow/react'
+import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
 import { useTranslation } from '../../i18n'
@@ -59,6 +59,64 @@ export const ImageNode = memo(function ImageNode({
             </div>
           </div>
         )}
+
+        {/* 데이터 입력 핸들 */}
+        <div className={styles.dataInputs}>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-path"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>path</span>
+          </div>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-layer"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>layer</span>
+          </div>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-order"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>order</span>
+          </div>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-align"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>align</span>
+          </div>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-x"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>x</span>
+          </div>
+          <div className={styles.dataInput}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="image-y"
+              className={styles.dataHandle}
+            />
+            <span className={styles.inputLabel}>y</span>
+          </div>
+        </div>
       </div>
     </BaseNode>
   )

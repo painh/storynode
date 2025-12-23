@@ -24,6 +24,8 @@ const NODE_WIDTHS: Record<StoryNodeType, number> = {
   variable: 260,
   condition: 280,
   image: 220,
+  javascript: 260,
+  custom: 260,
 }
 
 const DEFAULT_NODE_WIDTH = 260

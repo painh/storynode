@@ -42,6 +42,8 @@ export const NODE_COLORS: Record<AllNodeType, string> = {
   variable: '#7B1FA2',    // 보라 (진함)
   condition: '#00796B',   // 청록
   image: '#00BCD4',       // 시안 (이미지)
+  javascript: '#F0DB4F',  // JavaScript 노란색
+  custom: '#9C27B0',      // 딥 퍼플 (커스텀)
   comment: '#5C6BC0',     // 인디고 (코멘트)
 }
 
@@ -57,6 +59,8 @@ export const NODE_ICONS: Record<AllNodeType, string> = {
   variable: '📊',
   condition: '❓',
   image: '🖼️',
+  javascript: '📜',
+  custom: '🧩',
   comment: '📝',
 }
 
@@ -72,5 +76,7 @@ export const NODE_LABELS: Record<AllNodeType, string> = {
   variable: 'Variable',
   condition: 'Condition',
   image: 'Image',
+  javascript: 'JavaScript',
+  custom: 'Custom',
   comment: 'Comment',
 }

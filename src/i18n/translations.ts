@@ -15,6 +15,8 @@ export interface Translations {
     variable: string
     condition: string
     image: string
+    javascript: string
+    custom: string
     comment: string
   }
 
@@ -30,6 +32,8 @@ export interface Translations {
     variable: string
     condition: string
     image: string
+    javascript: string
+    custom: string
   }
 
   // 메뉴
@@ -155,6 +159,8 @@ export const translations: Record<Language, Translations> = {
       variable: '변수',
       condition: '조건',
       image: '이미지',
+      javascript: 'JavaScript',
+      custom: '커스텀',
       comment: '코멘트',
     },
     nodeDescriptions: {
@@ -168,6 +174,8 @@ export const translations: Record<Language, Translations> = {
       variable: '변수 조작',
       condition: '조건 분기',
       image: '이미지 표시',
+      javascript: 'JavaScript 코드 실행',
+      custom: '사용자 정의 노드',
     },
     menu: {
       file: '파일',
@@ -279,6 +287,8 @@ export const translations: Record<Language, Translations> = {
       variable: 'Variable',
       condition: 'Condition',
       image: 'Image',
+      javascript: 'JavaScript',
+      custom: 'Custom',
       comment: 'Comment',
     },
     nodeDescriptions: {
@@ -292,6 +302,8 @@ export const translations: Record<Language, Translations> = {
       variable: 'Variable operations',
       condition: 'Condition branch',
       image: 'Display image',
+      javascript: 'Execute JavaScript code',
+      custom: 'Custom node',
     },
     menu: {
       file: 'File',

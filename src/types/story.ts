@@ -5,7 +5,7 @@ export type StoryNodeType =
   | 'start' | 'dialogue' | 'choice' | 'chapter_end'
   | 'battle' | 'shop' | 'event'
   | 'variable' | 'condition'
-  | 'image'
+  | 'image' | 'javascript' | 'custom'
 
 // 이미지 정렬 타입
 export type ImageAlignment = 'left' | 'center' | 'right' | 'custom'
@@ -21,6 +21,28 @@ export interface ImageNodeData {
   alignment: ImageAlignment // 정렬 (left, center, right, custom)
   x?: number                // custom 정렬시 x 좌표
   y?: number                // custom 정렬시 y 좌표
+}
+
+// 커스텀 필드 타입
+export type CustomFieldType = 'text' | 'textarea' | 'number' | 'boolean' | 'select'
+
+// 커스텀 필드 정의
+export interface CustomFieldDefinition {
+  id: string
+  name: string
+  type: CustomFieldType
+  defaultValue?: string | number | boolean
+  options?: string[]  // select 타입용
+  placeholder?: string
+}
+
+// 커스텀 노드 데이터
+export interface CustomNodeData {
+  title: string                    // 커스텀 노드 제목
+  description?: string             // 노드 설명
+  color?: string                   // 노드 색상
+  fields: CustomFieldDefinition[]  // 필드 정의
+  values: Record<string, string | number | boolean>  // 필드 값들
 }
 
 // 캐릭터 ID 타입
@@ -123,6 +145,12 @@ export interface StoryNode {
 
   // image 노드용
   imageData?: ImageNodeData
+
+  // javascript 노드용
+  javascriptCode?: string
+
+  // custom 노드용
+  customData?: CustomNodeData
 }
 
 // 코멘트 노드 (에디터용)

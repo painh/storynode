@@ -11,7 +11,7 @@ import styles from './Sidebar.module.css'
 const NODE_CATEGORIES = {
   flow: ['start', 'chapter_end'] as StoryNodeType[],
   content: ['dialogue', 'choice', 'image', 'battle', 'shop', 'event'] as StoryNodeType[],
-  logic: ['variable', 'condition'] as StoryNodeType[],
+  logic: ['variable', 'condition', 'javascript'] as StoryNodeType[],
   editor: ['comment'] as AllNodeType[],
 }
 

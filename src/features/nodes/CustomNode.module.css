@@ -1,0 +1,155 @@
+.node {
+  min-width: 220px;
+  max-width: 280px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px var(--border-default);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.node:hover {
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--border-light);
+}
+
+.node.selected {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 2px var(--selection-border),
+    0 0 24px var(--selection-glow);
+}
+
+.node.playing {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 3px #4CAF50,
+    0 0 32px rgba(76, 175, 80, 0.6);
+  animation: playingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes playingPulse {
+  0%, 100% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.6),
+      0 0 0 3px #4CAF50,
+      0 0 32px rgba(76, 175, 80, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.6),
+      0 0 0 3px #81C784,
+      0 0 48px rgba(76, 175, 80, 0.8);
+  }
+}
+
+.header {
+  padding: 8px 12px;
+  background: var(--header-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 14px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.body {
+  padding: 12px;
+}
+
+.description {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.fieldName {
+  color: var(--text-accent);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.fieldValue {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moreFields {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 4px;
+}
+
+.empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.highlight {
+  background: rgba(255, 193, 7, 0.4);
+  color: #FFD54F;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Execution Handle - Pentagon shape */
+.execHandle {
+  width: 14px !important;
+  height: 14px !important;
+  background: var(--pin-exec) !important;
+  border: 2px solid var(--bg-secondary) !important;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  cursor: crosshair;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.execHandle:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 4px var(--selection-border));
+}
+
+/* Handle positioning override */
+.node :global(.react-flow__handle-left) {
+  left: -7px;
+}
+
+.node :global(.react-flow__handle-right) {
+  right: -7px;
+}

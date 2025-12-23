@@ -239,6 +239,14 @@ export const useEditorStore = create<EditorState>()(
             newNode.choices = []
           } else if (type === 'chapter_end') {
             newNode.text = ''
+          } else if (type === 'custom') {
+            newNode.customData = {
+              title: 'Custom Node',
+              description: '',
+              color: '#9C27B0',
+              fields: [],
+              values: {},
+            }
           }
           // start 노드는 추가 속성 없음
 
