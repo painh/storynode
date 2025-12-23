@@ -57,4 +57,10 @@
   font-weight: bold;
 }
 
+.flipIcon {
+  color: var(--header-color);
+  font-weight: bold;
+  margin-left: 4px;
+}
+
 /* 데이터 핸들은 BaseNode에서 자동 생성됨 */

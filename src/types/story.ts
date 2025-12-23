@@ -21,6 +21,7 @@ export interface ImageNodeData {
   alignment: ImageAlignment // 정렬 (left, center, right, custom)
   x?: number                // custom 정렬시 x 좌표
   y?: number                // custom 정렬시 y 좌표
+  flipHorizontal?: boolean  // 좌우 반전
 }
 
 // 커스텀 필드 타입

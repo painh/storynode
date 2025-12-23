@@ -26,6 +26,9 @@ export interface AppSettings {
   autoSaveMode: AutoSaveMode
   autoSaveIntervalMinutes: number // 분 단위
 
+  // 게임 실행 시 자동 저장
+  saveBeforeGameRun: boolean
+
   // 최근 프로젝트 목록
   recentProjects: RecentProject[]
 
@@ -40,6 +43,7 @@ const defaultSettings: AppSettings = {
   autoSaveEnabled: true,
   autoSaveMode: 'onChange',
   autoSaveIntervalMinutes: 5,
+  saveBeforeGameRun: true,
   recentProjects: [],
   lastProjectPath: null,
 }
@@ -66,6 +70,7 @@ interface SettingsState {
   setAutoSaveEnabled: (value: boolean) => void
   setAutoSaveMode: (mode: AutoSaveMode) => void
   setAutoSaveIntervalMinutes: (minutes: number) => void
+  setSaveBeforeGameRun: (value: boolean) => void
 }
 
 const MAX_RECENT_PROJECTS = 10
@@ -225,6 +230,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setAutoSaveIntervalMinutes: (minutes) => {
     set((state) => ({
       settings: { ...state.settings, autoSaveIntervalMinutes: minutes }
+    }))
+    get().saveSettings()
+  },
+
+  setSaveBeforeGameRun: (value) => {
+    set((state) => ({
+      settings: { ...state.settings, saveBeforeGameRun: value }
     }))
     get().saveSettings()
   },

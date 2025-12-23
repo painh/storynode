@@ -41,6 +41,7 @@ export const ImageNode = memo(function ImageNode({
               src={imageData.resourcePath}
               alt="preview"
               className={styles.thumbnail}
+              style={imageData.flipHorizontal ? { transform: 'scaleX(-1)' } : undefined}
             />
           </div>
         ) : (
@@ -56,6 +57,7 @@ export const ImageNode = memo(function ImageNode({
             <div className={styles.alignment}>
               <span className={styles.label}>Align:</span>
               <span className={styles.value}>{getAlignmentText()}</span>
+              {imageData.flipHorizontal && <span className={styles.flipIcon}>↔</span>}
             </div>
           </div>
         )}

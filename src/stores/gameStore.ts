@@ -5,6 +5,8 @@ import type { GameStatus, GameState, DebugInfo, GameMode } from '../types/game'
 import type { StoryNode } from '../types/story'
 import { GameEngine } from '../features/game/engine/GameEngine'
 import { useEditorStore } from './editorStore'
+import { useSettingsStore } from './settingsStore'
+import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
 
 interface GameStoreState {
   // 게임 상태
@@ -69,8 +71,9 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
   gameMode: 'visualNovel',
 
-  openGame: (stageId, chapterId) => {
+  openGame: async (stageId, chapterId) => {
     const editorState = useEditorStore.getState()
+    const settingsState = useSettingsStore.getState()
     const project = editorState.project
 
     // 스테이지/챕터 ID가 없으면 현재 에디터 상태 사용
@@ -80,6 +83,16 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     if (!targetStageId || !targetChapterId) {
       console.error('No stage or chapter selected')
       return
+    }
+
+    // 게임 실행 전 자동 저장
+    if (settingsState.settings.saveBeforeGameRun && isTauri() && settingsState.settings.lastProjectPath) {
+      try {
+        await saveProjectToFolder(settingsState.settings.lastProjectPath, project)
+        console.log('[GameStore] Project saved before game run')
+      } catch (error) {
+        console.error('[GameStore] Failed to save before game run:', error)
+      }
     }
 
     // 프로젝트 게임 설정 적용

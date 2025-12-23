@@ -75,6 +75,8 @@ export interface Translations {
     autoSaveModeBoth: string
     autoSaveInterval: string
     autoSaveIntervalMinutes: string
+    gameSettings: string
+    saveBeforeGameRun: string
   }
 
   // Inspector
@@ -213,6 +215,8 @@ export const translations: Record<Language, Translations> = {
       autoSaveModeBoth: '둘 다',
       autoSaveInterval: '저장 간격',
       autoSaveIntervalMinutes: '분',
+      gameSettings: '게임 실행',
+      saveBeforeGameRun: '게임 실행 전 자동 저장',
     },
     inspector: {
       nodeId: '노드 ID',
@@ -341,6 +345,8 @@ export const translations: Record<Language, Translations> = {
       autoSaveModeBoth: 'Both',
       autoSaveInterval: 'Save interval',
       autoSaveIntervalMinutes: 'min',
+      gameSettings: 'Game Run',
+      saveBeforeGameRun: 'Save before game run',
     },
     inspector: {
       nodeId: 'Node ID',

@@ -502,21 +502,35 @@ function CanvasInner() {
               sourceInfo.path
             )
 
+            console.log('[DataBinding] Initial sync:', {
+              sourcePath: sourceInfo.path,
+              targetPath: targetInfo.path,
+              sourceValue,
+              sourceNode: sourceNode,
+            })
+
+            // 업데이트할 속성 객체 생성
+            const updates: Record<string, unknown> = { dataBindings: bindings }
+
             if (sourceValue !== undefined) {
-              // 값과 바인딩을 함께 업데이트
-              const updatedTarget = setNestedValue(
-                { ...targetNode } as unknown as Record<string, unknown>,
-                targetInfo.path,
-                sourceValue
-              )
-              updateNode(connection.target, {
-                ...updatedTarget,
-                dataBindings: bindings
-              })
-            } else {
-              // 소스 값이 없으면 바인딩만 저장
-              updateNode(connection.target, { dataBindings: bindings })
+              // 단일 레벨 속성인 경우 (예: speaker)
+              if (!targetInfo.path.includes('.')) {
+                updates[targetInfo.path] = sourceValue
+              } else {
+                // 중첩 속성인 경우 (예: imageData.layer)
+                const [topKey] = targetInfo.path.split('.')
+                const currentTop = (targetNode as unknown as Record<string, unknown>)[topKey]
+                const updatedTop = setNestedValue(
+                  (currentTop as Record<string, unknown>) || {},
+                  targetInfo.path.substring(topKey.length + 1),
+                  sourceValue
+                )
+                updates[topKey] = updatedTop
+              }
             }
+
+            console.log('[DataBinding] Updates to apply:', updates)
+            updateNode(connection.target, updates)
           }
         }
 

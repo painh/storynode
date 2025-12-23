@@ -95,6 +95,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               </>
             )}
           </div>
+
+          {/* 게임 실행 설정 */}
+          <div className={styles.section}>
+            <h3 className={styles.sectionTitle}>{settingsT.gameSettings}</h3>
+
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={settings.saveBeforeGameRun}
+                onChange={(e) => useSettingsStore.getState().setSaveBeforeGameRun(e.target.checked)}
+              />
+              <span>{settingsT.saveBeforeGameRun}</span>
+            </label>
+          </div>
         </div>
       </div>
     </div>

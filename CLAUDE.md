@@ -37,6 +37,8 @@ git add .
 git commit -m "feat: 작업 내용 요약"
 ```
 
+양식을 꼭 지켜주세요. 한글로 작성해주세요.
+
 ## 릴리즈
 태그를 push하면 GitHub Actions로 자동 릴리즈됩니다:
 

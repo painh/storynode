@@ -434,6 +434,18 @@ export function Inspector() {
                 </div>
               </div>
             )}
+
+            {/* 좌우 반전 */}
+            <div className={styles.field}>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={selectedNode.imageData?.flipHorizontal || false}
+                  onChange={(e) => handleImageDataChange('flipHorizontal', e.target.checked)}
+                />
+                <span>Flip Horizontal</span>
+              </label>
+            </div>
           </>
         )}
 
