@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from 'react'
 import { useEditorStore } from '../stores/editorStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { useSearchStore } from '../stores/searchStore'
 import {
   isTauri,
   saveProjectToFolder,
@@ -26,10 +27,6 @@ interface UseKeyboardShortcutsOptions {
 export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) {
   const {
     project,
-    getCurrentChapter,
-    setSelectedNodes,
-    selectedNodeIds,
-    deleteNode,
     clearSelection,
     setProject,
   } = useEditorStore()
@@ -71,6 +68,16 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   // Cmd+L: 자동 정렬
   const handleAutoLayout = useCallback(() => {
     window.dispatchEvent(new CustomEvent('storynode:auto-layout'))
+  }, [])
+
+  // Cmd+F: 검색 (현재 캔버스)
+  const handleSearch = useCallback(() => {
+    useSearchStore.getState().openSearch('canvas')
+  }, [])
+
+  // Cmd+Shift+F: 전체 검색
+  const handleGlobalSearch = useCallback(() => {
+    useSearchStore.getState().openSearch('global')
   }, [])
 
   // Cmd+S: 저장
@@ -234,6 +241,20 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         return
       }
 
+      // Cmd+F: 검색 (현재 캔버스)
+      if (isMod && !isShift && e.key === 'f') {
+        e.preventDefault()
+        handleSearch()
+        return
+      }
+
+      // Cmd+Shift+F: 전체 검색
+      if (isMod && isShift && e.key === 'f') {
+        e.preventDefault()
+        handleGlobalSearch()
+        return
+      }
+
       // 입력 필드에 포커스가 있으면 아래 단축키는 무시
       if (isInputFocused) return
 
@@ -271,6 +292,8 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleUndo,
     handleRedo,
     handleAutoLayout,
+    handleSearch,
+    handleGlobalSearch,
   ])
 
   return {
@@ -283,5 +306,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleUndo,
     handleRedo,
     handleAutoLayout,
+    handleSearch,
+    handleGlobalSearch,
   }
 }

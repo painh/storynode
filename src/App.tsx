@@ -3,10 +3,12 @@ import { Header } from './components/layout/Header'
 import { Sidebar } from './components/layout/Sidebar'
 import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
+import { SearchModal } from './components/common/SearchModal'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useAutoSave } from './hooks/useAutoSave'
 import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
+import { useSearchStore } from './stores/searchStore'
 import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
 import styles from './App.module.css'
 
@@ -14,6 +16,7 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false)
   const { loadSettings, settings, isLoaded } = useSettingsStore()
   const { setProject } = useEditorStore()
+  const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
 
   // 전역 단축키 활성화
   useKeyboardShortcuts()
@@ -59,6 +62,7 @@ function App() {
         <Canvas />
         <Inspector />
       </div>
+      <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
     </div>
   )
 }

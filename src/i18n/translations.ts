@@ -118,6 +118,18 @@ export interface Translations {
     logic: string
     editor: string
   }
+
+  // 검색
+  search: {
+    placeholder: string
+    currentCanvas: string
+    allFiles: string
+    resultCount: string
+    noResults: string
+    navigate: string
+    goTo: string
+    close: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -224,6 +236,16 @@ export const translations: Record<Language, Translations> = {
       logic: '로직',
       editor: '에디터',
     },
+    search: {
+      placeholder: '검색어를 입력하세요...',
+      currentCanvas: '현재 캔버스',
+      allFiles: '전체 파일',
+      resultCount: '{count}개 결과',
+      noResults: '검색 결과가 없습니다',
+      navigate: '이동',
+      goTo: '선택',
+      close: '닫기',
+    },
   },
   en: {
     nodes: {
@@ -327,6 +349,16 @@ export const translations: Record<Language, Translations> = {
       content: 'Content',
       logic: 'Logic',
       editor: 'Editor',
+    },
+    search: {
+      placeholder: 'Search...',
+      currentCanvas: 'Current Canvas',
+      allFiles: 'All Files',
+      resultCount: '{count} results',
+      noResults: 'No results found',
+      navigate: 'Navigate',
+      goTo: 'Go to',
+      close: 'Close',
     },
   },
 }

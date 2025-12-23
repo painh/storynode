@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
+import { useSearchStore } from '../../stores/searchStore'
 import {
   downloadJson,
   isTauri,
@@ -18,7 +19,8 @@ let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
 export function Header() {
   const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject } = useEditorStore()
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
-  const { menu } = useTranslation()
+  const { openSearch } = useSearchStore()
+  const { menu, search: searchT } = useTranslation()
   const currentStage = getCurrentStage()
   const [showFileMenu, setShowFileMenu] = useState(false)
   const [showEditMenu, setShowEditMenu] = useState(false)
@@ -336,6 +338,21 @@ export function Header() {
                 }}>
                   <span>Delete</span>
                   <span className={styles.shortcut}>⌫</span>
+                </button>
+                <div className={styles.divider} />
+                <button onClick={() => {
+                  openSearch('canvas')
+                  setShowEditMenu(false)
+                }}>
+                  <span>{searchT.currentCanvas}</span>
+                  <span className={styles.shortcut}>⌘F</span>
+                </button>
+                <button onClick={() => {
+                  openSearch('global')
+                  setShowEditMenu(false)
+                }}>
+                  <span>{searchT.allFiles}</span>
+                  <span className={styles.shortcut}>⇧⌘F</span>
                 </button>
               </div>
             )}

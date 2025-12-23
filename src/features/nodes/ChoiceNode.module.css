@@ -67,3 +67,10 @@
   padding: 12px;
   font-style: italic;
 }
+
+.highlight {
+  background: rgba(255, 193, 7, 0.4);
+  color: #FFD54F;
+  border-radius: 2px;
+  padding: 0 2px;
+}
