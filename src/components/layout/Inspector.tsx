@@ -1,6 +1,6 @@
 import { useEditorStore } from '../../stores/editorStore'
 import { NODE_COLORS, NODE_ICONS, NODE_LABELS, type CommentNodeData } from '../../types/editor'
-import type { StoryNode, StoryChoice, ImageNodeData, ImageAlignment, CustomNodeData, CustomFieldDefinition, CustomFieldType } from '../../types/story'
+import type { StoryNode, StoryChoice, ImageNodeData, ImageAlignment, ImageEffect, CustomNodeData, CustomFieldDefinition, CustomFieldType } from '../../types/story'
 import styles from './Inspector.module.css'
 
 // 색상 프리셋
@@ -446,6 +446,35 @@ export function Inspector() {
                 <span>Flip Horizontal</span>
               </label>
             </div>
+
+            {/* 효과 */}
+            <div className={styles.field}>
+              <label className={styles.label}>Effect</label>
+              <select
+                className={styles.select}
+                value={selectedNode.imageData?.effect || 'none'}
+                onChange={(e) => handleImageDataChange('effect', e.target.value as ImageEffect)}
+              >
+                <option value="none">None</option>
+                <option value="fadeIn">Fade In</option>
+                <option value="shake">Shake</option>
+              </select>
+            </div>
+
+            {/* 효과 지속 시간 */}
+            {selectedNode.imageData?.effect && selectedNode.imageData.effect !== 'none' && (
+              <div className={styles.field}>
+                <label className={styles.label}>Duration (ms)</label>
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={selectedNode.imageData?.effectDuration ?? 500}
+                  onChange={(e) => handleImageDataChange('effectDuration', parseInt(e.target.value) || 500)}
+                  min={100}
+                  step={100}
+                />
+              </div>
+            )}
           </>
         )}
 

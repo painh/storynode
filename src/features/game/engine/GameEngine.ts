@@ -9,7 +9,7 @@ import type {
   StoryChoiceEffect,
   VariableOperation,
 } from '../../../types/story'
-import type { GameState, GameVariables, GameHistoryEntry } from '../../../types/game'
+import type { GameState, GameVariables, GameHistoryEntry, ActiveImage } from '../../../types/game'
 import { DEFAULT_GAME_VARIABLES } from '../../../types/game'
 
 export interface GameEngineOptions {
@@ -37,6 +37,7 @@ export class GameEngine {
       currentChapterId: '',
       variables: { ...DEFAULT_GAME_VARIABLES },
       history: [],
+      activeImages: [],
       startedAt: Date.now(),
       playTime: 0,
     }
@@ -135,10 +136,53 @@ export class GameEngine {
       }
     }
 
-    // 히스토리에 추가 (variable, condition 제외)
-    if (node.type !== 'variable' && node.type !== 'condition') {
+    // image 노드면 이미지 레이어 업데이트 후 자동 진행
+    if (node.type === 'image') {
+      this.processImageNode(node)
+      if (node.nextNodeId) {
+        this.goToNode(node.nextNodeId)
+        return
+      }
+    }
+
+    // 히스토리에 추가 (variable, condition, image 제외)
+    if (node.type !== 'variable' && node.type !== 'condition' && node.type !== 'image') {
       this.addToHistory(node)
     }
+  }
+
+  // 이미지 노드 처리
+  private processImageNode(node: StoryNode): void {
+    if (!node.imageData) return
+
+    const { resourcePath, layer, layerOrder, alignment, x, y } = node.imageData
+
+    // 빈 리소스 경로면 해당 레이어의 이미지 제거
+    if (!resourcePath) {
+      this.state.activeImages = this.state.activeImages.filter(
+        img => !(img.layer === layer && img.layerOrder === layerOrder)
+      )
+      return
+    }
+
+    // 새 이미지 객체
+    const newImage: ActiveImage = {
+      id: node.id,
+      resourcePath,
+      layer,
+      layerOrder,
+      alignment,
+      x,
+      y,
+    }
+
+    // 같은 레이어+순서에 있는 기존 이미지 제거 후 새 이미지 추가
+    this.state.activeImages = [
+      ...this.state.activeImages.filter(
+        img => !(img.layer === layer && img.layerOrder === layerOrder)
+      ),
+      newImage,
+    ]
   }
 
   // 다음 노드로 진행 (dialogue, event 등에서 클릭 시)

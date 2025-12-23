@@ -1,6 +1,17 @@
 // 게임 실행 관련 타입 정의
 
-import type { CharacterId, FactionId } from './story'
+import type { CharacterId, FactionId, ImageLayer, ImageAlignment } from './story'
+
+// 활성 이미지 (현재 화면에 표시 중인 이미지)
+export interface ActiveImage {
+  id: string               // 이미지 식별자 (노드 ID)
+  resourcePath: string     // 리소스 경로 또는 base64
+  layer: ImageLayer        // 레이어 (background, character 등)
+  layerOrder: number       // 레이어 내 순서
+  alignment: ImageAlignment
+  x?: number
+  y?: number
+}
 
 // 게임 실행 상태
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'ended'
@@ -35,6 +46,7 @@ export interface GameState {
   currentChapterId: string
   variables: GameVariables
   history: GameHistoryEntry[]
+  activeImages: ActiveImage[]  // 현재 표시 중인 이미지들
   startedAt: number
   playTime: number
 }

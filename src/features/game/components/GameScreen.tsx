@@ -1,18 +1,72 @@
 // 게임 화면 컴포넌트
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
-import type { GameTheme } from '../../../types/game'
+import type { GameTheme, ActiveImage } from '../../../types/game'
 import styles from '../styles/GameScreen.module.css'
 
 interface GameScreenProps {
   theme: GameTheme
 }
 
+// 이미지 레이어 컴포넌트
+function ImageLayers({ images }: { images: ActiveImage[] }) {
+  // 레이어 순서로 정렬 (background가 가장 뒤, 그 다음 character)
+  const sortedImages = useMemo(() => {
+    const layerPriority: Record<string, number> = {
+      background: 0,
+      character: 1,
+    }
+    return [...images].sort((a, b) => {
+      const aPriority = layerPriority[a.layer] ?? 2
+      const bPriority = layerPriority[b.layer] ?? 2
+      if (aPriority !== bPriority) return aPriority - bPriority
+      return a.layerOrder - b.layerOrder
+    })
+  }, [images])
+
+  const getAlignmentClass = (alignment: string) => {
+    switch (alignment) {
+      case 'left': return styles.alignLeft
+      case 'center': return styles.alignCenter
+      case 'right': return styles.alignRight
+      default: return styles.alignCustom
+    }
+  }
+
+  const getImageStyle = (img: ActiveImage): React.CSSProperties => {
+    const style: React.CSSProperties = {}
+    if (img.alignment === 'custom') {
+      if (img.x !== undefined) style.left = `${img.x}%`
+      if (img.y !== undefined) style.top = `${img.y}%`
+    }
+    return style
+  }
+
+  if (sortedImages.length === 0) return null
+
+  return (
+    <div className={styles.imageLayerContainer}>
+      {sortedImages.map((img) => (
+        <img
+          key={img.id}
+          src={img.resourcePath}
+          alt=""
+          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)}`}
+          style={getImageStyle(img)}
+        />
+      ))}
+    </div>
+  )
+}
+
 export function GameScreen({ theme }: GameScreenProps) {
-  const { currentNode, status, advance, selectChoice } = useGameStore()
+  const { currentNode, status, advance, selectChoice, gameState } = useGameStore()
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+
+  // 활성 이미지 목록
+  const activeImages = gameState?.activeImages || []
 
   // 타이프라이터 효과
   useEffect(() => {
@@ -182,8 +236,11 @@ export function GameScreen({ theme }: GameScreenProps) {
 
   return (
     <div className={styles.screen}>
+      {/* 이미지 레이어 */}
+      <ImageLayers images={activeImages} />
+
       <div className={styles.characterArea}>
-        {/* 캐릭터 스탠딩 이미지 영역 (미래 확장) */}
+        {/* 캐릭터 스탠딩 이미지 영역 */}
       </div>
 
       <div

@@ -35,7 +35,8 @@
 }
 
 .layer,
-.alignment {
+.alignment,
+.effect {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -61,6 +62,10 @@
   color: var(--header-color);
   font-weight: bold;
   margin-left: 4px;
+}
+
+.effectIcon {
+  font-size: 12px;
 }
 
 /* 데이터 핸들은 BaseNode에서 자동 생성됨 */

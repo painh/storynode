@@ -13,6 +13,9 @@ export type ImageAlignment = 'left' | 'center' | 'right' | 'custom'
 // 이미지 레이어 (배경이 더 아래에 렌더링됨)
 export type ImageLayer = 'background' | 'character' | string
 
+// 이미지 효과 타입
+export type ImageEffect = 'none' | 'fadeIn' | 'shake'
+
 // 이미지 노드 데이터
 export interface ImageNodeData {
   resourcePath: string      // 리소스 경로 또는 base64
@@ -22,6 +25,8 @@ export interface ImageNodeData {
   x?: number                // custom 정렬시 x 좌표
   y?: number                // custom 정렬시 y 좌표
   flipHorizontal?: boolean  // 좌우 반전
+  effect?: ImageEffect      // 이미지 효과
+  effectDuration?: number   // 효과 지속 시간 (ms)
 }
 
 // 커스텀 필드 타입

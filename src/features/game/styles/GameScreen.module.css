@@ -10,19 +10,77 @@
   overflow: hidden;
 }
 
-/* 배경 이미지 (미래 확장용) */
-.background {
+/* 이미지 레이어 컨테이너 */
+.imageLayerContainer {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-size: cover;
-  background-position: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 배경 레이어 */
+.backgroundLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 0;
 }
 
-/* 캐릭터 영역 (미래 확장용) */
+/* 캐릭터 레이어 */
+.characterLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* 개별 이미지 */
+.layerImage {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+}
+
+/* 배경 이미지 스타일 */
+.layerImage.background {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 정렬 스타일 */
+.layerImage.alignLeft {
+  left: 10%;
+  bottom: 0;
+  transform: translateX(0);
+}
+
+.layerImage.alignCenter {
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.layerImage.alignRight {
+  right: 10%;
+  bottom: 0;
+  transform: translateX(0);
+}
+
+.layerImage.alignCustom {
+  /* x, y는 인라인 스타일로 적용 */
+}
+
+/* 캐릭터 영역 */
 .characterArea {
   flex: 1;
   display: flex;
@@ -30,7 +88,7 @@
   justify-content: center;
   gap: 24px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* 대사창 */

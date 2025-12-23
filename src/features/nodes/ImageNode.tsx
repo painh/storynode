@@ -26,6 +26,16 @@ export const ImageNode = memo(function ImageNode({
     return imageData.alignment
   }
 
+  // 효과 아이콘
+  const getEffectIcon = () => {
+    if (!imageData?.effect || imageData.effect === 'none') return null
+    switch (imageData.effect) {
+      case 'fadeIn': return '✨'
+      case 'shake': return '〰️'
+      default: return null
+    }
+  }
+
   return (
     <BaseNode
       nodeType="image"
@@ -59,6 +69,13 @@ export const ImageNode = memo(function ImageNode({
               <span className={styles.value}>{getAlignmentText()}</span>
               {imageData.flipHorizontal && <span className={styles.flipIcon}>↔</span>}
             </div>
+            {imageData.effect && imageData.effect !== 'none' && (
+              <div className={styles.effect}>
+                <span className={styles.label}>Effect:</span>
+                <span className={styles.effectIcon}>{getEffectIcon()}</span>
+                <span className={styles.value}>{imageData.effect}</span>
+              </div>
+            )}
           </div>
         )}
         {/* 데이터 핸들은 BaseNode에서 자동 생성됨 */}
