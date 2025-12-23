@@ -55,8 +55,31 @@ export function Header() {
     checkTauri()
   }, [])
 
-  // 폴더 저장 (Tauri)
-  const handleSaveToFolder = async () => {
+  // 저장 (Tauri) - lastProjectPath가 있으면 바로 저장, 없으면 Save As
+  const handleSave = async () => {
+    setShowFileMenu(false)
+    if (!isTauri()) {
+      alert('Folder save is only available in desktop app')
+      return
+    }
+
+    const lastPath = settings.lastProjectPath
+    if (lastPath) {
+      // 기존 경로에 바로 저장
+      try {
+        await saveProjectToFolder(lastPath, project)
+        addRecentProject(lastPath, project.name)
+      } catch (error) {
+        alert('Failed to save project: ' + (error as Error).message)
+      }
+    } else {
+      // 경로가 없으면 Save As 동작
+      await handleSaveAs()
+    }
+  }
+
+  // 다른 이름으로 저장 (Tauri) - 항상 폴더 선택 다이얼로그
+  const handleSaveAs = async () => {
     setShowFileMenu(false)
     if (!isTauri() || !openDialog) {
       alert('Folder save is only available in desktop app')
@@ -274,9 +297,13 @@ export function Header() {
                         </div>
                       )}
                     </div>
-                    <button onClick={handleSaveToFolder}>
-                      <span>Save to Folder...</span>
+                    <button onClick={handleSave}>
+                      <span>Save</span>
                       <span className={styles.shortcut}>⌘S</span>
+                    </button>
+                    <button onClick={handleSaveAs}>
+                      <span>Save As...</span>
+                      <span className={styles.shortcut}>⇧⌘S</span>
                     </button>
                     <div className={styles.divider} />
                   </>
@@ -531,6 +558,17 @@ export function Header() {
                 <div className={styles.shortcutList}>
                   <div><kbd>Drag</kbd><span>Free movement (1px)</span></div>
                   <div><kbd>⇧</kbd> + <kbd>Drag</kbd><span>Snap to grid</span></div>
+                </div>
+              </section>
+              <section>
+                <h3>Search</h3>
+                <div className={styles.shortcutList}>
+                  <div><kbd>F3</kbd><span>Next Result</span></div>
+                  <div><kbd>⇧</kbd> + <kbd>F3</kbd><span>Previous Result</span></div>
+                  <div><kbd>Enter</kbd><span>Go to Result & Close</span></div>
+                  <div><kbd>⇧</kbd> + <kbd>Enter</kbd><span>Go to Result (Keep Open)</span></div>
+                  <div><kbd>↑</kbd> / <kbd>↓</kbd><span>Navigate Results</span></div>
+                  <div><kbd>Esc</kbd><span>Close Search</span></div>
                 </div>
               </section>
               <section>

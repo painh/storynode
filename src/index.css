@@ -29,6 +29,7 @@
   /* 선택/강조 */
   --selection-glow: rgba(255, 183, 77, 0.5);
   --selection-border: #FFB74D;
+  --selection-bg: rgba(255, 183, 77, 0.15);
 
   /* 텍스트 */
   --text-primary: #FFFFFF;

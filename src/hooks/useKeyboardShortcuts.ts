@@ -46,11 +46,12 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     }
   }, [])
 
-  // Delete: 선택된 노드 삭제
+  // Delete: 선택된 노드 삭제 (한 번에 삭제하여 Undo 시 한 번에 복원)
   const deleteSelectedNodes = useCallback(() => {
-    const { selectedNodeIds, deleteNode, setSelectedNodes } = useEditorStore.getState()
-    selectedNodeIds.forEach(id => deleteNode(id))
-    setSelectedNodes([])
+    const { selectedNodeIds, deleteNodes } = useEditorStore.getState()
+    if (selectedNodeIds.length > 0) {
+      deleteNodes(selectedNodeIds)
+    }
   }, [])
 
   // Escape: 선택 해제
@@ -176,13 +177,37 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     }
   }, [])
 
-  // Cmd+S: 저장
+  // Cmd+S: 저장 (lastProjectPath가 있으면 바로 저장, 없으면 Save As)
   const handleSave = useCallback(async () => {
     if (options.onSave) {
       options.onSave()
       return
     }
 
+    if (!isTauri()) {
+      alert('Save is only available in desktop app')
+      return
+    }
+
+    const { settings, addRecentProject } = useSettingsStore.getState()
+    const lastPath = settings.lastProjectPath
+
+    if (lastPath) {
+      // 기존 경로에 바로 저장
+      try {
+        await saveProjectToFolder(lastPath, project)
+        addRecentProject(lastPath, project.name)
+      } catch (error) {
+        alert('Failed to save: ' + (error as Error).message)
+      }
+    } else {
+      // 경로가 없으면 Save As 동작
+      await handleSaveAs()
+    }
+  }, [options, project])
+
+  // Cmd+Shift+S: 다른 이름으로 저장
+  const handleSaveAs = useCallback(async () => {
     if (!isTauri() || !openDialog) {
       alert('Save is only available in desktop app')
       return
@@ -197,12 +222,13 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
       if (selected && typeof selected === 'string') {
         await saveProjectToFolder(selected, project)
+        useSettingsStore.getState().addRecentProject(selected, project.name)
         alert('Project saved!')
       }
     } catch (error) {
       alert('Failed to save: ' + (error as Error).message)
     }
-  }, [options, project])
+  }, [project])
 
   // Cmd+O: 열기
   const handleOpen = useCallback(async () => {
@@ -287,6 +313,13 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       const isShift = e.shiftKey
       const target = e.target as HTMLElement
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+      // Cmd+Shift+S: 다른 이름으로 저장
+      if (isMod && isShift && e.key === 's') {
+        e.preventDefault()
+        handleSaveAs()
+        return
+      }
 
       // Cmd+S: 저장 (항상 가로채기)
       if (isMod && e.key === 's') {
@@ -404,6 +437,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     deleteSelectedNodes,
     handleEscape,
     handleSave,
+    handleSaveAs,
     handleOpen,
     handleNew,
     handleUndo,
@@ -421,6 +455,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     deleteSelectedNodes,
     handleEscape,
     handleSave,
+    handleSaveAs,
     handleOpen,
     handleNew,
     handleUndo,

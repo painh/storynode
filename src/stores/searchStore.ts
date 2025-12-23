@@ -63,8 +63,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     searchQuery: '',
     results: [],
     selectedResultIndex: -1,
-    highlightedNodeId: null,
-    highlightQuery: '',
+    // highlightedNodeId와 highlightQuery는 유지 (카메라 이동에 필요)
   }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),

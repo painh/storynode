@@ -32,6 +32,8 @@ interface EditorState {
   createNode: (type: StoryNodeType, position?: { x: number; y: number }) => StoryNode | null
   updateNode: (nodeId: string, updates: Partial<StoryNode>) => void
   deleteNode: (nodeId: string) => void
+  deleteNodes: (nodeIds: string[]) => void
+  pasteNodes: (nodes: Array<{ node: StoryNode; position: { x: number; y: number } }>) => string[]
 
   // Selection
   setSelectedNodes: (nodeIds: string[]) => void
@@ -236,6 +238,121 @@ export const useEditorStore = create<EditorState>()(
             state.selectedNodeIds = state.selectedNodeIds.filter(id => id !== nodeId)
           }
         }),
+
+        // 여러 노드 한 번에 삭제 (Undo 시 한 번에 복원되도록)
+        deleteNodes: (nodeIds) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          if (chapter) {
+            const nodeIdSet = new Set(nodeIds)
+            chapter.nodes = chapter.nodes.filter(n => !nodeIdSet.has(n.id))
+            // 삭제된 노드를 참조하는 nextNodeId들 정리
+            chapter.nodes.forEach(node => {
+              if (node.nextNodeId && nodeIdSet.has(node.nextNodeId)) {
+                node.nextNodeId = undefined
+              }
+              if (node.choices) {
+                node.choices.forEach(choice => {
+                  if (nodeIdSet.has(choice.nextNodeId)) {
+                    choice.nextNodeId = ''
+                  }
+                })
+              }
+              if (node.conditionBranches) {
+                node.conditionBranches.forEach(branch => {
+                  if (branch.nextNodeId && nodeIdSet.has(branch.nextNodeId)) {
+                    branch.nextNodeId = undefined
+                  }
+                })
+              }
+              if (node.defaultNextNodeId && nodeIdSet.has(node.defaultNextNodeId)) {
+                node.defaultNextNodeId = undefined
+              }
+            })
+            if (nodeIdSet.has(chapter.startNodeId)) {
+              chapter.startNodeId = chapter.nodes[0]?.id || ''
+            }
+            state.selectedNodeIds = []
+          }
+        }),
+
+        // 노드 붙여넣기 (복사된 노드들을 새 ID로 생성)
+        pasteNodes: (nodeDataList) => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+
+          if (!chapter) return []
+
+          // 기존 ID -> 새 ID 매핑
+          const idMap: Record<string, string> = {}
+          const newNodes: StoryNode[] = []
+
+          nodeDataList.forEach(({ node }) => {
+            // start 노드는 복사 불가 (챕터당 1개만)
+            if (node.type === 'start') return
+
+            const newId = generateId()
+            idMap[node.id] = newId
+
+            // 노드 복사 (deep clone)
+            const newNode: StoryNode = JSON.parse(JSON.stringify(node))
+            newNode.id = newId
+
+            // nextNodeId, choices, conditionBranches의 참조는 일단 제거
+            // (복사된 노드들 간의 연결만 나중에 복원)
+            newNode.nextNodeId = undefined
+            newNode.defaultNextNodeId = undefined
+            if (newNode.choices) {
+              newNode.choices = newNode.choices.map(c => ({ ...c, nextNodeId: '' }))
+            }
+            if (newNode.conditionBranches) {
+              newNode.conditionBranches = newNode.conditionBranches.map(b => ({ ...b, nextNodeId: undefined }))
+            }
+
+            newNodes.push(newNode)
+          })
+
+          // 복사된 노드들 간의 연결 복원
+          nodeDataList.forEach(({ node }) => {
+            if (node.type === 'start') return
+            const newNode = newNodes.find(n => n.id === idMap[node.id])
+            if (!newNode) return
+
+            // nextNodeId가 복사된 노드 중 하나를 가리키면 새 ID로 업데이트
+            if (node.nextNodeId && idMap[node.nextNodeId]) {
+              newNode.nextNodeId = idMap[node.nextNodeId]
+            }
+            if (node.defaultNextNodeId && idMap[node.defaultNextNodeId]) {
+              newNode.defaultNextNodeId = idMap[node.defaultNextNodeId]
+            }
+            if (node.choices) {
+              newNode.choices = node.choices.map(c => ({
+                ...c,
+                nextNodeId: idMap[c.nextNodeId] || '',
+              }))
+            }
+            if (node.conditionBranches) {
+              newNode.conditionBranches = node.conditionBranches.map(b => ({
+                ...b,
+                nextNodeId: b.nextNodeId && idMap[b.nextNodeId] ? idMap[b.nextNodeId] : undefined,
+              }))
+            }
+          })
+
+          const newIds = newNodes.map(n => n.id)
+
+          set((state) => {
+            const stage = state.project.stages.find(s => s.id === state.currentStageId)
+            const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+            if (chapter) {
+              chapter.nodes.push(...newNodes)
+            }
+            state.selectedNodeIds = newIds
+          })
+
+          return newIds
+        },
 
         // Selection
         setSelectedNodes: (nodeIds) => set({ selectedNodeIds: nodeIds }),

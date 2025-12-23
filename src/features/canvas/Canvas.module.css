@@ -20,3 +20,46 @@
 .canvas :global(.react-flow__minimap) :global(a) {
   display: none !important;
 }
+
+/* 그리드 설정 툴바 */
+.gridToolbar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: rgba(30, 30, 30, 0.9);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 10;
+}
+
+.gridToolbar label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.gridToolbar input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.gridToolbar input[type="number"] {
+  width: 50px;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.gridToolbar input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}

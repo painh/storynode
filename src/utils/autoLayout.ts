@@ -28,7 +28,7 @@ const NODE_WIDTHS: Record<StoryNodeType, number> = {
 const DEFAULT_NODE_WIDTH = 260
 const NODE_HEIGHT = 120
 const VERTICAL_GAP = 40
-const SNAP_GRID = 10
+const SNAP_GRID = 1
 const MIN_NODE_GAP = 120 // 노드 사이 최소 간격 (연결선 표시용)
 
 const snap = (value: number) => Math.round(value / SNAP_GRID) * SNAP_GRID

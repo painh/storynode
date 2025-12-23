@@ -125,10 +125,14 @@ export interface Translations {
     currentCanvas: string
     allFiles: string
     resultCount: string
+    resultPosition: string
     noResults: string
     navigate: string
     goTo: string
+    goToKeepOpen: string
     close: string
+    previous: string
+    next: string
   }
 }
 
@@ -241,10 +245,14 @@ export const translations: Record<Language, Translations> = {
       currentCanvas: '현재 캔버스',
       allFiles: '전체 파일',
       resultCount: '{count}개 결과',
+      resultPosition: '{current} / {total}',
       noResults: '검색 결과가 없습니다',
       navigate: '이동',
       goTo: '선택',
+      goToKeepOpen: '이동(유지)',
       close: '닫기',
+      previous: '이전',
+      next: '다음',
     },
   },
   en: {
@@ -355,10 +363,14 @@ export const translations: Record<Language, Translations> = {
       currentCanvas: 'Current Canvas',
       allFiles: 'All Files',
       resultCount: '{count} results',
+      resultPosition: '{current} / {total}',
       noResults: 'No results found',
       navigate: 'Navigate',
       goTo: 'Go to',
+      goToKeepOpen: 'Go (Keep)',
       close: 'Close',
+      previous: 'Previous',
+      next: 'Next',
     },
   },
 }

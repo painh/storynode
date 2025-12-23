@@ -103,8 +103,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     performSearch(searchQuery, searchScope)
   }, [searchQuery, searchScope, performSearch])
 
-  // 결과 항목으로 이동
-  const navigateToResult = useCallback((result: SearchResult) => {
+  // 결과 항목으로 이동 (모달 닫지 않음)
+  const navigateToResultWithoutClose = useCallback((result: SearchResult) => {
     // 다른 스테이지/챕터면 이동
     if (result.stageId !== currentStageId) {
       setCurrentStage(result.stageId)
@@ -116,9 +116,28 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     // 노드 선택 및 하이라이트 (Canvas에서 뷰포트 이동 처리)
     setSelectedNodes([result.nodeId])
     setHighlightedNode(result.nodeId, searchQuery)
+  }, [currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, setSelectedNodes, setHighlightedNode, searchQuery])
 
+  // 결과 항목으로 이동 (모달 닫음)
+  const navigateToResult = useCallback((result: SearchResult) => {
+    navigateToResultWithoutClose(result)
     onClose()
-  }, [currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, setSelectedNodes, setHighlightedNode, searchQuery, onClose])
+  }, [navigateToResultWithoutClose, onClose])
+
+  // 다음/이전 결과로 이동
+  const goToNextResult = useCallback(() => {
+    if (results.length === 0) return
+    const nextIndex = (selectedResultIndex + 1) % results.length
+    selectResult(nextIndex)
+    navigateToResultWithoutClose(results[nextIndex])
+  }, [results, selectedResultIndex, selectResult, navigateToResultWithoutClose])
+
+  const goToPrevResult = useCallback(() => {
+    if (results.length === 0) return
+    const prevIndex = selectedResultIndex <= 0 ? results.length - 1 : selectedResultIndex - 1
+    selectResult(prevIndex)
+    navigateToResultWithoutClose(results[prevIndex])
+  }, [results, selectedResultIndex, selectResult, navigateToResultWithoutClose])
 
   // 선택된 결과 스크롤
   useEffect(() => {
@@ -138,14 +157,28 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       selectPrevResult()
+    } else if (e.key === 'F3' && !e.shiftKey) {
+      // F3: 다음 결과로 이동
+      e.preventDefault()
+      goToNextResult()
+    } else if (e.key === 'F3' && e.shiftKey) {
+      // Shift+F3: 이전 결과로 이동
+      e.preventDefault()
+      goToPrevResult()
     } else if (e.key === 'Enter' && selectedResultIndex >= 0) {
       e.preventDefault()
-      navigateToResult(results[selectedResultIndex])
+      if (e.shiftKey) {
+        // Shift+Enter: 이동만 (모달 유지)
+        navigateToResultWithoutClose(results[selectedResultIndex])
+      } else {
+        // Enter: 이동 후 모달 닫기
+        navigateToResult(results[selectedResultIndex])
+      }
     } else if (e.key === 'Escape') {
       e.preventDefault()
       onClose()
     }
-  }, [selectNextResult, selectPrevResult, selectedResultIndex, results, navigateToResult, onClose])
+  }, [selectNextResult, selectPrevResult, selectedResultIndex, results, navigateToResult, navigateToResultWithoutClose, goToNextResult, goToPrevResult, onClose])
 
   // 모달 열릴 때 포커스
   useEffect(() => {
@@ -249,9 +282,29 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {searchT.allFiles}
             </button>
             {results.length > 0 && (
-              <span className={styles.resultCount}>
-                {searchT.resultCount.replace('{count}', String(results.length))}
-              </span>
+              <div className={styles.navigation}>
+                <span className={styles.resultPosition}>
+                  {searchT.resultPosition
+                    .replace('{current}', String(selectedResultIndex + 1))
+                    .replace('{total}', String(results.length))}
+                </span>
+                <button
+                  className={styles.navButton}
+                  onClick={goToPrevResult}
+                  title={`${searchT.previous} (Shift+F3)`}
+                  disabled={results.length === 0}
+                >
+                  ▲
+                </button>
+                <button
+                  className={styles.navButton}
+                  onClick={goToNextResult}
+                  title={`${searchT.next} (F3)`}
+                  disabled={results.length === 0}
+                >
+                  ▼
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -292,12 +345,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
         <div className={styles.footer}>
           <div className={styles.shortcutHint}>
-            <kbd className={styles.kbd}>↑↓</kbd>
-            <span>{searchT.navigate}</span>
+            <kbd className={styles.kbd}>F3</kbd>
+            <span>{searchT.next}</span>
+          </div>
+          <div className={styles.shortcutHint}>
+            <kbd className={styles.kbd}>⇧F3</kbd>
+            <span>{searchT.previous}</span>
           </div>
           <div className={styles.shortcutHint}>
             <kbd className={styles.kbd}>Enter</kbd>
             <span>{searchT.goTo}</span>
+          </div>
+          <div className={styles.shortcutHint}>
+            <kbd className={styles.kbd}>⇧Enter</kbd>
+            <span>{searchT.goToKeepOpen}</span>
           </div>
           <div className={styles.shortcutHint}>
             <kbd className={styles.kbd}>Esc</kbd>
