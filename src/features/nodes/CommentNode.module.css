@@ -15,10 +15,53 @@
               0 0 20px var(--selection-glow);
 }
 
+/* 접힌 상태 (포스트잇 스타일) */
+.comment.collapsed {
+  min-width: 120px;
+  max-width: 300px;
+  background: var(--comment-color);
+  border: none;
+  border-radius: 4px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 0;
+}
+
+.comment.collapsed .header {
+  background: transparent;
+  padding: 6px 10px;
+}
+
+.comment.collapsed .title {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 12px;
+}
+
 .header {
   padding: 8px 12px;
   background: var(--comment-color);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.collapseBtn {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  font-size: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.collapseBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .title {
@@ -26,11 +69,14 @@
   font-weight: 600;
   color: white;
   cursor: text;
-  display: block;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .titleInput {
-  width: 100%;
+  flex: 1;
   font-size: 13px;
   font-weight: 600;
   color: white;

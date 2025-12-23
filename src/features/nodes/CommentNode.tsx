@@ -1,8 +1,7 @@
-import { memo, useCallback, useRef, useState } from 'react'
+import { memo, useCallback, useRef, useState, useEffect } from 'react'
 import { type NodeProps, type Node, NodeResizer } from '@xyflow/react'
 import type { EditorNodeData, CommentNodeData } from '../../types/editor'
 import { useEditorStore } from '../../stores/editorStore'
-import { useCanvasStore } from '../../stores/canvasStore'
 import styles from './CommentNode.module.css'
 
 const DEFAULT_COMMENT_DATA: CommentNodeData = {
@@ -11,6 +10,7 @@ const DEFAULT_COMMENT_DATA: CommentNodeData = {
   color: '#5C6BC0',
   width: 300,
   height: 200,
+  isCollapsed: false,
 }
 
 export const CommentNode = memo(function CommentNode({
@@ -19,16 +19,28 @@ export const CommentNode = memo(function CommentNode({
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   const commentData = data.commentData || DEFAULT_COMMENT_DATA
-  const currentChapterId = useEditorStore((s) => s.currentChapterId)
-  const updateCommentNode = useCanvasStore((s) => s.updateCommentNode)
+  const updateCommentNode = useEditorStore((s) => s.updateCommentNode)
+  const setSelectedComment = useEditorStore((s) => s.setSelectedComment)
   const [isEditing, setIsEditing] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
 
-  const handleUpdate = useCallback((updates: Partial<CommentNodeData>) => {
-    if (currentChapterId) {
-      updateCommentNode(currentChapterId, id, updates)
+  // 노드가 선택되면 인스펙터에도 반영
+  // selectedCommentId를 의존성에서 제거하여 무한 루프 방지
+  useEffect(() => {
+    if (selected) {
+      setSelectedComment(id)
     }
-  }, [id, currentChapterId, updateCommentNode])
+    // selected가 false일 때는 Canvas의 onSelectionChange에서 처리
+  }, [selected, id, setSelectedComment])
+
+  const handleUpdate = useCallback((updates: Partial<CommentNodeData>) => {
+    updateCommentNode(id, updates)
+  }, [id, updateCommentNode])
+
+  const handleToggleCollapse = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    handleUpdate({ isCollapsed: !commentData.isCollapsed })
+  }, [commentData.isCollapsed, handleUpdate])
 
   const handleTitleDoubleClick = useCallback(() => {
     setIsEditing(true)
@@ -53,25 +65,34 @@ export const CommentNode = memo(function CommentNode({
     handleUpdate({ width: params.width, height: params.height })
   }, [handleUpdate])
 
+  const isCollapsed = commentData.isCollapsed
+
   return (
     <div
-      className={`${styles.comment} ${selected ? styles.selected : ''}`}
+      className={`${styles.comment} ${selected ? styles.selected : ''} ${isCollapsed ? styles.collapsed : ''}`}
       style={{
         '--comment-color': commentData.color,
-        width: commentData.width,
-        height: commentData.height,
+        width: isCollapsed ? 'auto' : commentData.width,
+        height: isCollapsed ? 'auto' : commentData.height,
       } as React.CSSProperties}
     >
       <NodeResizer
         minWidth={150}
         minHeight={100}
-        isVisible={selected}
+        isVisible={selected && !isCollapsed}
         lineClassName={styles.resizerLine}
         handleClassName={styles.resizerHandle}
         onResize={handleResize}
       />
 
       <div className={styles.header}>
+        <button
+          className={styles.collapseBtn}
+          onClick={handleToggleCollapse}
+          title={isCollapsed ? 'Expand' : 'Collapse'}
+        >
+          {isCollapsed ? '▶' : '▼'}
+        </button>
         {isEditing ? (
           <input
             ref={titleRef}
@@ -89,14 +110,16 @@ export const CommentNode = memo(function CommentNode({
         )}
       </div>
 
-      <div className={styles.body}>
-        <textarea
-          className={styles.description}
-          placeholder="Add description..."
-          value={commentData.description}
-          onChange={(e) => handleUpdate({ description: e.target.value })}
-        />
-      </div>
+      {!isCollapsed && (
+        <div className={styles.body}>
+          <textarea
+            className={styles.description}
+            placeholder="Add description..."
+            value={commentData.description}
+            onChange={(e) => handleUpdate({ description: e.target.value })}
+          />
+        </div>
+      )}
     </div>
   )
 })

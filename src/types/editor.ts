@@ -14,6 +14,7 @@ export interface CommentNodeData {
   color: string
   width: number
   height: number
+  isCollapsed?: boolean  // 포스트잇 접기 모드
 }
 
 // React Flow 노드에 저장될 데이터

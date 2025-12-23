@@ -57,40 +57,4 @@
   font-weight: bold;
 }
 
-/* 데이터 입력 핸들 */
-.dataInputs {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dataInput {
-  display: flex;
-  align-items: center;
-  position: relative;
-  height: 16px;
-}
-
-.dataHandle {
-  width: 10px !important;
-  height: 10px !important;
-  background: #9c27b0 !important;
-  border: 2px solid #7b1fa2 !important;
-  border-radius: 50% !important;
-  left: -20px !important;
-}
-
-.dataHandle:hover {
-  background: #ba68c8 !important;
-}
-
-.inputLabel {
-  font-size: 9px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-left: 4px;
-}
+/* 데이터 핸들은 BaseNode에서 자동 생성됨 */

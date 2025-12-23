@@ -15,6 +15,7 @@ export function SmartEdge({
   targetPosition,
   style,
   markerEnd,
+  selected,
 }: EdgeProps) {
   // Y 좌표 차이가 작으면 직선 사용
   const yDiff = Math.abs(sourceY - targetY)
@@ -40,11 +41,21 @@ export function SmartEdge({
     edgePath = path
   }
 
+  // 선택 시 하이라이트 스타일
+  const edgeStyle = selected
+    ? {
+        ...style,
+        stroke: '#ff6b00',
+        strokeWidth: 4,
+        filter: 'drop-shadow(0 0 6px #ff6b00)',
+      }
+    : style
+
   return (
     <BaseEdge
       id={id}
       path={edgePath}
-      style={style}
+      style={edgeStyle}
       markerEnd={markerEnd}
     />
   )

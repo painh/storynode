@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { temporal } from 'zundo'
 import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode } from '../types/story'
+import { getNestedValue, setNestedValue } from '../utils/nestedProperty'
 
 interface EditorState {
   // 프로젝트 데이터
@@ -11,6 +12,7 @@ interface EditorState {
   currentStageId: string | null
   currentChapterId: string | null
   selectedNodeIds: string[]
+  selectedCommentId: string | null  // 선택된 코멘트 노드
 
   // 액션
   setProject: (project: StoryProject) => void
@@ -62,6 +64,8 @@ interface EditorState {
   updateCommentPosition: (commentId: string, position: { x: number; y: number }) => void
   deleteCommentNode: (commentId: string) => void
   getCommentNodes: () => CommentNode[]
+  getCommentById: (commentId: string) => CommentNode | undefined
+  setSelectedComment: (commentId: string | null) => void
   wrapNodesWithComment: (flowNodes?: Array<{ id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number } }>) => string | null
 }
 
@@ -126,6 +130,7 @@ export const useEditorStore = create<EditorState>()(
         currentStageId: 'stage_1',
         currentChapterId: 'chapter_1',
         selectedNodeIds: [],
+        selectedCommentId: null,
 
         setProject: (project) => set({
           project: {
@@ -142,6 +147,7 @@ export const useEditorStore = create<EditorState>()(
           currentStageId: project.stages[0]?.id || null,
           currentChapterId: project.stages[0]?.chapters[0]?.id || null,
           selectedNodeIds: [],
+          selectedCommentId: null,
         }),
 
         // Stage CRUD
@@ -177,6 +183,7 @@ export const useEditorStore = create<EditorState>()(
           const stage = state.project.stages.find(s => s.id === stageId)
           state.currentChapterId = stage?.chapters[0]?.id || null
           state.selectedNodeIds = []
+          state.selectedCommentId = null
         }),
 
         // Chapter CRUD
@@ -216,6 +223,7 @@ export const useEditorStore = create<EditorState>()(
         setCurrentChapter: (chapterId) => set((state) => {
           state.currentChapterId = chapterId
           state.selectedNodeIds = []
+          state.selectedCommentId = null
         }),
 
         // Node CRUD
@@ -276,8 +284,29 @@ export const useEditorStore = create<EditorState>()(
           const stage = state.project.stages.find(s => s.id === state.currentStageId)
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
           const node = chapter?.nodes.find(n => n.id === nodeId)
-          if (node) {
+          if (node && chapter) {
             Object.assign(node, updates)
+
+            // 데이터 바인딩 동기화: 이 노드를 소스로 하는 바인딩들 찾아서 값 전파
+            chapter.nodes.forEach(targetNode => {
+              if (targetNode.dataBindings) {
+                targetNode.dataBindings.forEach(binding => {
+                  if (binding.sourceNodeId === nodeId) {
+                    // 소스 노드에서 값 가져오기
+                    const sourceValue = getNestedValue(node as unknown as Record<string, unknown>, binding.sourcePath)
+                    if (sourceValue !== undefined) {
+                      // 타겟 노드에 값 설정
+                      const updated = setNestedValue(
+                        targetNode as unknown as Record<string, unknown>,
+                        binding.targetPath,
+                        sourceValue
+                      )
+                      Object.assign(targetNode, updated)
+                    }
+                  }
+                })
+              }
+            })
           }
         }),
 
@@ -608,6 +637,21 @@ export const useEditorStore = create<EditorState>()(
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
           return chapter?.commentNodes || []
         },
+
+        getCommentById: (commentId) => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          return chapter?.commentNodes?.find(c => c.id === commentId)
+        },
+
+        setSelectedComment: (commentId) => set((state) => {
+          state.selectedCommentId = commentId
+          // 코멘트 선택 시 노드 선택 해제
+          if (commentId) {
+            state.selectedNodeIds = []
+          }
+        }),
 
         // 선택된 노드들을 Comment로 감싸기 (React Flow nodes에서 실제 크기 사용)
         wrapNodesWithComment: (flowNodes?: Array<{ id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number } }>) => {

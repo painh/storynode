@@ -1,0 +1,58 @@
+/* 데이터 핸들 스타일 - 언리얼 블루프린트 스타일 */
+
+.row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 18px;
+  padding: 0 4px;
+}
+
+.rowRight {
+  justify-content: flex-end;
+}
+
+/* 입력+출력 한 줄에 표시 */
+.fullRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  height: 18px;
+  padding: 0 4px;
+}
+
+/* 데이터 핸들 - 원형 (실행 핸들의 오각형과 구분) */
+.handle {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  border: 2px solid !important;
+  cursor: crosshair;
+  transition: transform 0.1s, filter 0.1s, box-shadow 0.1s;
+}
+
+.handle:hover {
+  transform: scale(1.4);
+  filter: brightness(1.3);
+  box-shadow: 0 0 8px currentColor;
+}
+
+.label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0 6px;
+  white-space: nowrap;
+}
+
+.centerLabel {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+}

@@ -6,7 +6,7 @@
     0 4px 12px rgba(0, 0, 0, 0.4),
     0 0 0 1px var(--border-default);
   font-family: 'Segoe UI', system-ui, sans-serif;
-  overflow: hidden;
+  overflow: visible;
   transition: box-shadow 0.15s, transform 0.1s;
 }
 
@@ -58,6 +58,7 @@
 .header {
   padding: 8px 12px;
   background: var(--header-color);
+  border-radius: 8px 8px 0 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -102,4 +103,22 @@
 
 .node :global(.react-flow__handle-right) {
   right: -7px;
+}
+
+/* Data Handles Section */
+.dataHandles {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Data Handle positioning inside node */
+.dataHandles :global(.react-flow__handle-left) {
+  left: -17px;
+}
+
+.dataHandles :global(.react-flow__handle-right) {
+  right: -17px;
 }

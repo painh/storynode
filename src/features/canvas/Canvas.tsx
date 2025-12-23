@@ -10,8 +10,10 @@ import {
   useEdgesState,
   useReactFlow,
   SelectionMode,
+  applyEdgeChanges,
   type Connection,
   type Edge,
+  type EdgeChange,
   type Node,
   BackgroundVariant,
 } from '@xyflow/react'
@@ -25,11 +27,15 @@ import { nodeTypes } from '../nodes/nodeRegistry'
 import { SmartEdge } from '../edges/SmartEdge'
 import { autoLayoutNodes } from '../../utils/autoLayout'
 import type { EditorNodeData } from '../../types/editor'
-import type { StoryNodeType } from '../../types/story'
+import type { StoryNodeType, DataBinding } from '../../types/story'
+import { parseDataHandleId } from '../../config/dataHandles'
+import { DataEdge } from '../edges/DataEdge'
+import { getNestedValue, setNestedValue } from '../../utils/nestedProperty'
 import styles from './Canvas.module.css'
 
 const edgeTypes = {
   smart: SmartEdge,
+  data: DataEdge,
 }
 
 function CanvasInner() {
@@ -38,8 +44,8 @@ function CanvasInner() {
     getCurrentChapter,
     createNode,
     updateNode,
-    selectedNodeIds,
     setSelectedNodes,
+    setSelectedComment,
     getCommentNodes,
     createCommentNode,
     updateCommentPosition,
@@ -69,7 +75,7 @@ function CanvasInner() {
   const commentNodes = getCommentNodes()
   const commentNodesKey = JSON.stringify(commentNodes.map(c => ({ id: c.id, pos: c.position, data: c.data })))
 
-  // StoryNode를 React Flow Node로 변환
+  // StoryNode를 React Flow Node로 변환 (선택 상태는 React Flow가 내부 관리)
   const initialNodes = useMemo((): Node<EditorNodeData>[] => {
     if (!chapter) return []
 
@@ -94,7 +100,6 @@ function CanvasInner() {
           label: storyNode.type,
           isPlaying: playingNodeId === storyNode.id,
         },
-        selected: selectedNodeIds.includes(storyNode.id),
       }
     })
 
@@ -107,13 +112,12 @@ function CanvasInner() {
         commentData: comment.data,
         label: 'comment',
       },
-      selected: selectedNodeIds.includes(comment.id),
       zIndex: -1, // 다른 노드 뒤에 표시
     }))
 
     return [...commentFlowNodes, ...storyNodes]
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter, selectedNodeIds, commentNodesKey, playingNodeId])
+  }, [chapter, commentNodesKey, playingNodeId])
 
   // 연결 정보를 Edge로 변환
   const initialEdges = useMemo((): Edge[] => {
@@ -173,25 +177,107 @@ function CanvasInner() {
           targetHandle: 'exec-in',
         })
       }
+
+      // 데이터 바인딩 엣지
+      if (node.dataBindings) {
+        node.dataBindings.forEach((binding, index) => {
+          edges.push({
+            id: `${binding.sourceNodeId}-data-${index}-${node.id}`,
+            source: binding.sourceNodeId,
+            target: node.id,
+            sourceHandle: `data-out-${binding.sourcePath}`,
+            targetHandle: `data-in-${binding.targetPath}`,
+            type: 'data',
+          })
+        })
+      }
     })
 
     return edges
   }, [chapter])
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [edges, setEdges] = useEdgesState(initialEdges)
+
+  // 엣지 삭제 시 실제 연결 데이터도 삭제
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange<Edge>[]) => {
+      // 삭제 변경 처리
+      const removeChanges = changes.filter((c) => c.type === 'remove')
+      removeChanges.forEach((change) => {
+        if (change.type === 'remove') {
+          const edge = edges.find((e) => e.id === change.id)
+          if (edge && chapter) {
+            const sourceNode = chapter.nodes.find((n) => n.id === edge.source)
+            if (sourceNode) {
+              const sourceHandle = edge.sourceHandle || 'exec-out'
+
+              // 데이터 바인딩 엣지 삭제
+              if (sourceHandle.startsWith('data-out-')) {
+                const targetNode = chapter.nodes.find((n) => n.id === edge.target)
+                if (targetNode?.dataBindings) {
+                  const targetHandle = edge.targetHandle || ''
+                  const targetPath = targetHandle.replace('data-in-', '')
+                  const newBindings = targetNode.dataBindings.filter(
+                    (b) => !(b.sourceNodeId === edge.source && b.targetPath === targetPath)
+                  )
+                  updateNode(edge.target, { dataBindings: newBindings })
+                }
+              }
+              // choice 연결 삭제
+              else if (sourceHandle.startsWith('choice-')) {
+                const choiceIndex = parseInt(sourceHandle.split('-')[1])
+                if (sourceNode.choices?.[choiceIndex]) {
+                  const choices = [...sourceNode.choices]
+                  choices[choiceIndex] = { ...choices[choiceIndex], nextNodeId: '' }
+                  updateNode(edge.source, { choices })
+                }
+              }
+              // condition 분기 삭제
+              else if (sourceHandle.startsWith('condition-')) {
+                const conditionIndex = parseInt(sourceHandle.split('-')[1])
+                if (sourceNode.conditionBranches?.[conditionIndex]) {
+                  const branches = [...sourceNode.conditionBranches]
+                  branches[conditionIndex] = { ...branches[conditionIndex], nextNodeId: undefined }
+                  updateNode(edge.source, { conditionBranches: branches })
+                }
+              }
+              // default 연결 삭제
+              else if (sourceHandle === 'default') {
+                updateNode(edge.source, { defaultNextNodeId: undefined })
+              }
+              // 일반 nextNodeId 삭제
+              else {
+                updateNode(edge.source, { nextNodeId: undefined })
+              }
+            }
+          }
+        }
+      })
+
+      // React Flow 엣지 상태 업데이트
+      setEdges((eds) => applyEdgeChanges(changes, eds))
+    },
+    [edges, chapter, updateNode, setEdges]
+  )
 
   // setNodes ref 저장
   useEffect(() => {
     setNodesRef.current = setNodes
   }, [setNodes])
 
-  // 챕터/노드 변경 시 노드/엣지 업데이트
+  // 챕터/노드 변경 시 노드 업데이트
   useEffect(() => {
     setNodes(initialNodes)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentChapterId, commentNodesKey, initialNodes])
+
+  // 엣지는 실제 연결 데이터가 변경될 때만 업데이트 (선택 상태 유지)
+  const initialEdgesKey = useMemo(() => JSON.stringify(initialEdges.map(e => e.id)), [initialEdges])
+  useEffect(() => {
     setEdges(initialEdges)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChapterId, commentNodesKey, initialNodes, initialEdges])
+  }, [currentChapterId, initialEdgesKey])
 
   // React Flow nodes를 canvasStore에 동기화 (measured 크기 포함)
   useEffect(() => {
@@ -383,6 +469,61 @@ function CanvasInner() {
       if (!connection.source || !connection.target) return
 
       const sourceHandle = connection.sourceHandle || 'exec-out'
+      const targetHandle = connection.targetHandle || 'exec-in'
+
+      // 데이터 핸들 연결인 경우
+      if (sourceHandle.startsWith('data-out-') && targetHandle.startsWith('data-in-')) {
+        const sourceInfo = parseDataHandleId(sourceHandle)
+        const targetInfo = parseDataHandleId(targetHandle)
+
+        if (sourceInfo && targetInfo) {
+          const sourceNode = chapter?.nodes.find(n => n.id === connection.source)
+          const targetNode = chapter?.nodes.find(n => n.id === connection.target)
+          if (sourceNode && targetNode) {
+            const bindings: DataBinding[] = [...(targetNode.dataBindings || [])]
+
+            // 같은 targetPath에 이미 바인딩이 있으면 덮어쓰기
+            const existingIndex = bindings.findIndex(b => b.targetPath === targetInfo.path)
+            const newBinding: DataBinding = {
+              targetPath: targetInfo.path,
+              sourceNodeId: connection.source,
+              sourcePath: sourceInfo.path,
+            }
+
+            if (existingIndex >= 0) {
+              bindings[existingIndex] = newBinding
+            } else {
+              bindings.push(newBinding)
+            }
+
+            // 초기 동기화: 소스 노드의 값을 타겟 노드로 복사
+            const sourceValue = getNestedValue(
+              sourceNode as unknown as Record<string, unknown>,
+              sourceInfo.path
+            )
+
+            if (sourceValue !== undefined) {
+              // 값과 바인딩을 함께 업데이트
+              const updatedTarget = setNestedValue(
+                { ...targetNode } as unknown as Record<string, unknown>,
+                targetInfo.path,
+                sourceValue
+              )
+              updateNode(connection.target, {
+                ...updatedTarget,
+                dataBindings: bindings
+              })
+            } else {
+              // 소스 값이 없으면 바인딩만 저장
+              updateNode(connection.target, { dataBindings: bindings })
+            }
+          }
+        }
+
+        // 데이터 엣지 추가
+        setEdges((eds) => addEdge({ ...connection, type: 'data' }, eds))
+        return
+      }
 
       // choice 핸들인 경우
       if (sourceHandle.startsWith('choice-')) {
@@ -424,12 +565,33 @@ function CanvasInner() {
     [chapter, updateNode, setEdges]
   )
 
+  // 엣지 클릭 디버깅
+  const onEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      console.log('Edge clicked:', edge)
+      console.log('Edge id:', edge.id)
+      console.log('Edge selectable:', edge.selectable)
+    },
+    []
+  )
+
   // 노드 선택
   const onSelectionChange = useCallback(
-    ({ nodes }: { nodes: Node[] }) => {
-      setSelectedNodes(nodes.map(n => n.id))
+    ({ nodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
+      console.log('Selection changed - nodes:', nodes.length, 'edges:', selectedEdges.length)
+      if (selectedEdges.length > 0) {
+        console.log('Selected edges:', selectedEdges)
+      }
+      const nodeIds = nodes.map(n => n.id)
+      setSelectedNodes(nodeIds)
+
+      // 일반 노드(comment가 아닌)가 선택되면 코멘트 선택 해제
+      const hasNonCommentNode = nodes.some(n => n.type !== 'comment')
+      if (hasNonCommentNode) {
+        setSelectedComment(null)
+      }
     },
-    [setSelectedNodes]
+    [setSelectedNodes, setSelectedComment]
   )
 
   // 드래그 앤 드롭으로 노드 생성
@@ -490,6 +652,7 @@ function CanvasInner() {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       onSelectionChange={onSelectionChange}
+      onEdgeClick={onEdgeClick}
       onNodeDragStart={onNodeDragStart}
       onNodeDrag={onNodeDrag}
       onNodeDragStop={onNodeDragStop}
@@ -505,9 +668,12 @@ function CanvasInner() {
       selectionMode={SelectionMode.Partial}
       minZoom={0.1}
       maxZoom={2}
+      deleteKeyCode={['Backspace', 'Delete']}
       defaultEdgeOptions={{
         type: 'smart',
         style: { stroke: '#fff', strokeWidth: 2 },
+        selectable: true,
+        focusable: true,
       }}
       proOptions={{ hideAttribution: true }}
     >
@@ -554,6 +720,7 @@ function CanvasInner() {
             condition: '#00796B',
             image: '#00BCD4',
             javascript: '#F0DB4F',
+            custom: '#9C27B0',
             comment: '#5C6BC0',
           }
           return colors[node.type || 'dialogue'] || '#666'

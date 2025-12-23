@@ -121,6 +121,13 @@ export interface ConditionBranch {
   nextNodeId?: string
 }
 
+// 데이터 바인딩 (노드 간 데이터 연결)
+export interface DataBinding {
+  targetPath: string      // 받는 프로퍼티 경로
+  sourceNodeId: string    // 주는 노드 ID
+  sourcePath: string      // 주는 프로퍼티 경로
+}
+
 // 스토리 노드
 export interface StoryNode {
   id: string
@@ -151,6 +158,9 @@ export interface StoryNode {
 
   // custom 노드용
   customData?: CustomNodeData
+
+  // 데이터 바인딩 (다른 노드에서 값 주입)
+  dataBindings?: DataBinding[]
 }
 
 // 코멘트 노드 (에디터용)
@@ -163,6 +173,7 @@ export interface CommentNode {
     color: string
     width: number
     height: number
+    isCollapsed?: boolean  // 포스트잇 접기 모드
   }
 }
 
