@@ -175,3 +175,44 @@
   font-size: 12px;
   font-style: italic;
 }
+
+.select {
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.select:focus {
+  border-color: var(--selection-border);
+  outline: none;
+}
+
+.imagePreview {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.previewImg {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 12px;
+}
+
+.fieldRow .field {
+  flex: 1;
+}

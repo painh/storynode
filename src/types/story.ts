@@ -5,6 +5,23 @@ export type StoryNodeType =
   | 'start' | 'dialogue' | 'choice' | 'chapter_end'
   | 'battle' | 'shop' | 'event'
   | 'variable' | 'condition'
+  | 'image'
+
+// 이미지 정렬 타입
+export type ImageAlignment = 'left' | 'center' | 'right' | 'custom'
+
+// 이미지 레이어 (배경이 더 아래에 렌더링됨)
+export type ImageLayer = 'background' | 'character' | string
+
+// 이미지 노드 데이터
+export interface ImageNodeData {
+  resourcePath: string      // 리소스 경로 또는 base64
+  layer: ImageLayer         // 레이어 이름 (background, character 등)
+  layerOrder: number        // 같은 레이어 내 렌더링 순서
+  alignment: ImageAlignment // 정렬 (left, center, right, custom)
+  x?: number                // custom 정렬시 x 좌표
+  y?: number                // custom 정렬시 y 좌표
+}
 
 // 캐릭터 ID 타입
 export type CharacterId = 'kairen' | 'zed' | 'lyra' | 'elise'
@@ -103,6 +120,9 @@ export interface StoryNode {
   // condition 노드용
   conditionBranches?: ConditionBranch[]
   defaultNextNodeId?: string  // 어떤 조건도 안 맞을 때
+
+  // image 노드용
+  imageData?: ImageNodeData
 }
 
 // 코멘트 노드 (에디터용)
@@ -150,7 +170,7 @@ export interface StoryStage {
 }
 
 // 리소스 타입
-export type ResourceType = 'character' | 'background'
+export type ResourceType = 'image'
 
 // 프로젝트 리소스 (캐릭터, 배경 등)
 export interface ProjectResource {

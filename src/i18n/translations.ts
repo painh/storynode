@@ -14,6 +14,7 @@ export interface Translations {
     chapter_end: string
     variable: string
     condition: string
+    image: string
     comment: string
   }
 
@@ -28,6 +29,7 @@ export interface Translations {
     chapter_end: string
     variable: string
     condition: string
+    image: string
   }
 
   // 메뉴
@@ -152,6 +154,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: '챕터 종료',
       variable: '변수',
       condition: '조건',
+      image: '이미지',
       comment: '코멘트',
     },
     nodeDescriptions: {
@@ -164,6 +167,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: '챕터 종료',
       variable: '변수 조작',
       condition: '조건 분기',
+      image: '이미지 표시',
     },
     menu: {
       file: '파일',
@@ -274,6 +278,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: 'Chapter End',
       variable: 'Variable',
       condition: 'Condition',
+      image: 'Image',
       comment: 'Comment',
     },
     nodeDescriptions: {
@@ -286,6 +291,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: 'End chapter',
       variable: 'Variable operations',
       condition: 'Condition branch',
+      image: 'Display image',
     },
     menu: {
       file: 'File',

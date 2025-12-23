@@ -99,7 +99,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   // Ctrl+/ 또는 Cmd+/: 선택된 노드들을 Comment로 감싸기
   const handleWrapWithComment = useCallback(() => {
     const { wrapNodesWithComment } = useEditorStore.getState()
-    wrapNodesWithComment()
+    const { nodes } = useCanvasStore.getState()
+    // React Flow nodes의 실제 측정된 크기를 전달
+    wrapNodesWithComment(nodes)
   }, [])
 
   // Cmd+C: 복사

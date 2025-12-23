@@ -41,6 +41,7 @@ export const NODE_COLORS: Record<AllNodeType, string> = {
   chapter_end: '#37474F', // 회색
   variable: '#7B1FA2',    // 보라 (진함)
   condition: '#00796B',   // 청록
+  image: '#00BCD4',       // 시안 (이미지)
   comment: '#5C6BC0',     // 인디고 (코멘트)
 }
 
@@ -55,6 +56,7 @@ export const NODE_ICONS: Record<AllNodeType, string> = {
   chapter_end: '🏁',
   variable: '📊',
   condition: '❓',
+  image: '🖼️',
   comment: '📝',
 }
 
@@ -69,5 +71,6 @@ export const NODE_LABELS: Record<AllNodeType, string> = {
   chapter_end: 'Chapter End',
   variable: 'Variable',
   condition: 'Condition',
+  image: 'Image',
   comment: 'Comment',
 }

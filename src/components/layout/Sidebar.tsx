@@ -10,7 +10,7 @@ import styles from './Sidebar.module.css'
 // 노드 카테고리
 const NODE_CATEGORIES = {
   flow: ['start', 'chapter_end'] as StoryNodeType[],
-  content: ['dialogue', 'choice', 'battle', 'shop', 'event'] as StoryNodeType[],
+  content: ['dialogue', 'choice', 'image', 'battle', 'shop', 'event'] as StoryNodeType[],
   logic: ['variable', 'condition'] as StoryNodeType[],
   editor: ['comment'] as AllNodeType[],
 }
@@ -60,9 +60,8 @@ export function Sidebar() {
 
   const currentStage = getCurrentStage()
 
-  // 리소스 분류
-  const characters = (project.resources || []).filter(r => r.type === 'character')
-  const backgrounds = (project.resources || []).filter(r => r.type === 'background')
+  // 리소스 분류 (새로운 구조: 모든 이미지는 'image' 타입)
+  const images = (project.resources || []).filter(r => r.type === 'image')
 
   const handleDragStart = (e: React.DragEvent, nodeType: AllNodeType) => {
     e.dataTransfer.setData('application/storynode-type', nodeType)
@@ -276,13 +275,14 @@ export function Sidebar() {
   )
 
   // 리소스 폴더 생성
-  const handleCreateResourceFolder = async (folderName: 'characters' | 'backgrounds') => {
+  const handleCreateResourceFolder = async () => {
     const projectPath = settings.lastProjectPath
     if (!projectPath || !isTauri()) return
 
     try {
-      await createDirectory(`${projectPath}/${folderName}`)
-      alert(`Created ${folderName}/ folder. Add images and reload the project.`)
+      await createDirectory(`${projectPath}/resources`)
+      await createDirectory(`${projectPath}/resources/images`)
+      alert('Created resources/images/ folder. Add images and reload the project.')
     } catch (error) {
       alert(`Failed to create folder: ${(error as Error).message}`)
     }
@@ -296,8 +296,7 @@ export function Sidebar() {
 
   // Resources 탭 컨텐츠
   const renderResourcesTab = () => {
-    const filteredCharacters = characters.filter(r => fuzzyMatch(r.name, resourceFilter))
-    const filteredBackgrounds = backgrounds.filter(r => fuzzyMatch(r.name, resourceFilter))
+    const filteredImages = images.filter(r => fuzzyMatch(r.name, resourceFilter))
     const projectPath = settings.lastProjectPath
 
     return (
@@ -321,11 +320,11 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Characters */}
+        {/* Images */}
         <div className={styles.nodeCategory}>
-          <div className={styles.categoryTitle}>Characters</div>
+          <div className={styles.categoryTitle}>Images</div>
           <div className={styles.resourceList}>
-            {filteredCharacters.map((resource) => (
+            {filteredImages.map((resource) => (
               <div key={resource.id} className={styles.resourceItem}>
                 <img
                   src={resource.path}
@@ -335,55 +334,17 @@ export function Sidebar() {
                 <span className={styles.resourceName}>{resource.name}</span>
               </div>
             ))}
-            {filteredCharacters.length === 0 && (
+            {filteredImages.length === 0 && (
               <div className={styles.emptyState}>
-                {characters.length === 0 ? (
+                {images.length === 0 ? (
                   projectPath ? (
                     <>
-                      <div className={styles.emptyText}>Add images to characters/ folder</div>
+                      <div className={styles.emptyText}>Add images to resources/images/ folder</div>
                       <button
                         className={styles.createFolderButton}
-                        onClick={() => handleCreateResourceFolder('characters')}
+                        onClick={handleCreateResourceFolder}
                       >
-                        Create characters/ folder
-                      </button>
-                    </>
-                  ) : (
-                    <div className={styles.emptyText}>Save project first</div>
-                  )
-                ) : (
-                  <div className={styles.emptyText}>No matches</div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Backgrounds */}
-        <div className={styles.nodeCategory}>
-          <div className={styles.categoryTitle}>Backgrounds</div>
-          <div className={styles.resourceList}>
-            {filteredBackgrounds.map((resource) => (
-              <div key={resource.id} className={styles.resourceItem}>
-                <img
-                  src={resource.path}
-                  alt={resource.name}
-                  className={styles.resourceThumbnail}
-                />
-                <span className={styles.resourceName}>{resource.name}</span>
-              </div>
-            ))}
-            {filteredBackgrounds.length === 0 && (
-              <div className={styles.emptyState}>
-                {backgrounds.length === 0 ? (
-                  projectPath ? (
-                    <>
-                      <div className={styles.emptyText}>Add images to backgrounds/ folder</div>
-                      <button
-                        className={styles.createFolderButton}
-                        onClick={() => handleCreateResourceFolder('backgrounds')}
-                      >
-                        Create backgrounds/ folder
+                        Create resources/images/ folder
                       </button>
                     </>
                   ) : (

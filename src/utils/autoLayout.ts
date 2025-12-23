@@ -23,6 +23,7 @@ const NODE_WIDTHS: Record<StoryNodeType, number> = {
   chapter_end: 200,
   variable: 260,
   condition: 280,
+  image: 220,
 }
 
 const DEFAULT_NODE_WIDTH = 260

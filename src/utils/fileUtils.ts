@@ -87,7 +87,7 @@ interface ProjectMeta {
   version: string
   stages: string[] // stage IDs
   gameSettings?: GameSettings
-  resources?: ProjectResource[]
+  // resources는 저장하지 않음 - 폴더에서 직접 로드
 }
 
 interface StageMeta {
@@ -116,13 +116,12 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
     throw new Error('Folder operations are only available in Tauri environment')
   }
 
-  // 1. 프로젝트 메타데이터 저장
+  // 1. 프로젝트 메타데이터 저장 (resources는 저장하지 않음 - 폴더에서 직접 로드)
   const projectMeta: ProjectMeta = {
     name: project.name,
     version: project.version,
     stages: project.stages.map(s => s.id),
     gameSettings: project.gameSettings,
-    resources: project.resources,
   }
   await writeStoryFile(`${projectDir}/project.json`, JSON.stringify(projectMeta, null, 2))
 
@@ -157,8 +156,16 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
   }
 
   // 1. 프로젝트 메타데이터 로드
-  const projectMetaJson = await readStoryFile(`${projectDir}/project.json`)
-  const projectMeta: ProjectMeta = JSON.parse(projectMetaJson)
+  let projectMeta: ProjectMeta
+  try {
+    const projectMetaJson = await readStoryFile(`${projectDir}/project.json`)
+    console.log('[loadProject] project.json raw:', projectMetaJson.substring(0, 500))
+    projectMeta = JSON.parse(projectMetaJson)
+    console.log('[loadProject] project.json parsed:', projectMeta)
+  } catch (error) {
+    console.error('[loadProject] Failed to parse project.json:', error)
+    throw new Error(`Failed to parse project.json: ${(error as Error).message}`)
+  }
 
   // 2. 각 스테이지 로드
   const stages: StoryStage[] = []
@@ -166,14 +173,30 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     const stageDir = `${projectDir}/${stageId}`
 
     // 스테이지 메타데이터
-    const stageMetaJson = await readStoryFile(`${stageDir}/stage.json`)
-    const stageMeta: StageMeta = JSON.parse(stageMetaJson)
+    let stageMeta: StageMeta
+    try {
+      const stageMetaJson = await readStoryFile(`${stageDir}/stage.json`)
+      console.log(`[loadProject] ${stageId}/stage.json raw:`, stageMetaJson.substring(0, 500))
+      stageMeta = JSON.parse(stageMetaJson)
+      console.log(`[loadProject] ${stageId}/stage.json parsed:`, stageMeta)
+    } catch (error) {
+      console.error(`[loadProject] Failed to parse ${stageDir}/stage.json:`, error)
+      throw new Error(`Failed to parse ${stageDir}/stage.json: ${(error as Error).message}`)
+    }
 
     // 각 챕터 로드
     const chapters: StoryChapter[] = []
     for (const chapterId of stageMeta.chapters) {
-      const chapterJson = await readStoryFile(`${stageDir}/${chapterId}.json`)
-      chapters.push(JSON.parse(chapterJson))
+      try {
+        const chapterJson = await readStoryFile(`${stageDir}/${chapterId}.json`)
+        console.log(`[loadProject] ${stageId}/${chapterId}.json raw:`, chapterJson.substring(0, 500))
+        const chapter = JSON.parse(chapterJson)
+        console.log(`[loadProject] ${stageId}/${chapterId}.json parsed, nodes:`, chapter.nodes?.length)
+        chapters.push(chapter)
+      } catch (error) {
+        console.error(`[loadProject] Failed to parse ${stageDir}/${chapterId}.json:`, error)
+        throw new Error(`Failed to parse ${stageDir}/${chapterId}.json: ${(error as Error).message}`)
+      }
     }
 
     stages.push({
@@ -185,31 +208,23 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     })
   }
 
-  // 3. 리소스 폴더 스캔
+  // 3. 리소스 폴더 스캔 (새로운 구조: resources/images)
   const resources: ProjectResource[] = []
 
-  // characters 폴더 스캔
-  const characterFiles = await listImageFiles(`${projectDir}/characters`)
-  for (const file of characterFiles) {
+  // resources/images 폴더 스캔
+  console.log('[loadProject] Scanning resources/images folder:', `${projectDir}/resources/images`)
+  const imageFiles = await listImageFiles(`${projectDir}/resources/images`)
+  console.log('[loadProject] Image files found:', imageFiles.length, imageFiles.map(f => f.name))
+  for (const file of imageFiles) {
     resources.push({
-      id: `char_${file.name.replace(/\.[^/.]+$/, '')}`,
+      id: `img_${file.name.replace(/\.[^/.]+$/, '')}`,
       name: file.name.replace(/\.[^/.]+$/, ''),
-      type: 'character',
+      type: 'image',
       path: file.data_url, // base64 data URL 사용
     })
   }
 
-  // backgrounds 폴더 스캔
-  const backgroundFiles = await listImageFiles(`${projectDir}/backgrounds`)
-  for (const file of backgroundFiles) {
-    resources.push({
-      id: `bg_${file.name.replace(/\.[^/.]+$/, '')}`,
-      name: file.name.replace(/\.[^/.]+$/, ''),
-      type: 'background',
-      path: file.data_url, // base64 data URL 사용
-    })
-  }
-
+  console.log('[loadProject] Total resources loaded:', resources.length)
   return {
     name: projectMeta.name,
     version: projectMeta.version,

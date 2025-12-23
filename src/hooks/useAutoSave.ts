@@ -21,6 +21,17 @@ export function useAutoSave() {
   const saveProject = useCallback(async () => {
     if (!isTauri() || !lastProjectPath) return
 
+    // 안전장치: 빈 프로젝트(노드가 하나도 없는 프로젝트)는 자동저장하지 않음
+    // 기존 프로젝트를 덮어쓰는 것을 방지
+    const totalNodes = project.stages.reduce((sum, stage) =>
+      sum + stage.chapters.reduce((chapterSum, chapter) =>
+        chapterSum + chapter.nodes.length, 0), 0)
+
+    if (totalNodes === 0) {
+      console.log('[AutoSave] Skipped: Project has no nodes (safety check)')
+      return
+    }
+
     // 변경사항 확인
     const currentState = JSON.stringify(project)
     if (currentState === lastSavedRef.current) return

@@ -50,6 +50,14 @@ function CanvasInner() {
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { status: gameStatus, gameState } = useGameStore()
 
+  // Comment 노드 드래그 시 내부 노드 추적
+  const draggedCommentRef = useRef<{
+    commentId: string
+    startPos: { x: number; y: number }
+    childNodeIds: string[]
+    childStartPositions: Map<string, { x: number; y: number }>
+  } | null>(null)
+
   // 게임에서 현재 실행 중인 노드 ID
   const playingNodeId = gameStatus === 'playing' || gameStatus === 'paused' ? gameState?.currentNodeId : null
   const { screenToFlowPosition, setViewport } = useReactFlow()
@@ -254,9 +262,103 @@ function CanvasInner() {
     }
   }, [])
 
+  // Comment 노드 내부에 있는 노드들 찾기
+  const getNodesInsideComment = useCallback((commentNode: Node<EditorNodeData>, allNodes: Node<EditorNodeData>[]) => {
+    const commentData = commentNode.data?.commentData
+    if (!commentData) return []
+
+    const commentBounds = {
+      left: commentNode.position.x,
+      top: commentNode.position.y,
+      right: commentNode.position.x + (commentData.width || 300),
+      bottom: commentNode.position.y + (commentData.height || 200),
+    }
+
+    return allNodes.filter(node => {
+      if (node.type === 'comment' || node.id === commentNode.id) return false
+      const nodeCenter = {
+        x: node.position.x + 140, // 대략적인 노드 중심
+        y: node.position.y + 90,
+      }
+      return (
+        nodeCenter.x >= commentBounds.left &&
+        nodeCenter.x <= commentBounds.right &&
+        nodeCenter.y >= commentBounds.top &&
+        nodeCenter.y <= commentBounds.bottom
+      )
+    })
+  }, [])
+
+  // 노드 드래그 시작 시 comment 노드면 내부 노드들 추적
+  const onNodeDragStart = useCallback(
+    (_: React.MouseEvent, node: Node<EditorNodeData>, draggedNodes: Node<EditorNodeData>[]) => {
+      // 단일 comment 노드 드래그일 때만 처리
+      if (node.type === 'comment' && draggedNodes.length === 1) {
+        const childNodes = getNodesInsideComment(node, nodes)
+        if (childNodes.length > 0) {
+          const childStartPositions = new Map<string, { x: number; y: number }>()
+          childNodes.forEach(child => {
+            childStartPositions.set(child.id, { ...child.position })
+          })
+          draggedCommentRef.current = {
+            commentId: node.id,
+            startPos: { ...node.position },
+            childNodeIds: childNodes.map(n => n.id),
+            childStartPositions,
+          }
+        }
+      } else {
+        draggedCommentRef.current = null
+      }
+    },
+    [nodes, getNodesInsideComment]
+  )
+
+  // 노드 드래그 중 comment 노드면 내부 노드들도 이동
+  const onNodeDrag = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      if (draggedCommentRef.current && node.id === draggedCommentRef.current.commentId) {
+        const delta = {
+          x: node.position.x - draggedCommentRef.current.startPos.x,
+          y: node.position.y - draggedCommentRef.current.startPos.y,
+        }
+
+        setNodes(nds =>
+          nds.map(n => {
+            if (draggedCommentRef.current?.childNodeIds.includes(n.id)) {
+              const startPos = draggedCommentRef.current.childStartPositions.get(n.id)
+              if (startPos) {
+                return {
+                  ...n,
+                  position: {
+                    x: startPos.x + delta.x,
+                    y: startPos.y + delta.y,
+                  },
+                }
+              }
+            }
+            return n
+          })
+        )
+      }
+    },
+    [setNodes]
+  )
+
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
     (_: React.MouseEvent, _node: Node, draggedNodes: Node[]) => {
+      // Comment 노드의 자식들 위치도 저장
+      if (draggedCommentRef.current) {
+        draggedCommentRef.current.childNodeIds.forEach(childId => {
+          const childNode = nodes.find(n => n.id === childId)
+          if (childNode) {
+            updateNode(childId, { position: childNode.position })
+          }
+        })
+        draggedCommentRef.current = null
+      }
+
       // 드래그된 모든 노드의 위치 저장
       draggedNodes.forEach((draggedNode) => {
         if (draggedNode.type === 'comment') {
@@ -267,7 +369,7 @@ function CanvasInner() {
         }
       })
     },
-    [updateNode, updateCommentPosition]
+    [updateNode, updateCommentPosition, nodes]
   )
 
   // 연결 생성
@@ -368,6 +470,8 @@ function CanvasInner() {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       onSelectionChange={onSelectionChange}
+      onNodeDragStart={onNodeDragStart}
+      onNodeDrag={onNodeDrag}
       onNodeDragStop={onNodeDragStop}
       onDragOver={onDragOver}
       onDrop={onDrop}
@@ -428,6 +532,7 @@ function CanvasInner() {
             chapter_end: '#37474F',
             variable: '#7B1FA2',
             condition: '#00796B',
+            image: '#00BCD4',
             comment: '#5C6BC0',
           }
           return colors[node.type || 'dialogue'] || '#666'

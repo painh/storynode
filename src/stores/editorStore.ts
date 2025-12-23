@@ -62,7 +62,7 @@ interface EditorState {
   updateCommentPosition: (commentId: string, position: { x: number; y: number }) => void
   deleteCommentNode: (commentId: string) => void
   getCommentNodes: () => CommentNode[]
-  wrapNodesWithComment: () => string | null
+  wrapNodesWithComment: (flowNodes?: Array<{ id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number } }>) => string | null
 }
 
 const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
@@ -72,22 +72,22 @@ const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(
 // 기본 템플릿 리소스
 const defaultTemplateResources: ProjectResource[] = [
   {
-    id: 'char_1',
-    name: 'Character 1',
-    type: 'character',
-    path: '/templates/default/characters/char1.png',
+    id: 'img_char1',
+    name: 'char1',
+    type: 'image',
+    path: '/templates/default/resources/images/char1.png',
   },
   {
-    id: 'char_2',
-    name: 'Character 2',
-    type: 'character',
-    path: '/templates/default/characters/char2.png',
+    id: 'img_char2',
+    name: 'char2',
+    type: 'image',
+    path: '/templates/default/resources/images/char2.png',
   },
   {
-    id: 'bg_1',
-    name: 'Background',
-    type: 'background',
-    path: '/templates/default/backgrounds/background.png',
+    id: 'img_background',
+    name: 'background',
+    type: 'image',
+    path: '/templates/default/resources/images/background.png',
   },
 ]
 
@@ -601,8 +601,8 @@ export const useEditorStore = create<EditorState>()(
           return chapter?.commentNodes || []
         },
 
-        // 선택된 노드들을 Comment로 감싸기
-        wrapNodesWithComment: () => {
+        // 선택된 노드들을 Comment로 감싸기 (React Flow nodes에서 실제 크기 사용)
+        wrapNodesWithComment: (flowNodes?: Array<{ id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number } }>) => {
           const state = get()
           const { selectedNodeIds, currentStageId, currentChapterId } = state
 
@@ -613,17 +613,21 @@ export const useEditorStore = create<EditorState>()(
 
           if (!chapter) return null
 
-          // 선택된 노드들의 위치 수집 (story 노드와 comment 노드 모두)
+          // 선택된 노드들의 위치 수집
           const positions: Array<{ x: number; y: number; width: number; height: number }> = []
 
-          // Story 노드들의 위치
+          // React Flow nodes에서 실제 크기 가져오기
+          const flowNodeMap = new Map(flowNodes?.map(n => [n.id, n]) || [])
+
           chapter.nodes.forEach(node => {
             if (selectedNodeIds.includes(node.id) && node.position) {
+              const flowNode = flowNodeMap.get(node.id)
+              const measured = flowNode?.measured
               positions.push({
                 x: node.position.x,
                 y: node.position.y,
-                width: 250, // 기본 노드 너비
-                height: 150, // 기본 노드 높이
+                width: measured?.width || 280,
+                height: measured?.height || 180,
               })
             }
           })
