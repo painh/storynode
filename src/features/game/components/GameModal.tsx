@@ -4,6 +4,7 @@ import { useEffect, useMemo, CSSProperties } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
 import { getThemeById, themePresets } from '../themes'
 import { GameScreen } from './GameScreen'
+import { TextAdventureScreen } from './TextAdventureScreen'
 import { DebugPanel } from './DebugPanel'
 import styles from '../styles/GameModal.module.css'
 
@@ -17,8 +18,10 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
     status,
     debug,
     currentThemeId,
+    gameMode,
     toggleDebug,
     setTheme,
+    setGameMode,
     pause,
     resume,
     restart,
@@ -102,6 +105,16 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
           </div>
 
           <div className={styles.headerRight}>
+            {/* 게임 모드 선택 */}
+            <select
+              className={styles.modeSelect}
+              value={gameMode}
+              onChange={(e) => setGameMode(e.target.value as 'visualNovel' | 'textAdventure')}
+            >
+              <option value="visualNovel">Visual Novel</option>
+              <option value="textAdventure">Text Adventure</option>
+            </select>
+
             {/* 테마 선택 */}
             <select
               className={styles.themeSelect}
@@ -156,7 +169,11 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
         {/* 컨텐츠 */}
         <div className={styles.content}>
           <div className={styles.gameArea}>
-            <GameScreen theme={theme} />
+            {gameMode === 'visualNovel' ? (
+              <GameScreen theme={theme} />
+            ) : (
+              <TextAdventureScreen theme={theme} />
+            )}
           </div>
 
           {/* 디버그 패널 */}

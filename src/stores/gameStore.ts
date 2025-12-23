@@ -1,7 +1,7 @@
 // 게임 실행 상태 관리 스토어
 
 import { create } from 'zustand'
-import type { GameStatus, GameState, DebugInfo } from '../types/game'
+import type { GameStatus, GameState, DebugInfo, GameMode } from '../types/game'
 import type { StoryNode } from '../types/story'
 import { GameEngine } from '../features/game/engine/GameEngine'
 import { useEditorStore } from './editorStore'
@@ -22,6 +22,9 @@ interface GameStoreState {
   // 테마
   currentThemeId: string
 
+  // 게임 모드
+  gameMode: GameMode
+
   // 액션
   openGame: (stageId?: string, chapterId?: string) => void
   closeGame: () => void
@@ -39,6 +42,9 @@ interface GameStoreState {
 
   // 테마
   setTheme: (themeId: string) => void
+
+  // 게임 모드
+  setGameMode: (mode: GameMode) => void
 
   // 내부 업데이트 (엔진에서 호출)
   _setCurrentNode: (node: StoryNode | null) => void
@@ -60,6 +66,8 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   },
 
   currentThemeId: 'dark',
+
+  gameMode: 'visualNovel',
 
   openGame: (stageId, chapterId) => {
     const editorState = useEditorStore.getState()
@@ -165,6 +173,10 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     set({ currentThemeId: themeId })
   },
 
+  setGameMode: (mode) => {
+    set({ gameMode: mode })
+  },
+
   _setCurrentNode: (node) => {
     set({ currentNode: node })
   },
@@ -180,3 +192,4 @@ export const useGameState = () => useGameStore((state) => state.gameState)
 export const useCurrentNode = () => useGameStore((state) => state.currentNode)
 export const useDebugInfo = () => useGameStore((state) => state.debug)
 export const useGameTheme = () => useGameStore((state) => state.currentThemeId)
+export const useGameMode = () => useGameStore((state) => state.gameMode)

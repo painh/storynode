@@ -5,6 +5,9 @@ import type { CharacterId, FactionId } from './story'
 // 게임 실행 상태
 export type GameStatus = 'idle' | 'playing' | 'paused' | 'ended'
 
+// 게임 모드 타입
+export type GameMode = 'visualNovel' | 'textAdventure'
+
 // 게임 변수 상태
 export interface GameVariables {
   gold: number

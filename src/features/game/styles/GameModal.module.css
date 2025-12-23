@@ -105,6 +105,7 @@
   opacity: 1;
 }
 
+.modeSelect,
 .themeSelect {
   padding: 6px 10px;
   background: rgba(255, 255, 255, 0.1);
@@ -115,13 +116,19 @@
   cursor: pointer;
 }
 
+.modeSelect:hover,
 .themeSelect:hover {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+.modeSelect:focus,
 .themeSelect:focus {
   border-color: var(--game-accent);
   outline: none;
+}
+
+.modeSelect {
+  min-width: 120px;
 }
 
 .content {
