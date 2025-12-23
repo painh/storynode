@@ -1,0 +1,13 @@
+.canvas {
+  flex: 1;
+  background: var(--bg-canvas);
+  outline: none;
+}
+
+.canvas :global(.react-flow__node) {
+  cursor: grab;
+}
+
+.canvas :global(.react-flow__node):active {
+  cursor: grabbing;
+}

@@ -1,0 +1,73 @@
+.node {
+  min-width: 200px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px var(--border-default);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.node:hover {
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px var(--border-light);
+}
+
+.node.selected {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 2px var(--selection-border),
+    0 0 24px var(--selection-glow);
+}
+
+.header {
+  padding: 8px 12px;
+  background: var(--header-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 14px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.body {
+  padding: 12px;
+}
+
+/* Execution Handle - Pentagon shape */
+.execHandle {
+  width: 14px !important;
+  height: 14px !important;
+  background: var(--pin-exec) !important;
+  border: 2px solid var(--bg-secondary) !important;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  cursor: crosshair;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.execHandle:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 4px var(--selection-border));
+}
+
+/* Handle positioning override */
+.node :global(.react-flow__handle-left) {
+  left: -7px;
+}
+
+.node :global(.react-flow__handle-right) {
+  right: -7px;
+}
