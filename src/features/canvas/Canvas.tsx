@@ -27,7 +27,6 @@ export function Canvas() {
     getCurrentChapter,
     createNode,
     updateNode,
-    deleteNode,
     selectedNodeIds,
     setSelectedNodes,
   } = useEditorStore()
@@ -180,18 +179,8 @@ export function Canvas() {
     [createNode, currentChapterId, updateNodePosition]
   )
 
-  // 키보드 이벤트 (삭제)
-  const onKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        selectedNodeIds.forEach(deleteNode)
-      }
-    },
-    [selectedNodeIds, deleteNode]
-  )
-
   return (
-    <div className={styles.canvas} onKeyDown={onKeyDown} tabIndex={0}>
+    <div className={styles.canvas} tabIndex={0}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

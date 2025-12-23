@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
+import { temporal } from 'zundo'
 import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType } from '../types/story'
 
 interface EditorState {
@@ -68,183 +69,198 @@ const createDefaultProject = (): StoryProject => ({
 
 export const useEditorStore = create<EditorState>()(
   persist(
-    immer((set, get) => ({
-      project: createDefaultProject(),
-      currentStageId: 'stage_1',
-      currentChapterId: 'chapter_1',
-      selectedNodeIds: [],
+    temporal(
+      immer((set, get) => ({
+        project: createDefaultProject(),
+        currentStageId: 'stage_1',
+        currentChapterId: 'chapter_1',
+        selectedNodeIds: [],
 
-      setProject: (project) => set({ project }),
+        setProject: (project) => set({ project }),
 
-      // Stage CRUD
-      createStage: (stage) => set((state) => {
-        const newStage: StoryStage = {
-          id: `stage_${Date.now()}`,
-          title: stage.title || 'New Stage',
-          description: stage.description || '',
-          partyCharacters: stage.partyCharacters || [],
-          chapters: stage.chapters || [],
-          ...stage,
-        }
-        state.project.stages.push(newStage)
-      }),
-
-      updateStage: (id, updates) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === id)
-        if (stage) {
-          Object.assign(stage, updates)
-        }
-      }),
-
-      deleteStage: (id) => set((state) => {
-        state.project.stages = state.project.stages.filter(s => s.id !== id)
-        if (state.currentStageId === id) {
-          state.currentStageId = state.project.stages[0]?.id || null
-          state.currentChapterId = state.project.stages[0]?.chapters[0]?.id || null
-        }
-      }),
-
-      setCurrentStage: (stageId) => set((state) => {
-        state.currentStageId = stageId
-        const stage = state.project.stages.find(s => s.id === stageId)
-        state.currentChapterId = stage?.chapters[0]?.id || null
-        state.selectedNodeIds = []
-      }),
-
-      // Chapter CRUD
-      createChapter: (stageId, chapter) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === stageId)
-        if (stage) {
-          const newChapter: StoryChapter = {
-            id: `chapter_${Date.now()}`,
-            title: chapter.title || 'New Chapter',
-            description: chapter.description || '',
-            nodes: chapter.nodes || [],
-            startNodeId: chapter.startNodeId || '',
-            ...chapter,
+        // Stage CRUD
+        createStage: (stage) => set((state) => {
+          const newStage: StoryStage = {
+            id: `stage_${Date.now()}`,
+            title: stage.title || 'New Stage',
+            description: stage.description || '',
+            partyCharacters: stage.partyCharacters || [],
+            chapters: stage.chapters || [],
+            ...stage,
           }
-          stage.chapters.push(newChapter)
-        }
-      }),
+          state.project.stages.push(newStage)
+        }),
 
-      updateChapter: (stageId, chapterId, updates) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === stageId)
-        const chapter = stage?.chapters.find(c => c.id === chapterId)
-        if (chapter) {
-          Object.assign(chapter, updates)
-        }
-      }),
-
-      deleteChapter: (stageId, chapterId) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === stageId)
-        if (stage) {
-          stage.chapters = stage.chapters.filter(c => c.id !== chapterId)
-          if (state.currentChapterId === chapterId) {
-            state.currentChapterId = stage.chapters[0]?.id || null
+        updateStage: (id, updates) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === id)
+          if (stage) {
+            Object.assign(stage, updates)
           }
-        }
-      }),
+        }),
 
-      setCurrentChapter: (chapterId) => set((state) => {
-        state.currentChapterId = chapterId
-        state.selectedNodeIds = []
-      }),
+        deleteStage: (id) => set((state) => {
+          state.project.stages = state.project.stages.filter(s => s.id !== id)
+          if (state.currentStageId === id) {
+            state.currentStageId = state.project.stages[0]?.id || null
+            state.currentChapterId = state.project.stages[0]?.chapters[0]?.id || null
+          }
+        }),
 
-      // Node CRUD
-      createNode: (type, position) => {
-        const state = get()
-        const stage = state.project.stages.find(s => s.id === state.currentStageId)
-        const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+        setCurrentStage: (stageId) => set((state) => {
+          state.currentStageId = stageId
+          const stage = state.project.stages.find(s => s.id === stageId)
+          state.currentChapterId = stage?.chapters[0]?.id || null
+          state.selectedNodeIds = []
+        }),
 
-        if (!chapter) return null
+        // Chapter CRUD
+        createChapter: (stageId, chapter) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === stageId)
+          if (stage) {
+            const newChapter: StoryChapter = {
+              id: `chapter_${Date.now()}`,
+              title: chapter.title || 'New Chapter',
+              description: chapter.description || '',
+              nodes: chapter.nodes || [],
+              startNodeId: chapter.startNodeId || '',
+              ...chapter,
+            }
+            stage.chapters.push(newChapter)
+          }
+        }),
 
-        const newNode: StoryNode = {
-          id: generateId(),
-          type,
-        }
+        updateChapter: (stageId, chapterId, updates) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === stageId)
+          const chapter = stage?.chapters.find(c => c.id === chapterId)
+          if (chapter) {
+            Object.assign(chapter, updates)
+          }
+        }),
 
-        if (type === 'dialogue') {
-          newNode.text = ''
-          newNode.speaker = ''
-        } else if (type === 'choice') {
-          newNode.text = ''
-          newNode.choices = []
-        } else if (type === 'chapter_end') {
-          newNode.text = ''
-        }
+        deleteChapter: (stageId, chapterId) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === stageId)
+          if (stage) {
+            stage.chapters = stage.chapters.filter(c => c.id !== chapterId)
+            if (state.currentChapterId === chapterId) {
+              state.currentChapterId = stage.chapters[0]?.id || null
+            }
+          }
+        }),
 
-        set((state) => {
+        setCurrentChapter: (chapterId) => set((state) => {
+          state.currentChapterId = chapterId
+          state.selectedNodeIds = []
+        }),
+
+        // Node CRUD
+        createNode: (type, position) => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+
+          if (!chapter) return null
+
+          const newNode: StoryNode = {
+            id: generateId(),
+            type,
+          }
+
+          if (type === 'dialogue') {
+            newNode.text = ''
+            newNode.speaker = ''
+          } else if (type === 'choice') {
+            newNode.text = ''
+            newNode.choices = []
+          } else if (type === 'chapter_end') {
+            newNode.text = ''
+          }
+
+          set((state) => {
+            const stage = state.project.stages.find(s => s.id === state.currentStageId)
+            const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+            if (chapter) {
+              chapter.nodes.push(newNode)
+              // 첫 노드면 startNodeId로 설정
+              if (chapter.nodes.length === 1) {
+                chapter.startNodeId = newNode.id
+              }
+            }
+          })
+
+          return newNode
+        },
+
+        updateNode: (nodeId, updates) => set((state) => {
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          const node = chapter?.nodes.find(n => n.id === nodeId)
+          if (node) {
+            Object.assign(node, updates)
+          }
+        }),
+
+        deleteNode: (nodeId) => set((state) => {
           const stage = state.project.stages.find(s => s.id === state.currentStageId)
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
           if (chapter) {
-            chapter.nodes.push(newNode)
-            // 첫 노드면 startNodeId로 설정
-            if (chapter.nodes.length === 1) {
-              chapter.startNodeId = newNode.id
+            chapter.nodes = chapter.nodes.filter(n => n.id !== nodeId)
+            // 삭제된 노드를 참조하는 nextNodeId들 정리
+            chapter.nodes.forEach(node => {
+              if (node.nextNodeId === nodeId) {
+                node.nextNodeId = undefined
+              }
+              if (node.choices) {
+                node.choices.forEach(choice => {
+                  if (choice.nextNodeId === nodeId) {
+                    choice.nextNodeId = ''
+                  }
+                })
+              }
+            })
+            if (chapter.startNodeId === nodeId) {
+              chapter.startNodeId = chapter.nodes[0]?.id || ''
             }
+            state.selectedNodeIds = state.selectedNodeIds.filter(id => id !== nodeId)
           }
-        })
+        }),
 
-        return newNode
-      },
+        // Selection
+        setSelectedNodes: (nodeIds) => set({ selectedNodeIds: nodeIds }),
+        clearSelection: () => set({ selectedNodeIds: [] }),
 
-      updateNode: (nodeId, updates) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === state.currentStageId)
-        const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
-        const node = chapter?.nodes.find(n => n.id === nodeId)
-        if (node) {
-          Object.assign(node, updates)
-        }
-      }),
+        // Helpers
+        getCurrentStage: () => {
+          const state = get()
+          return state.project.stages.find(s => s.id === state.currentStageId)
+        },
 
-      deleteNode: (nodeId) => set((state) => {
-        const stage = state.project.stages.find(s => s.id === state.currentStageId)
-        const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
-        if (chapter) {
-          chapter.nodes = chapter.nodes.filter(n => n.id !== nodeId)
-          // 삭제된 노드를 참조하는 nextNodeId들 정리
-          chapter.nodes.forEach(node => {
-            if (node.nextNodeId === nodeId) {
-              node.nextNodeId = undefined
-            }
-            if (node.choices) {
-              node.choices.forEach(choice => {
-                if (choice.nextNodeId === nodeId) {
-                  choice.nextNodeId = ''
-                }
-              })
-            }
-          })
-          if (chapter.startNodeId === nodeId) {
-            chapter.startNodeId = chapter.nodes[0]?.id || ''
-          }
-          state.selectedNodeIds = state.selectedNodeIds.filter(id => id !== nodeId)
-        }
-      }),
+        getCurrentChapter: () => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          return stage?.chapters.find(c => c.id === state.currentChapterId)
+        },
 
-      // Selection
-      setSelectedNodes: (nodeIds) => set({ selectedNodeIds: nodeIds }),
-      clearSelection: () => set({ selectedNodeIds: [] }),
-
-      // Helpers
-      getCurrentStage: () => {
-        const state = get()
-        return state.project.stages.find(s => s.id === state.currentStageId)
-      },
-
-      getCurrentChapter: () => {
-        const state = get()
-        const stage = state.project.stages.find(s => s.id === state.currentStageId)
-        return stage?.chapters.find(c => c.id === state.currentChapterId)
-      },
-
-      getNodeById: (nodeId) => {
-        const state = get()
-        const stage = state.project.stages.find(s => s.id === state.currentStageId)
-        const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
-        return chapter?.nodes.find(n => n.id === nodeId)
-      },
-    })),
+        getNodeById: (nodeId) => {
+          const state = get()
+          const stage = state.project.stages.find(s => s.id === state.currentStageId)
+          const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
+          return chapter?.nodes.find(n => n.id === nodeId)
+        },
+      })),
+      {
+        // Undo/Redo 설정
+        limit: 50, // 최대 50개 히스토리
+        partialize: (state) => {
+          // project 데이터만 Undo/Redo 대상으로
+          const { project } = state
+          return { project }
+        },
+        equality: (pastState, currentState) => {
+          // 깊은 비교로 실제 변경만 기록
+          return JSON.stringify(pastState) === JSON.stringify(currentState)
+        },
+      }
+    ),
     {
       name: 'storynode-editor',
       partialize: (state) => ({
@@ -255,3 +271,14 @@ export const useEditorStore = create<EditorState>()(
     }
   )
 )
+
+// Undo/Redo 훅 export
+export const useTemporalStore = <T>(
+  selector: (state: {
+    pastStates: EditorState[]
+    futureStates: EditorState[]
+    undo: () => void
+    redo: () => void
+    clear: () => void
+  }) => T
+) => useEditorStore.temporal(selector)
