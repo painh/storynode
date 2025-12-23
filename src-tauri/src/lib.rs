@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -202,6 +202,17 @@ pub fn run() {
             println!("[Tauri] App started");
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app_handle, event| {
+            if let RunEvent::WindowEvent { label, event: WindowEvent::CloseRequested { api, .. }, .. } = event {
+                // 창 닫기 요청 시 기본 동작 방지하고 프론트엔드에 알림
+                api.prevent_close();
+
+                // 프론트엔드에 이벤트 발송
+                if let Some(window) = app_handle.get_webview_window(&label) {
+                    let _ = window.emit("tauri://close-requested", ());
+                }
+            }
+        });
 }

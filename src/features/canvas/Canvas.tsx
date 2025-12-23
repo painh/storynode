@@ -313,6 +313,34 @@ function CanvasInner() {
     }
   }, [chapter, updateNode])
 
+  // 모든 노드/엣지 선택 이벤트 리스너
+  useEffect(() => {
+    const handleSelectAll = () => {
+      if (!setNodesRef.current) return
+
+      // 모든 노드 선택
+      setNodesRef.current((nds) =>
+        nds.map((node) => ({
+          ...node,
+          selected: true,
+        }))
+      )
+
+      // 모든 엣지 선택
+      setEdges((eds) =>
+        eds.map((edge) => ({
+          ...edge,
+          selected: true,
+        }))
+      )
+    }
+
+    window.addEventListener('storynode:select-all', handleSelectAll)
+    return () => {
+      window.removeEventListener('storynode:select-all', handleSelectAll)
+    }
+  }, [setEdges])
+
   // 검색 결과로 이동 (highlightedNodeId 또는 navigateTimestamp 변경 시)
   useEffect(() => {
     if (!highlightedNodeId || !chapter || !navigateTimestamp) {

@@ -5,7 +5,7 @@ import { isTauri } from '../utils/fileUtils'
 /**
  * 저장하지 않은 변경사항이 있을 때 종료 경고를 표시하는 훅
  * - 웹: beforeunload 이벤트로 브라우저 종료 시 경고
- * - Tauri: window close 이벤트로 앱 종료 시 경고
+ * - Tauri: Rust에서 보낸 close-requested 이벤트로 앱 종료 시 경고
  */
 export function useUnsavedChangesWarning() {
   const isDirty = useEditorStore((state) => state.isDirty)
@@ -28,7 +28,7 @@ export function useUnsavedChangesWarning() {
     }
   }, [handleBeforeUnload])
 
-  // Tauri 버전: 창 닫기 이벤트 처리
+  // Tauri 버전: Rust에서 보낸 close-requested 이벤트 처리
   useEffect(() => {
     if (!isTauri()) return
 
@@ -36,17 +36,16 @@ export function useUnsavedChangesWarning() {
 
     const setupTauriCloseHandler = async () => {
       try {
+        const { listen } = await import('@tauri-apps/api/event')
         const { getCurrentWindow } = await import('@tauri-apps/api/window')
         const currentWindow = getCurrentWindow()
 
-        unlisten = await currentWindow.onCloseRequested(async (event) => {
+        // Rust에서 보내는 tauri://close-requested 이벤트 수신
+        unlisten = await listen('tauri://close-requested', async () => {
           // isDirty 상태를 직접 스토어에서 가져옴 (클로저 문제 방지)
           const currentIsDirty = useEditorStore.getState().isDirty
 
           if (currentIsDirty) {
-            // 닫기 기본 동작 방지
-            event.preventDefault()
-
             // Tauri 다이얼로그로 확인
             const { confirm } = await import('@tauri-apps/plugin-dialog')
             const confirmed = await confirm(
@@ -63,6 +62,9 @@ export function useUnsavedChangesWarning() {
               // 사용자가 종료를 확인하면 창 닫기
               await currentWindow.destroy()
             }
+          } else {
+            // 변경사항 없으면 바로 닫기
+            await currentWindow.destroy()
           }
         })
       } catch (error) {

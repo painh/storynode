@@ -37,13 +37,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   const editorTemporal = useEditorStore.temporal.getState()
   const canvasTemporal = useCanvasStore.temporal.getState()
 
-  // Cmd+A: 모든 노드 선택
+  // Cmd+A: 모든 노드 선택 (React Flow 이벤트로 처리)
   const selectAllNodes = useCallback(() => {
-    const { getCurrentChapter, setSelectedNodes } = useEditorStore.getState()
-    const chapter = getCurrentChapter()
-    if (chapter) {
-      setSelectedNodes(chapter.nodes.map(n => n.id))
-    }
+    window.dispatchEvent(new CustomEvent('storynode:select-all'))
   }, [])
 
   // Delete: 선택된 노드 삭제 (한 번에 삭제하여 Undo 시 한 번에 복원)
