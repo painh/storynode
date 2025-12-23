@@ -18,6 +18,7 @@ export const ChapterEndNode = memo(function ChapterEndNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={false}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         <div className={styles.text}>

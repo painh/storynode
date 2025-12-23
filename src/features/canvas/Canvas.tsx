@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -20,6 +20,7 @@ import '@xyflow/react/dist/style.css'
 import { useEditorStore } from '../../stores/editorStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useSearchStore } from '../../stores/searchStore'
+import { useGameStore } from '../../stores/gameStore'
 import { nodeTypes } from '../nodes/nodeRegistry'
 import { SmartEdge } from '../edges/SmartEdge'
 import { autoLayoutNodes } from '../../utils/autoLayout'
@@ -41,8 +42,13 @@ function CanvasInner() {
     setSelectedNodes,
   } = useEditorStore()
 
-  const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition } = useCanvasStore()
+  const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition, snapGrid, showGrid, setSnapGrid, setShowGrid } = useCanvasStore()
+  const [isShiftPressed, setIsShiftPressed] = useState(false)
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
+  const { status: gameStatus, gameState } = useGameStore()
+
+  // 게임에서 현재 실행 중인 노드 ID
+  const playingNodeId = gameStatus === 'playing' || gameStatus === 'paused' ? gameState?.currentNodeId : null
   const { screenToFlowPosition, setViewport } = useReactFlow()
 
   const chapter = getCurrentChapter()
@@ -78,6 +84,7 @@ function CanvasInner() {
         data: {
           storyNode,
           label: storyNode.type,
+          isPlaying: playingNodeId === storyNode.id,
         },
         selected: selectedNodeIds.includes(storyNode.id),
       }
@@ -98,7 +105,7 @@ function CanvasInner() {
 
     return [...commentFlowNodes, ...storyNodes]
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter, selectedNodeIds, getNodePosition, commentNodesKey])
+  }, [chapter, selectedNodeIds, getNodePosition, commentNodesKey, playingNodeId])
 
   // 연결 정보를 Edge로 변환
   const initialEdges = useMemo((): Edge[] => {
@@ -171,12 +178,12 @@ function CanvasInner() {
     setNodesRef.current = setNodes
   }, [setNodes])
 
-  // 챕터 변경 시 노드/엣지 업데이트
+  // 챕터/노드 변경 시 노드/엣지 업데이트
   useEffect(() => {
     setNodes(initialNodes)
     setEdges(initialEdges)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChapterId, commentNodesKey])
+  }, [currentChapterId, commentNodesKey, initialNodes, initialEdges])
 
   // 자동 정렬 이벤트 리스너
   useEffect(() => {
@@ -208,20 +215,53 @@ function CanvasInner() {
 
   // 검색 결과로 이동 (highlightedNodeId 또는 navigateTimestamp 변경 시)
   useEffect(() => {
-    if (!highlightedNodeId || !currentChapterId || !navigateTimestamp) return
+    console.log('[Search Navigate] Effect triggered:', {
+      highlightedNodeId,
+      navigateTimestamp,
+      currentChapterId,
+    })
+
+    if (!highlightedNodeId || !currentChapterId || !navigateTimestamp) {
+      console.log('[Search Navigate] Early return - missing values')
+      return
+    }
 
     const nodePosition = getNodePosition(currentChapterId, highlightedNodeId)
+    console.log('[Search Navigate] Node position:', nodePosition)
+
     if (nodePosition) {
+      const targetViewport = {
+        x: -nodePosition.x + 400,
+        y: -nodePosition.y + 300,
+        zoom: 1,
+      }
+      console.log('[Search Navigate] Setting viewport to:', targetViewport)
+
       // 약간의 딜레이 후 뷰포트 이동 (챕터 전환 시 렌더링 대기)
       setTimeout(() => {
-        setViewport({
-          x: -nodePosition.x + 400,
-          y: -nodePosition.y + 300,
-          zoom: 1,
-        }, { duration: 300 })
+        console.log('[Search Navigate] Calling setViewport now')
+        setViewport(targetViewport, { duration: 300 })
       }, 100)
+    } else {
+      console.log('[Search Navigate] No position found for node')
     }
   }, [highlightedNodeId, navigateTimestamp, currentChapterId, getNodePosition, setViewport])
+
+  // Shift 키 감지 (스냅 그리드 활성화용)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftPressed(true)
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') setIsShiftPressed(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
 
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
@@ -340,8 +380,8 @@ function CanvasInner() {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
-      snapToGrid
-      snapGrid={[20, 20]}
+      snapToGrid={isShiftPressed}
+      snapGrid={[snapGrid, snapGrid]}
       panOnDrag={[1, 2]}
       selectionOnDrag
       selectionMode={SelectionMode.Partial}
@@ -353,12 +393,34 @@ function CanvasInner() {
       }}
       proOptions={{ hideAttribution: true }}
     >
-      <Background
-        variant={BackgroundVariant.Dots}
-        gap={20}
-        size={1}
-        color="#333"
-      />
+{showGrid && (
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={snapGrid}
+          size={1}
+          color="#444"
+        />
+      )}
+      {/* 그리드 설정 툴바 */}
+      <div className={styles.gridToolbar}>
+        <label>
+          <input
+            type="checkbox"
+            checked={showGrid}
+            onChange={(e) => setShowGrid(e.target.checked)}
+          />
+          Grid
+        </label>
+        <input
+          type="number"
+          value={snapGrid}
+          onChange={(e) => setSnapGrid(Math.max(1, parseInt(e.target.value) || 1))}
+          min={1}
+          max={100}
+          style={{ width: 50 }}
+        />
+        <span style={{ fontSize: 11, color: '#888' }}>Shift+Drag to snap</span>
+      </div>
       <Controls />
       <MiniMap
         nodeColor={(node) => {

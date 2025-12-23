@@ -43,6 +43,7 @@ export const DialogueNode = memo(function DialogueNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         {displaySpeaker && (

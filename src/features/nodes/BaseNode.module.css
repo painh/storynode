@@ -23,6 +23,38 @@
     0 0 24px var(--selection-glow);
 }
 
+/* 게임 실행 중 현재 노드 하이라이트 */
+.node.playing {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 3px #4CAF50,
+    0 0 32px rgba(76, 175, 80, 0.6);
+  animation: playingPulse 1.5s ease-in-out infinite;
+}
+
+.node.playing.selected {
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 0 3px #4CAF50,
+    0 0 32px rgba(76, 175, 80, 0.6),
+    0 0 48px var(--selection-glow);
+}
+
+@keyframes playingPulse {
+  0%, 100% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.6),
+      0 0 0 3px #4CAF50,
+      0 0 32px rgba(76, 175, 80, 0.6);
+  }
+  50% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.6),
+      0 0 0 3px #81C784,
+      0 0 48px rgba(76, 175, 80, 0.8);
+  }
+}
+
 .header {
   padding: 8px 12px;
   background: var(--header-color);

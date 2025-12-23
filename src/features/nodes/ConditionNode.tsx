@@ -47,6 +47,7 @@ export const ConditionNode = memo(function ConditionNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={false}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         {branches.length === 0 ? (

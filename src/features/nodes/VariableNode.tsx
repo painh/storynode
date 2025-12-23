@@ -48,6 +48,7 @@ export const VariableNode = memo(function VariableNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         {operations.length === 0 ? (

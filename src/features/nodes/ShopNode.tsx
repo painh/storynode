@@ -5,6 +5,7 @@ import type { EditorNodeData } from '../../types/editor'
 import styles from './ShopNode.module.css'
 
 export const ShopNode = memo(function ShopNode({
+  data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   return (
@@ -13,6 +14,7 @@ export const ShopNode = memo(function ShopNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         <div className={styles.icon}>🛒</div>

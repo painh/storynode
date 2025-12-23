@@ -11,6 +11,7 @@ interface BaseNodeProps {
   children: ReactNode
   hasInputExec?: boolean
   hasOutputExec?: boolean
+  isPlaying?: boolean
 }
 
 export const BaseNode = memo(function BaseNode({
@@ -19,6 +20,7 @@ export const BaseNode = memo(function BaseNode({
   children,
   hasInputExec = true,
   hasOutputExec = true,
+  isPlaying = false,
 }: BaseNodeProps) {
   const { nodes } = useTranslation()
   const headerColor = NODE_COLORS[nodeType]
@@ -27,7 +29,7 @@ export const BaseNode = memo(function BaseNode({
 
   return (
     <div
-      className={`${styles.node} ${selected ? styles.selected : ''}`}
+      className={`${styles.node} ${selected ? styles.selected : ''} ${isPlaying ? styles.playing : ''}`}
       style={{ '--header-color': headerColor } as React.CSSProperties}
     >
       {/* Input Execution Pin */}

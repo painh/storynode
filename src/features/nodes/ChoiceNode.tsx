@@ -37,6 +37,7 @@ export const ChoiceNode = memo(function ChoiceNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={false}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         {displayPrompt && (

@@ -4,11 +4,13 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { SearchModal } from './components/common/SearchModal'
+import { GameModal } from './features/game/components'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useAutoSave } from './hooks/useAutoSave'
 import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
 import { useSearchStore } from './stores/searchStore'
+import { useGameStore } from './stores/gameStore'
 import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
 import styles from './App.module.css'
 
@@ -17,6 +19,7 @@ function App() {
   const { loadSettings, settings, isLoaded } = useSettingsStore()
   const { setProject } = useEditorStore()
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
+  const { isModalOpen: isGameModalOpen, closeGame } = useGameStore()
 
   // 전역 단축키 활성화
   useKeyboardShortcuts()
@@ -63,6 +66,7 @@ function App() {
         <Inspector />
       </div>
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
+      <GameModal isOpen={isGameModalOpen} onClose={closeGame} />
     </div>
   )
 }

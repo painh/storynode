@@ -21,6 +21,7 @@ export interface EditorNodeData extends Record<string, unknown> {
   storyNode?: StoryNode
   commentData?: CommentNodeData
   label: string
+  isPlaying?: boolean // 게임 실행 중 현재 노드 표시
 }
 
 // React Flow 노드 타입

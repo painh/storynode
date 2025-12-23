@@ -20,6 +20,7 @@ export const BattleNode = memo(function BattleNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         <div className={styles.battleId}>

@@ -20,6 +20,7 @@ export const EventNode = memo(function EventNode({
       selected={selected}
       hasInputExec={true}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         <div className={styles.eventId}>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSearchStore } from '../../stores/searchStore'
+import { useGameStore } from '../../stores/gameStore'
 import {
   downloadJson,
   isTauri,
@@ -20,13 +21,16 @@ export function Header() {
   const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject } = useEditorStore()
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
+  const { openGame, status: gameStatus } = useGameStore()
   const { menu, search: searchT } = useTranslation()
   const currentStage = getCurrentStage()
   const [showFileMenu, setShowFileMenu] = useState(false)
   const [showEditMenu, setShowEditMenu] = useState(false)
   const [showViewMenu, setShowViewMenu] = useState(false)
+  const [showHelpMenu, setShowHelpMenu] = useState(false)
   const [showRecentSubmenu, setShowRecentSubmenu] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -221,6 +225,7 @@ export function Header() {
                 setShowFileMenu(!showFileMenu)
                 setShowEditMenu(false)
                 setShowViewMenu(false)
+                setShowHelpMenu(false)
               }}
             >
               File
@@ -296,6 +301,7 @@ export function Header() {
                 setShowEditMenu(!showEditMenu)
                 setShowFileMenu(false)
                 setShowViewMenu(false)
+                setShowHelpMenu(false)
               }}
             >
               Edit
@@ -366,6 +372,7 @@ export function Header() {
                 setShowViewMenu(!showViewMenu)
                 setShowFileMenu(false)
                 setShowEditMenu(false)
+                setShowHelpMenu(false)
               }}
             >
               View
@@ -404,6 +411,32 @@ export function Header() {
               </div>
             )}
           </div>
+
+          {/* Help Menu */}
+          <div className={styles.menuWrapper}>
+            <button
+              className={styles.menuItem}
+              onClick={() => {
+                setShowHelpMenu(!showHelpMenu)
+                setShowFileMenu(false)
+                setShowEditMenu(false)
+                setShowViewMenu(false)
+              }}
+            >
+              Help
+            </button>
+            {showHelpMenu && (
+              <div className={styles.dropdown}>
+                <button onClick={() => {
+                  setShowHelpModal(true)
+                  setShowHelpMenu(false)
+                }}>
+                  <span>Keyboard Shortcuts</span>
+                  <span className={styles.shortcut}>?</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -435,6 +468,16 @@ export function Header() {
             </option>
           ))}
         </select>
+
+        <button
+          className={styles.playButton}
+          onClick={() => openGame()}
+          disabled={gameStatus !== 'idle'}
+          title="Play Story (F5)"
+        >
+          <span className={styles.playIcon}>▶</span>
+          <span>Play</span>
+        </button>
       </div>
 
       {/* Hidden file input for import */}
@@ -451,6 +494,56 @@ export function Header() {
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
       />
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowHelpModal(false)}>
+          <div className={styles.helpModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.helpHeader}>
+              <h2>Keyboard Shortcuts</h2>
+              <button className={styles.closeButton} onClick={() => setShowHelpModal(false)}>×</button>
+            </div>
+            <div className={styles.helpContent}>
+              <section>
+                <h3>General</h3>
+                <div className={styles.shortcutList}>
+                  <div><kbd>⌘</kbd> + <kbd>N</kbd><span>New Project</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>O</kbd><span>Open Folder</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>S</kbd><span>Save</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>Z</kbd><span>Undo</span></div>
+                  <div><kbd>⇧</kbd> + <kbd>⌘</kbd> + <kbd>Z</kbd><span>Redo</span></div>
+                </div>
+              </section>
+              <section>
+                <h3>Canvas</h3>
+                <div className={styles.shortcutList}>
+                  <div><kbd>⌘</kbd> + <kbd>L</kbd><span>Auto Layout</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>F</kbd><span>Search in Canvas</span></div>
+                  <div><kbd>⇧</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd><span>Search All</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>A</kbd><span>Select All</span></div>
+                  <div><kbd>Delete</kbd> / <kbd>⌫</kbd><span>Delete Selected</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>C</kbd><span>Copy</span></div>
+                  <div><kbd>⌘</kbd> + <kbd>V</kbd><span>Paste</span></div>
+                </div>
+              </section>
+              <section>
+                <h3>Node Dragging</h3>
+                <div className={styles.shortcutList}>
+                  <div><kbd>Drag</kbd><span>Free movement (1px)</span></div>
+                  <div><kbd>⇧</kbd> + <kbd>Drag</kbd><span>Snap to grid</span></div>
+                </div>
+              </section>
+              <section>
+                <h3>Playback</h3>
+                <div className={styles.shortcutList}>
+                  <div><kbd>F5</kbd><span>Play Story</span></div>
+                  <div><kbd>Esc</kbd><span>Stop Playback</span></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

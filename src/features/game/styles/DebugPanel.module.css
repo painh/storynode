@@ -1,0 +1,253 @@
+/* 디버그 패널 스타일 */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+}
+
+.header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--game-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--game-debug-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.toggleButton {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--game-debug-text);
+  opacity: 0.5;
+  transition: all 0.15s;
+}
+
+.toggleButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.8;
+}
+
+.toggleButton.active {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--game-debug-text);
+  opacity: 0.6;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 현재 노드 정보 */
+.nodeInfo {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.nodeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.nodeRow:last-child {
+  margin-bottom: 0;
+}
+
+.nodeLabel {
+  color: var(--game-debug-text);
+  opacity: 0.6;
+}
+
+.nodeValue {
+  color: var(--game-debug-text);
+  font-weight: 500;
+}
+
+.nodeId {
+  font-size: 10px;
+  color: var(--game-accent);
+  word-break: break-all;
+}
+
+.nodeType {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.nodeType.dialogue { background: rgba(74, 111, 165, 0.3); color: #6B9AE8; }
+.nodeType.choice { background: rgba(139, 74, 107, 0.3); color: #C17BA8; }
+.nodeType.start { background: rgba(46, 125, 50, 0.3); color: #81C784; }
+.nodeType.battle { background: rgba(198, 40, 40, 0.3); color: #EF5350; }
+.nodeType.shop { background: rgba(46, 125, 50, 0.3); color: #81C784; }
+.nodeType.event { background: rgba(249, 168, 37, 0.3); color: #FFD54F; }
+.nodeType.chapter_end { background: rgba(55, 71, 79, 0.3); color: #90A4AE; }
+.nodeType.variable { background: rgba(156, 39, 176, 0.3); color: #CE93D8; }
+.nodeType.condition { background: rgba(0, 188, 212, 0.3); color: #4DD0E1; }
+
+/* 변수 목록 */
+.variablesList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.variableRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.variableName {
+  color: var(--game-debug-text);
+  opacity: 0.8;
+}
+
+.variableValue {
+  color: var(--game-accent);
+  font-weight: 500;
+}
+
+.variableValue.positive {
+  color: #81C784;
+}
+
+.variableValue.negative {
+  color: #EF5350;
+}
+
+/* 플래그 목록 */
+.flagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.flagItem {
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--game-debug-text);
+}
+
+.flagItem.true {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81C784;
+}
+
+.flagItem.false {
+  background: rgba(244, 67, 54, 0.2);
+  color: #EF5350;
+}
+
+/* 히스토리 */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyItem {
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  border-left: 2px solid var(--game-border);
+}
+
+.historyItem.choice {
+  border-left-color: #C17BA8;
+}
+
+.historyItem.dialogue {
+  border-left-color: #6B9AE8;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.historySpeaker {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--game-debug-text);
+}
+
+.historyTime {
+  font-size: 9px;
+  color: var(--game-debug-text);
+  opacity: 0.4;
+}
+
+.historyText {
+  font-size: 11px;
+  color: var(--game-debug-text);
+  opacity: 0.8;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.historyChoice {
+  font-size: 10px;
+  color: #C17BA8;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* 빈 상태 */
+.emptyMessage {
+  font-size: 11px;
+  color: var(--game-debug-text);
+  opacity: 0.4;
+  text-align: center;
+  padding: 12px;
+}

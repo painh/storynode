@@ -1,7 +1,9 @@
 import { useEffect, useCallback, useRef } from 'react'
 import { useEditorStore } from '../stores/editorStore'
+import { useCanvasStore } from '../stores/canvasStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSearchStore } from '../stores/searchStore'
+import { useGameStore } from '../stores/gameStore'
 import {
   isTauri,
   saveProjectToFolder,
@@ -31,8 +33,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     setProject,
   } = useEditorStore()
 
-  // Undo/Redo from temporal store
-  const { undo, redo } = useEditorStore.temporal.getState()
+  // Undo/Redo from temporal store (editor + canvas)
+  const editorTemporal = useEditorStore.temporal.getState()
+  const canvasTemporal = useCanvasStore.temporal.getState()
 
   // Cmd+A: 모든 노드 선택
   const selectAllNodes = useCallback(() => {
@@ -55,15 +58,17 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     clearSelection()
   }, [clearSelection])
 
-  // Cmd+Z: Undo
+  // Cmd+Z: Undo (editor와 canvas 동시에)
   const handleUndo = useCallback(() => {
-    undo()
-  }, [undo])
+    editorTemporal.undo()
+    canvasTemporal.undo()
+  }, [editorTemporal, canvasTemporal])
 
-  // Cmd+Shift+Z: Redo
+  // Cmd+Shift+Z: Redo (editor와 canvas 동시에)
   const handleRedo = useCallback(() => {
-    redo()
-  }, [redo])
+    editorTemporal.redo()
+    canvasTemporal.redo()
+  }, [editorTemporal, canvasTemporal])
 
   // Cmd+L: 자동 정렬
   const handleAutoLayout = useCallback(() => {
@@ -78,6 +83,97 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   // Cmd+Shift+F: 전체 검색
   const handleGlobalSearch = useCallback(() => {
     useSearchStore.getState().openSearch('global')
+  }, [])
+
+  // F5: 게임 실행
+  const handlePlayGame = useCallback(() => {
+    const gameStore = useGameStore.getState()
+    if (gameStore.status === 'idle') {
+      gameStore.openGame()
+    } else if (gameStore.status === 'paused') {
+      gameStore.resume()
+    }
+  }, [])
+
+  // Cmd+C: 복사
+  const handleCopy = useCallback(() => {
+    const { selectedNodeIds, getCurrentChapter } = useEditorStore.getState()
+    const { getNodePosition, getCommentNodes, setClipboard } = useCanvasStore.getState()
+    const chapter = getCurrentChapter()
+
+    if (!chapter || selectedNodeIds.length === 0) return
+
+    const commentNodes = getCommentNodes(chapter.id)
+
+    // 선택된 노드들의 데이터와 위치 수집
+    const nodesToCopy = selectedNodeIds
+      .map(id => {
+        const node = chapter.nodes.find(n => n.id === id)
+        if (node) {
+          return {
+            node,
+            position: getNodePosition(chapter.id, id) || { x: 0, y: 0 },
+          }
+        }
+        return null
+      })
+      .filter((item): item is { node: typeof chapter.nodes[0]; position: { x: number; y: number } } => item !== null)
+
+    // 선택된 Comment 노드들 수집
+    const commentsToCopy = commentNodes.filter(c => selectedNodeIds.includes(c.id))
+
+    if (nodesToCopy.length === 0 && commentsToCopy.length === 0) return
+
+    setClipboard({
+      nodes: nodesToCopy,
+      comments: commentsToCopy,
+    })
+  }, [])
+
+  // Cmd+V: 붙여넣기
+  const handlePaste = useCallback(() => {
+    const { currentChapterId, pasteNodes } = useEditorStore.getState()
+    const { getClipboard, updateNodePosition } = useCanvasStore.getState()
+
+    if (!currentChapterId) return
+
+    const clipboard = getClipboard()
+    if (!clipboard) return
+
+    // 붙여넣기 오프셋 (기존 위치에서 약간 이동)
+    const offset = { x: 50, y: 50 }
+
+    // Story 노드 붙여넣기
+    if (clipboard.nodes.length > 0) {
+      const nodesWithOffset = clipboard.nodes.map(item => ({
+        node: item.node,
+        position: {
+          x: item.position.x + offset.x,
+          y: item.position.y + offset.y,
+        },
+      }))
+
+      const newIds = pasteNodes(nodesWithOffset)
+
+      // 새 노드들의 위치 저장
+      nodesWithOffset.forEach((item, index) => {
+        if (newIds[index]) {
+          updateNodePosition(currentChapterId, newIds[index], item.position)
+        }
+      })
+    }
+
+    // Comment 노드 붙여넣기
+    if (clipboard.comments.length > 0) {
+      clipboard.comments.forEach(comment => {
+        const newId = useCanvasStore.getState().createCommentNode(currentChapterId, {
+          x: comment.position.x + offset.x,
+          y: comment.position.y + offset.y,
+        })
+        // Comment 데이터 업데이트
+        useCanvasStore.getState().updateCommentNode(currentChapterId, newId, comment.data)
+      })
+    }
   }, [])
 
   // Cmd+S: 저장
@@ -255,8 +351,29 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         return
       }
 
+      // F5: 게임 실행
+      if (e.key === 'F5') {
+        e.preventDefault()
+        handlePlayGame()
+        return
+      }
+
       // 입력 필드에 포커스가 있으면 아래 단축키는 무시
       if (isInputFocused) return
+
+      // Cmd+C: 복사
+      if (isMod && e.key === 'c') {
+        e.preventDefault()
+        handleCopy()
+        return
+      }
+
+      // Cmd+V: 붙여넣기
+      if (isMod && e.key === 'v') {
+        e.preventDefault()
+        handlePaste()
+        return
+      }
 
       // Cmd+A: 모든 노드 선택
       if (isMod && e.key === 'a') {
@@ -294,6 +411,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleAutoLayout,
     handleSearch,
     handleGlobalSearch,
+    handlePlayGame,
+    handleCopy,
+    handlePaste,
   ])
 
   return {
@@ -308,5 +428,8 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleAutoLayout,
     handleSearch,
     handleGlobalSearch,
+    handlePlayGame,
+    handleCopy,
+    handlePaste,
   }
 }

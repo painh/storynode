@@ -5,6 +5,7 @@ import type { EditorNodeData } from '../../types/editor'
 import styles from './StartNode.module.css'
 
 export const StartNode = memo(function StartNode({
+  data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   return (
@@ -13,6 +14,7 @@ export const StartNode = memo(function StartNode({
       selected={selected}
       hasInputExec={false}
       hasOutputExec={true}
+      isPlaying={data.isPlaying}
     >
       <div className={styles.content}>
         <div className={styles.label}>Chapter Start</div>
