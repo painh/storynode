@@ -27,14 +27,33 @@ const NODE_WIDTHS: Record<StoryNodeType, number> = {
 
 const DEFAULT_NODE_WIDTH = 260
 const NODE_HEIGHT = 120
-const HORIZONTAL_GAP = 80
 const VERTICAL_GAP = 40
-const SNAP_GRID = 20
+const SNAP_GRID = 10
+const MIN_NODE_GAP = 120 // 노드 사이 최소 간격 (연결선 표시용)
 
 const snap = (value: number) => Math.round(value / SNAP_GRID) * SNAP_GRID
 
 function getNodeWidth(node: StoryNode): number {
-  return NODE_WIDTHS[node.type] || DEFAULT_NODE_WIDTH
+  const baseWidth = NODE_WIDTHS[node.type] || DEFAULT_NODE_WIDTH
+
+  // 텍스트 길이에 따라 너비 추정 (글자당 약 7px, 최대 500px)
+  let textWidth = 0
+  if (node.text) {
+    textWidth = Math.min(node.text.length * 7, 500)
+  }
+
+  // 선택지가 있으면 선택지 텍스트도 고려
+  if (node.choices) {
+    for (const choice of node.choices) {
+      if (choice.text) {
+        textWidth = Math.max(textWidth, choice.text.length * 7)
+      }
+    }
+  }
+
+  const estimatedWidth = Math.max(baseWidth, textWidth + 50) // 패딩 포함
+  console.log(`[AutoLayout] Node ${node.id} (${node.type}): baseWidth=${baseWidth}, textWidth=${textWidth}, estimatedWidth=${estimatedWidth}`)
+  return estimatedWidth
 }
 
 /**
@@ -60,12 +79,16 @@ export function autoLayoutNodes(
   nodes: StoryNode[],
   startNodeId?: string
 ): LayoutResult {
+  console.log('[AutoLayout] Starting auto-layout for', nodes.length, 'nodes')
   if (nodes.length === 0) return {}
 
   const result: LayoutResult = {}
   const nodeMap = new Map(nodes.map(n => [n.id, n]))
   const placed = new Set<string>()
   const placedNodes: PlacedNode[] = []
+
+  // 각 레벨별 X 시작 위치를 추적 (이전 레벨의 최대 너비 기반)
+  const levelXPositions: Map<number, number> = new Map()
 
   // 노드에서 연결된 다음 노드 ID들 가져오기
   function getNextNodeIds(node: StoryNode): string[] {
@@ -187,6 +210,10 @@ export function autoLayoutNodes(
   const nodePreferredY = new Map<string, number>()
   nodePreferredY.set(startId, 100)
 
+  // 레벨별 최대 X+width 추적 (다음 레벨 X 위치 계산용)
+  const levelMaxRight: Map<number, number> = new Map()
+  levelXPositions.set(0, 100) // 첫 레벨은 X=100에서 시작
+
   // 다시 BFS로 배치
   const placeQueue: QueueItem[] = [{ nodeId: startId, level: 0, preferredY: 100 }]
 
@@ -201,8 +228,20 @@ export function autoLayoutNodes(
     placed.add(nodeId)
 
     const nodeWidth = getNodeWidth(node)
-    const x = snap(100 + level * (DEFAULT_NODE_WIDTH + HORIZONTAL_GAP))
+
+    // 레벨별 X 위치 계산 (이전 레벨의 최대 오른쪽 + 최소 간격)
+    if (!levelXPositions.has(level)) {
+      const prevLevelMaxRight = levelMaxRight.get(level - 1) || 100
+      levelXPositions.set(level, snap(prevLevelMaxRight + MIN_NODE_GAP))
+    }
+    const x = levelXPositions.get(level)!
     const y = findFreePosition(x, preferredY, nodeWidth, NODE_HEIGHT)
+
+    // 현재 레벨의 최대 오른쪽 업데이트
+    const currentRight = x + nodeWidth
+    levelMaxRight.set(level, Math.max(levelMaxRight.get(level) || 0, currentRight))
+
+    console.log(`[AutoLayout] Placing node ${nodeId} at (${x}, ${y}), width=${nodeWidth}, level=${level}, maxRight=${currentRight}`)
 
     result[nodeId] = { x, y }
     placedNodes.push({ id: nodeId, x, y, width: nodeWidth, height: NODE_HEIGHT })
@@ -249,6 +288,9 @@ export function autoLayoutNodes(
       }
     }
   }
+
+  console.log('[AutoLayout] Layout complete. Level X positions:', Object.fromEntries(levelXPositions))
+  console.log('[AutoLayout] Level max right edges:', Object.fromEntries(levelMaxRight))
 
   return result
 }

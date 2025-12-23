@@ -42,7 +42,7 @@ function CanvasInner() {
   } = useEditorStore()
 
   const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition } = useCanvasStore()
-  const { highlightedNodeId } = useSearchStore()
+  const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { screenToFlowPosition, setViewport } = useReactFlow()
 
   const chapter = getCurrentChapter()
@@ -206,9 +206,9 @@ function CanvasInner() {
     }
   }, [chapter, currentChapterId, updateNodePosition])
 
-  // 검색 결과로 이동 (highlightedNodeId 변경 시)
+  // 검색 결과로 이동 (highlightedNodeId 또는 navigateTimestamp 변경 시)
   useEffect(() => {
-    if (!highlightedNodeId || !currentChapterId) return
+    if (!highlightedNodeId || !currentChapterId || !navigateTimestamp) return
 
     const nodePosition = getNodePosition(currentChapterId, highlightedNodeId)
     if (nodePosition) {
@@ -221,7 +221,7 @@ function CanvasInner() {
         }, { duration: 300 })
       }, 100)
     }
-  }, [highlightedNodeId, currentChapterId, getNodePosition, setViewport])
+  }, [highlightedNodeId, navigateTimestamp, currentChapterId, getNodePosition, setViewport])
 
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(

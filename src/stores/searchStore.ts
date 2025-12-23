@@ -26,6 +26,7 @@ interface SearchState {
   // 하이라이트 상태
   highlightedNodeId: string | null
   highlightQuery: string
+  navigateTimestamp: number  // 이동 트리거용 타임스탬프
 
   // 액션
   openSearch: (scope?: SearchScope) => void
@@ -48,6 +49,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   selectedResultIndex: -1,
   highlightedNodeId: null,
   highlightQuery: '',
+  navigateTimestamp: 0,
 
   openSearch: (scope = 'canvas') => set({
     isOpen: true,
@@ -97,6 +99,7 @@ export const useSearchStore = create<SearchState>((set, get) => ({
   setHighlightedNode: (nodeId, query) => set({
     highlightedNodeId: nodeId,
     highlightQuery: query,
+    navigateTimestamp: Date.now(),  // 매번 새 타임스탬프로 effect 트리거
   }),
 
   clearHighlight: () => set({

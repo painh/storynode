@@ -1,0 +1,128 @@
+// 게임 테마 프리셋
+import type { GameTheme } from '../../../types/game'
+
+export const darkTheme: GameTheme = {
+  id: 'dark',
+  name: 'Dark',
+  colors: {
+    background: '#1a1a1a',
+    dialogueBox: 'rgba(30, 30, 30, 0.95)',
+    dialogueBoxBorder: '#404040',
+    dialogueText: '#ffffff',
+    speakerName: '#FFB74D',
+    speakerNameBg: 'rgba(255, 183, 77, 0.15)',
+    choiceButton: '#2a2a2a',
+    choiceButtonHover: '#3a3a3a',
+    choiceButtonText: '#ffffff',
+    choiceButtonBorder: '#505050',
+    accent: '#FFB74D',
+    debugPanelBg: 'rgba(0, 0, 0, 0.85)',
+    debugPanelText: '#00ff00',
+  },
+  fonts: {
+    dialogue: "'Noto Sans KR', sans-serif",
+    speaker: "'Noto Sans KR', sans-serif",
+    ui: "'Noto Sans KR', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 30,
+    fadeTransition: true,
+    dialogueAnimation: 'typewriter',
+  },
+}
+
+export const lightTheme: GameTheme = {
+  id: 'light',
+  name: 'Light',
+  colors: {
+    background: '#f5f5f5',
+    dialogueBox: 'rgba(255, 255, 255, 0.95)',
+    dialogueBoxBorder: '#ddd',
+    dialogueText: '#333333',
+    speakerName: '#1976D2',
+    speakerNameBg: 'rgba(25, 118, 210, 0.1)',
+    choiceButton: '#ffffff',
+    choiceButtonHover: '#e3f2fd',
+    choiceButtonText: '#333333',
+    choiceButtonBorder: '#ccc',
+    accent: '#1976D2',
+    debugPanelBg: 'rgba(255, 255, 255, 0.95)',
+    debugPanelText: '#333333',
+  },
+  fonts: {
+    dialogue: "'Noto Sans KR', sans-serif",
+    speaker: "'Noto Sans KR', sans-serif",
+    ui: "'Noto Sans KR', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 30,
+    fadeTransition: true,
+    dialogueAnimation: 'typewriter',
+  },
+}
+
+export const retroTheme: GameTheme = {
+  id: 'retro',
+  name: 'Retro',
+  colors: {
+    background: '#0f380f',
+    dialogueBox: 'rgba(15, 56, 15, 0.95)',
+    dialogueBoxBorder: '#306230',
+    dialogueText: '#9bbc0f',
+    speakerName: '#8bac0f',
+    speakerNameBg: 'rgba(139, 172, 15, 0.2)',
+    choiceButton: '#0f380f',
+    choiceButtonHover: '#306230',
+    choiceButtonText: '#9bbc0f',
+    choiceButtonBorder: '#306230',
+    accent: '#9bbc0f',
+    debugPanelBg: 'rgba(0, 0, 0, 0.9)',
+    debugPanelText: '#9bbc0f',
+  },
+  fonts: {
+    dialogue: "'Press Start 2P', 'Noto Sans KR', monospace",
+    speaker: "'Press Start 2P', 'Noto Sans KR', monospace",
+    ui: "'Press Start 2P', 'Noto Sans KR', monospace",
+  },
+  effects: {
+    typewriterSpeed: 50,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+}
+
+export const novelTheme: GameTheme = {
+  id: 'novel',
+  name: 'Novel',
+  colors: {
+    background: '#f8f4e8',
+    dialogueBox: 'rgba(248, 244, 232, 0.98)',
+    dialogueBoxBorder: '#d4c4a8',
+    dialogueText: '#3d3d3d',
+    speakerName: '#8b4513',
+    speakerNameBg: 'rgba(139, 69, 19, 0.1)',
+    choiceButton: '#fffef8',
+    choiceButtonHover: '#f0ead6',
+    choiceButtonText: '#3d3d3d',
+    choiceButtonBorder: '#c4b498',
+    accent: '#8b4513',
+    debugPanelBg: 'rgba(248, 244, 232, 0.95)',
+    debugPanelText: '#3d3d3d',
+  },
+  fonts: {
+    dialogue: "'Noto Serif KR', 'Georgia', serif",
+    speaker: "'Noto Serif KR', 'Georgia', serif",
+    ui: "'Noto Sans KR', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 40,
+    fadeTransition: true,
+    dialogueAnimation: 'fade',
+  },
+}
+
+export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme]
+
+export const getThemeById = (id: string): GameTheme => {
+  return themePresets.find((t) => t.id === id) || darkTheme
+}
