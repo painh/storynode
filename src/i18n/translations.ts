@@ -35,6 +35,7 @@ export interface Translations {
     file: string
     edit: string
     view: string
+    help: string
     settings: string
     newProject: string
     openFolder: string
@@ -51,6 +52,9 @@ export interface Translations {
     clearRecent: string
     noRecentProjects: string
     autoLayout: string
+    keyboardShortcuts: string
+    reload: string
+    toggleDevTools: string
   }
 
   // 설정
@@ -165,6 +169,7 @@ export const translations: Record<Language, Translations> = {
       file: '파일',
       edit: '편집',
       view: '보기',
+      help: '도움말',
       settings: '설정',
       newProject: '새 프로젝트',
       openFolder: '폴더 열기...',
@@ -181,6 +186,9 @@ export const translations: Record<Language, Translations> = {
       clearRecent: '최근 기록 지우기',
       noRecentProjects: '최근 프로젝트 없음',
       autoLayout: '자동 정렬',
+      keyboardShortcuts: '키보드 단축키',
+      reload: '새로고침',
+      toggleDevTools: '개발자 도구 토글',
     },
     settings: {
       language: '언어',
@@ -283,6 +291,7 @@ export const translations: Record<Language, Translations> = {
       file: 'File',
       edit: 'Edit',
       view: 'View',
+      help: 'Help',
       settings: 'Settings',
       newProject: 'New Project',
       openFolder: 'Open Folder...',
@@ -299,6 +308,9 @@ export const translations: Record<Language, Translations> = {
       clearRecent: 'Clear Recent',
       noRecentProjects: 'No recent projects',
       autoLayout: 'Auto Layout',
+      keyboardShortcuts: 'Keyboard Shortcuts',
+      reload: 'Reload',
+      toggleDevTools: 'Toggle DevTools',
     },
     settings: {
       language: 'Language',

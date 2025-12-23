@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
 import { temporal } from 'zundo'
-import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme } from '../types/story'
 
 interface EditorState {
   // 프로젝트 데이터
@@ -43,6 +43,12 @@ interface EditorState {
   getCurrentStage: () => StoryStage | undefined
   getCurrentChapter: () => StoryChapter | undefined
   getNodeById: (nodeId: string) => StoryNode | undefined
+
+  // Game Settings
+  updateGameSettings: (settings: Partial<GameSettings>) => void
+  addCustomTheme: (theme: CustomTheme) => void
+  updateCustomTheme: (themeId: string, updates: Partial<CustomTheme>) => void
+  deleteCustomTheme: (themeId: string) => void
 }
 
 const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
@@ -66,7 +72,12 @@ const createDefaultProject = (): StoryProject => ({
         }
       ]
     }
-  ]
+  ],
+  gameSettings: {
+    defaultGameMode: 'visualNovel',
+    defaultThemeId: 'dark',
+    customThemes: [],
+  },
 })
 
 export const useEditorStore = create<EditorState>()(
@@ -376,6 +387,52 @@ export const useEditorStore = create<EditorState>()(
           const chapter = stage?.chapters.find(c => c.id === state.currentChapterId)
           return chapter?.nodes.find(n => n.id === nodeId)
         },
+
+        // Game Settings
+        updateGameSettings: (settings) => set((state) => {
+          if (!state.project.gameSettings) {
+            state.project.gameSettings = {
+              defaultGameMode: 'visualNovel',
+              defaultThemeId: 'dark',
+              customThemes: [],
+            }
+          }
+          Object.assign(state.project.gameSettings, settings)
+        }),
+
+        addCustomTheme: (theme) => set((state) => {
+          if (!state.project.gameSettings) {
+            state.project.gameSettings = {
+              defaultGameMode: 'visualNovel',
+              defaultThemeId: 'dark',
+              customThemes: [],
+            }
+          }
+          if (!state.project.gameSettings.customThemes) {
+            state.project.gameSettings.customThemes = []
+          }
+          state.project.gameSettings.customThemes.push(theme)
+        }),
+
+        updateCustomTheme: (themeId, updates) => set((state) => {
+          const themes = state.project.gameSettings?.customThemes
+          if (themes) {
+            const index = themes.findIndex(t => t.id === themeId)
+            if (index !== -1) {
+              Object.assign(themes[index], updates)
+            }
+          }
+        }),
+
+        deleteCustomTheme: (themeId) => set((state) => {
+          const themes = state.project.gameSettings?.customThemes
+          if (themes) {
+            const index = themes.findIndex(t => t.id === themeId)
+            if (index !== -1) {
+              themes.splice(index, 1)
+            }
+          }
+        }),
       })),
       {
         // Undo/Redo 설정

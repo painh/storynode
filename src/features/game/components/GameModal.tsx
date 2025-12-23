@@ -1,7 +1,8 @@
 // 게임 모달 컴포넌트
 
-import { useEffect, useMemo, CSSProperties } from 'react'
+import { useEffect, useMemo, useCallback, CSSProperties } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
+import { useEditorStore } from '../../../stores/editorStore'
 import { getThemeById, themePresets } from '../themes'
 import { GameScreen } from './GameScreen'
 import { TextAdventureScreen } from './TextAdventureScreen'
@@ -28,7 +29,30 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
     closeGame,
   } = useGameStore()
 
+  const updateGameSettings = useEditorStore((state) => state.updateGameSettings)
+  const customThemes = useEditorStore((state) => state.project.gameSettings?.customThemes || [])
+
   const theme = useMemo(() => getThemeById(currentThemeId), [currentThemeId])
+
+  // 테마 변경 시 프로젝트 설정에도 저장
+  const handleThemeChange = useCallback((themeId: string) => {
+    setTheme(themeId)
+    updateGameSettings({ defaultThemeId: themeId })
+  }, [setTheme, updateGameSettings])
+
+  // 게임 모드 변경 시 프로젝트 설정에도 저장
+  const handleGameModeChange = useCallback((mode: 'visualNovel' | 'textAdventure') => {
+    setGameMode(mode)
+    updateGameSettings({ defaultGameMode: mode })
+  }, [setGameMode, updateGameSettings])
+
+  // 모든 테마 (프리셋 + 커스텀)
+  const allThemes = useMemo(() => {
+    return [...themePresets, ...customThemes.map(ct => ({
+      ...ct,
+      colors: { ...ct.colors, debugPanelBg: '#1a1a1a', debugPanelText: '#00ff00' },
+    }))]
+  }, [customThemes])
 
   // ESC 키로 닫기/일시정지
   useEffect(() => {
@@ -109,7 +133,7 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
             <select
               className={styles.modeSelect}
               value={gameMode}
-              onChange={(e) => setGameMode(e.target.value as 'visualNovel' | 'textAdventure')}
+              onChange={(e) => handleGameModeChange(e.target.value as 'visualNovel' | 'textAdventure')}
             >
               <option value="visualNovel">Visual Novel</option>
               <option value="textAdventure">Text Adventure</option>
@@ -119,9 +143,9 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
             <select
               className={styles.themeSelect}
               value={currentThemeId}
-              onChange={(e) => setTheme(e.target.value)}
+              onChange={(e) => handleThemeChange(e.target.value)}
             >
-              {themePresets.map((t) => (
+              {allThemes.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>

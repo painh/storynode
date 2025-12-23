@@ -250,19 +250,19 @@ export function Header() {
                 setShowHelpMenu(false)
               }}
             >
-              File
+              {menu.file}
             </button>
             {showFileMenu && (
               <div className={styles.dropdown}>
                 <button onClick={handleNew}>
-                  <span>New Project</span>
+                  <span>{menu.newProject}</span>
                   <span className={styles.shortcut}>⌘N</span>
                 </button>
                 <div className={styles.divider} />
                 {isDesktop ? (
                   <>
                     <button onClick={handleOpenFolder}>
-                      <span>Open Folder...</span>
+                      <span>{menu.openFolder}</span>
                       <span className={styles.shortcut}>⌘O</span>
                     </button>
                     {/* Open Recent 서브메뉴 */}
@@ -272,7 +272,7 @@ export function Header() {
                       onMouseLeave={() => setShowRecentSubmenu(false)}
                     >
                       <button className={styles.submenuTrigger}>
-                        Open Recent
+                        {menu.openRecent}
                       </button>
                       {showRecentSubmenu && (
                         <div className={styles.submenuContent}>
@@ -288,29 +288,29 @@ export function Header() {
                                 </button>
                               ))}
                               <div className={styles.divider} />
-                              <button onClick={handleClearRecent}>Clear Recent</button>
+                              <button onClick={handleClearRecent}>{menu.clearRecent}</button>
                             </>
                           ) : (
-                            <div className={styles.emptyRecent}>No recent projects</div>
+                            <div className={styles.emptyRecent}>{menu.noRecentProjects}</div>
                           )}
                         </div>
                       )}
                     </div>
                     <button onClick={handleSave}>
-                      <span>Save</span>
+                      <span>{menu.save}</span>
                       <span className={styles.shortcut}>⌘S</span>
                     </button>
                     <button onClick={handleSaveAs}>
-                      <span>Save As...</span>
+                      <span>{menu.saveAs}</span>
                       <span className={styles.shortcut}>⇧⌘S</span>
                     </button>
                     <div className={styles.divider} />
                   </>
                 ) : null}
-                <button onClick={handleImportJson}>Import JSON...</button>
-                <button onClick={handleExportJson}>Export as JSON</button>
+                <button onClick={handleImportJson}>{menu.importJson}</button>
+                <button onClick={handleExportJson}>{menu.exportJson}</button>
                 <div className={styles.divider} />
-                <button onClick={handleExportForGame}>Export for Game</button>
+                <button onClick={handleExportForGame}>{menu.exportForGame}</button>
                 <div className={styles.divider} />
                 <button onClick={() => { setShowSettingsModal(true); setShowFileMenu(false) }}>
                   {menu.settings}...
@@ -330,7 +330,7 @@ export function Header() {
                 setShowHelpMenu(false)
               }}
             >
-              Edit
+              {menu.edit}
             </button>
             {showEditMenu && (
               <div className={styles.dropdown}>
@@ -339,7 +339,7 @@ export function Header() {
                   disabled={!canUndo}
                   className={!canUndo ? styles.disabled : ''}
                 >
-                  <span>Undo</span>
+                  <span>{menu.undo}</span>
                   <span className={styles.shortcut}>⌘Z</span>
                 </button>
                 <button
@@ -347,7 +347,7 @@ export function Header() {
                   disabled={!canRedo}
                   className={!canRedo ? styles.disabled : ''}
                 >
-                  <span>Redo</span>
+                  <span>{menu.redo}</span>
                   <span className={styles.shortcut}>⇧⌘Z</span>
                 </button>
                 <div className={styles.divider} />
@@ -359,7 +359,7 @@ export function Header() {
                   }
                   setShowEditMenu(false)
                 }}>
-                  <span>Select All</span>
+                  <span>{menu.selectAll}</span>
                   <span className={styles.shortcut}>⌘A</span>
                 </button>
                 <button onClick={() => {
@@ -368,7 +368,7 @@ export function Header() {
                   setSelectedNodes([])
                   setShowEditMenu(false)
                 }}>
-                  <span>Delete</span>
+                  <span>{menu.delete}</span>
                   <span className={styles.shortcut}>⌫</span>
                 </button>
                 <div className={styles.divider} />
@@ -401,7 +401,7 @@ export function Header() {
                 setShowHelpMenu(false)
               }}
             >
-              View
+              {menu.view}
             </button>
             {showViewMenu && (
               <div className={styles.dropdown}>
@@ -419,7 +419,7 @@ export function Header() {
                       window.location.reload()
                       setShowViewMenu(false)
                     }}>
-                      <span>Reload</span>
+                      <span>{menu.reload}</span>
                       <span className={styles.shortcut}>⌘R</span>
                     </button>
                     <button onClick={async () => {
@@ -429,7 +429,7 @@ export function Header() {
                       }
                       setShowViewMenu(false)
                     }}>
-                      <span>Toggle DevTools</span>
+                      <span>{menu.toggleDevTools}</span>
                       <span className={styles.shortcut}>⌥⌘I</span>
                     </button>
                   </>
@@ -449,7 +449,7 @@ export function Header() {
                 setShowViewMenu(false)
               }}
             >
-              Help
+              {menu.help}
             </button>
             {showHelpMenu && (
               <div className={styles.dropdown}>
@@ -457,7 +457,7 @@ export function Header() {
                   setShowHelpModal(true)
                   setShowHelpMenu(false)
                 }}>
-                  <span>Keyboard Shortcuts</span>
+                  <span>{menu.keyboardShortcuts}</span>
                   <span className={styles.shortcut}>?</span>
                 </button>
               </div>

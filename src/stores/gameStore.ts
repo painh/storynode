@@ -82,6 +82,11 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       return
     }
 
+    // 프로젝트 게임 설정 적용
+    const gameSettings = project.gameSettings
+    const themeId = gameSettings?.defaultThemeId || 'dark'
+    const mode = gameSettings?.defaultGameMode || 'visualNovel'
+
     // 엔진 생성
     const engine = new GameEngine(project, {
       onStateChange: (state) => {
@@ -102,6 +107,8 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       engine,
       status: 'playing',
       isModalOpen: true,
+      currentThemeId: themeId,
+      gameMode: mode,
     })
   },
 

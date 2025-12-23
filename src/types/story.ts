@@ -133,9 +133,50 @@ export interface StoryStage {
   chapters: StoryChapter[]
 }
 
+// 게임 설정 (프로젝트에 저장, 익스포트 시 포함)
+export interface GameSettings {
+  // 기본 게임 모드
+  defaultGameMode: 'visualNovel' | 'textAdventure'
+  // 기본 테마 ID (프리셋 또는 커스텀)
+  defaultThemeId: string
+  // 커스텀 테마 (사용자 정의)
+  customThemes?: CustomTheme[]
+}
+
+// 커스텀 테마 정의
+export interface CustomTheme {
+  id: string
+  name: string
+  colors: {
+    background: string
+    dialogueBox: string
+    dialogueBoxBorder: string
+    dialogueText: string
+    speakerName: string
+    speakerNameBg: string
+    choiceButton: string
+    choiceButtonHover: string
+    choiceButtonText: string
+    choiceButtonBorder: string
+    accent: string
+  }
+  fonts: {
+    dialogue: string
+    speaker: string
+    ui: string
+  }
+  effects: {
+    typewriterSpeed: number
+    fadeTransition: boolean
+    dialogueAnimation: 'typewriter' | 'fade' | 'instant'
+  }
+}
+
 // 프로젝트 전체 구조
 export interface StoryProject {
   name: string
   version: string
   stages: StoryStage[]
+  // 게임 설정 (익스포트 시 포함)
+  gameSettings?: GameSettings
 }
