@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useSearchStore, extractSearchableText, type SearchResult, type SearchScope } from '../../stores/searchStore'
 import { useEditorStore } from '../../stores/editorStore'
-import { useCanvasStore } from '../../stores/canvasStore'
 import { useTranslation } from '../../i18n'
 import styles from './SearchModal.module.css'
 
@@ -29,7 +28,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   } = useSearchStore()
 
   const { project, setCurrentStage, setCurrentChapter, setSelectedNodes, currentStageId, currentChapterId } = useEditorStore()
-  const { setViewport } = useCanvasStore()
   const { search: searchT, nodes: nodesT } = useTranslation()
 
   // 검색 실행
@@ -115,25 +113,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setCurrentChapter(result.chapterId)
     }
 
-    // 노드 선택 및 하이라이트
+    // 노드 선택 및 하이라이트 (Canvas에서 뷰포트 이동 처리)
     setSelectedNodes([result.nodeId])
     setHighlightedNode(result.nodeId, searchQuery)
 
-    // 노드 위치로 뷰포트 이동 (약간의 딜레이 후)
-    setTimeout(() => {
-      const nodePosition = useCanvasStore.getState().getNodePosition(result.chapterId, result.nodeId)
-      if (nodePosition) {
-        // 화면 중앙에 노드 배치
-        setViewport({
-          x: -nodePosition.x + window.innerWidth / 2 - 130,
-          y: -nodePosition.y + window.innerHeight / 2 - 50,
-          zoom: 1,
-        })
-      }
-    }, 50)
-
     onClose()
-  }, [currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, setSelectedNodes, setHighlightedNode, searchQuery, setViewport, onClose])
+  }, [currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, setSelectedNodes, setHighlightedNode, searchQuery, onClose])
 
   // 선택된 결과 스크롤
   useEffect(() => {

@@ -19,6 +19,7 @@ import '@xyflow/react/dist/style.css'
 
 import { useEditorStore } from '../../stores/editorStore'
 import { useCanvasStore } from '../../stores/canvasStore'
+import { useSearchStore } from '../../stores/searchStore'
 import { nodeTypes } from '../nodes/nodeRegistry'
 import { SmartEdge } from '../edges/SmartEdge'
 import { autoLayoutNodes } from '../../utils/autoLayout'
@@ -41,7 +42,8 @@ function CanvasInner() {
   } = useEditorStore()
 
   const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition } = useCanvasStore()
-  const { screenToFlowPosition } = useReactFlow()
+  const { highlightedNodeId } = useSearchStore()
+  const { screenToFlowPosition, setViewport } = useReactFlow()
 
   const chapter = getCurrentChapter()
   const setNodesRef = useRef<typeof setNodes | null>(null)
@@ -203,6 +205,23 @@ function CanvasInner() {
       window.removeEventListener('storynode:auto-layout', handleAutoLayout)
     }
   }, [chapter, currentChapterId, updateNodePosition])
+
+  // 검색 결과로 이동 (highlightedNodeId 변경 시)
+  useEffect(() => {
+    if (!highlightedNodeId || !currentChapterId) return
+
+    const nodePosition = getNodePosition(currentChapterId, highlightedNodeId)
+    if (nodePosition) {
+      // 약간의 딜레이 후 뷰포트 이동 (챕터 전환 시 렌더링 대기)
+      setTimeout(() => {
+        setViewport({
+          x: -nodePosition.x + 400,
+          y: -nodePosition.y + 300,
+          zoom: 1,
+        }, { duration: 300 })
+      }, 100)
+    }
+  }, [highlightedNodeId, currentChapterId, getNodePosition, setViewport])
 
   // 노드 드래그 종료 시 위치 저장
   const onNodeDragStop = useCallback(
