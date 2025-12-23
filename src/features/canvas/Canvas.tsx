@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   addEdge,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   SelectionMode,
   type Connection,
   type Edge,
@@ -28,7 +30,7 @@ const edgeTypes = {
   smart: SmartEdge,
 }
 
-export function Canvas() {
+function CanvasInner() {
   const {
     currentChapterId,
     getCurrentChapter,
@@ -39,6 +41,7 @@ export function Canvas() {
   } = useEditorStore()
 
   const { getNodePosition, updateNodePosition } = useCanvasStore()
+  const { screenToFlowPosition } = useReactFlow()
 
   const chapter = getCurrentChapter()
   const setNodesRef = useRef<typeof setNodes | null>(null)
@@ -257,71 +260,78 @@ export function Canvas() {
       const nodeType = e.dataTransfer.getData('application/storynode-type') as StoryNodeType
       if (!nodeType) return
 
-      // React Flow 캔버스 내 좌표 계산
-      const reactFlowBounds = e.currentTarget.getBoundingClientRect()
-      const position = {
-        x: e.clientX - reactFlowBounds.left,
-        y: e.clientY - reactFlowBounds.top,
-      }
+      // 화면 좌표를 Flow 좌표로 변환 (줌/팬 고려)
+      const position = screenToFlowPosition({
+        x: e.clientX,
+        y: e.clientY,
+      })
 
       const newNode = createNode(nodeType, position)
       if (newNode && currentChapterId) {
         updateNodePosition(currentChapterId, newNode.id, position)
       }
     },
-    [createNode, currentChapterId, updateNodePosition]
+    [createNode, currentChapterId, updateNodePosition, screenToFlowPosition]
   )
 
   return (
-    <div className={styles.canvas} tabIndex={0}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onSelectionChange={onSelectionChange}
-        onNodeDragStop={onNodeDragStop}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView
-        snapToGrid
-        snapGrid={[20, 20]}
-        panOnDrag={[1, 2]}
-        selectionOnDrag
-        selectionMode={SelectionMode.Partial}
-        defaultEdgeOptions={{
-          type: 'smart',
-          style: { stroke: '#fff', strokeWidth: 2 },
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      onSelectionChange={onSelectionChange}
+      onNodeDragStop={onNodeDragStop}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      fitView
+      snapToGrid
+      snapGrid={[20, 20]}
+      panOnDrag={[1, 2]}
+      selectionOnDrag
+      selectionMode={SelectionMode.Partial}
+      defaultEdgeOptions={{
+        type: 'smart',
+        style: { stroke: '#fff', strokeWidth: 2 },
+      }}
+    >
+      <Background
+        variant={BackgroundVariant.Dots}
+        gap={20}
+        size={1}
+        color="#333"
+      />
+      <Controls />
+      <MiniMap
+        nodeColor={(node) => {
+          const colors: Record<string, string> = {
+            start: '#4CAF50',
+            dialogue: '#4A6FA5',
+            choice: '#8B4A6B',
+            battle: '#C62828',
+            shop: '#2E7D32',
+            event: '#F9A825',
+            chapter_end: '#37474F',
+            variable: '#7B1FA2',
+            condition: '#00796B',
+          }
+          return colors[node.type || 'dialogue'] || '#666'
         }}
-      >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={20}
-          size={1}
-          color="#333"
-        />
-        <Controls />
-        <MiniMap
-          nodeColor={(node) => {
-            const colors: Record<string, string> = {
-              start: '#4CAF50',
-              dialogue: '#4A6FA5',
-              choice: '#8B4A6B',
-              battle: '#C62828',
-              shop: '#2E7D32',
-              event: '#F9A825',
-              chapter_end: '#37474F',
-              variable: '#7B1FA2',
-              condition: '#00796B',
-            }
-            return colors[node.type || 'dialogue'] || '#666'
-          }}
-          maskColor="rgba(0, 0, 0, 0.8)"
-        />
-      </ReactFlow>
+        maskColor="rgba(0, 0, 0, 0.8)"
+      />
+    </ReactFlow>
+  )
+}
+
+export function Canvas() {
+  return (
+    <div className={styles.canvas} tabIndex={0}>
+      <ReactFlowProvider>
+        <CanvasInner />
+      </ReactFlowProvider>
     </div>
   )
 }
