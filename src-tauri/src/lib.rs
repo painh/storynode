@@ -205,14 +205,30 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
-            if let RunEvent::WindowEvent { label, event: WindowEvent::CloseRequested { api, .. }, .. } = event {
-                // 창 닫기 요청 시 기본 동작 방지하고 프론트엔드에 알림
-                api.prevent_close();
+            match &event {
+                RunEvent::WindowEvent { label, event: WindowEvent::CloseRequested { api, .. }, .. } => {
+                    println!("[Tauri] CloseRequested event received for window: {}", label);
+                    // 창 닫기 요청 시 기본 동작 방지하고 프론트엔드에 알림
+                    api.prevent_close();
 
-                // 프론트엔드에 이벤트 발송
-                if let Some(window) = app_handle.get_webview_window(&label) {
-                    let _ = window.emit("tauri://close-requested", ());
+                    // 프론트엔드에 이벤트 발송
+                    if let Some(window) = app_handle.get_webview_window(label) {
+                        println!("[Tauri] Emitting close-requested event to frontend");
+                        let _ = window.emit("tauri://close-requested", ());
+                    }
                 }
+                RunEvent::ExitRequested { api, .. } => {
+                    println!("[Tauri] ExitRequested event received");
+                    // 앱 종료 요청도 가로채기
+                    api.prevent_exit();
+
+                    // 모든 창에 이벤트 발송
+                    if let Some(window) = app_handle.get_webview_window("main") {
+                        println!("[Tauri] Emitting close-requested event for app exit");
+                        let _ = window.emit("tauri://close-requested", ());
+                    }
+                }
+                _ => {}
             }
         });
 }

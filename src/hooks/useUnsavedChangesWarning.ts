@@ -41,9 +41,12 @@ export function useUnsavedChangesWarning() {
         const currentWindow = getCurrentWindow()
 
         // Rust에서 보내는 tauri://close-requested 이벤트 수신
+        console.log('[UnsavedChangesWarning] Setting up close handler...')
         unlisten = await listen('tauri://close-requested', async () => {
+          console.log('[UnsavedChangesWarning] Close requested event received!')
           // isDirty 상태를 직접 스토어에서 가져옴 (클로저 문제 방지)
           const currentIsDirty = useEditorStore.getState().isDirty
+          console.log('[UnsavedChangesWarning] isDirty:', currentIsDirty)
 
           if (currentIsDirty) {
             // Tauri 다이얼로그로 확인
