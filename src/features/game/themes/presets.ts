@@ -121,7 +121,37 @@ export const novelTheme: GameTheme = {
   },
 }
 
-export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme]
+export const cyberpunkTheme: GameTheme = {
+  id: 'cyberpunk',
+  name: 'Cyberpunk',
+  colors: {
+    background: '#0a0a12',
+    dialogueBox: 'rgba(10, 10, 25, 0.95)',
+    dialogueBoxBorder: '#ff00ff',
+    dialogueText: '#00ffff',
+    speakerName: '#ff00ff',
+    speakerNameBg: 'rgba(255, 0, 255, 0.2)',
+    choiceButton: 'rgba(20, 20, 40, 0.9)',
+    choiceButtonHover: 'rgba(255, 0, 255, 0.3)',
+    choiceButtonText: '#00ffff',
+    choiceButtonBorder: '#ff00ff',
+    accent: '#ff00ff',
+    debugPanelBg: 'rgba(10, 10, 25, 0.95)',
+    debugPanelText: '#00ff00',
+  },
+  fonts: {
+    dialogue: "'Orbitron', 'Noto Sans KR', sans-serif",
+    speaker: "'Orbitron', 'Noto Sans KR', sans-serif",
+    ui: "'Orbitron', 'Noto Sans KR', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 20,
+    fadeTransition: true,
+    dialogueAnimation: 'typewriter',
+  },
+}
+
+export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme, cyberpunkTheme]
 
 export const getThemeById = (id: string): GameTheme => {
   return themePresets.find((t) => t.id === id) || darkTheme
