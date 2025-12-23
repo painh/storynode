@@ -68,6 +68,13 @@ export function Sidebar() {
     e.dataTransfer.effectAllowed = 'move'
   }
 
+  // 리소스 이미지 드래그 시작
+  const handleResourceDragStart = (e: React.DragEvent, resourcePath: string) => {
+    e.dataTransfer.setData('application/storynode-type', 'image')
+    e.dataTransfer.setData('application/storynode-image-path', resourcePath)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
   const handleClick = (nodeType: AllNodeType) => {
     // Comment 노드는 클릭으로 생성 불가 (드래그로만 생성)
     if (nodeType === 'comment') return
@@ -325,7 +332,13 @@ export function Sidebar() {
           <div className={styles.categoryTitle}>Images</div>
           <div className={styles.resourceList}>
             {filteredImages.map((resource) => (
-              <div key={resource.id} className={styles.resourceItem}>
+              <div
+                key={resource.id}
+                className={styles.resourceItem}
+                draggable
+                onDragStart={(e) => handleResourceDragStart(e, resource.path)}
+                title="Drag to canvas to create Image node"
+              >
                 <img
                   src={resource.path}
                   alt={resource.name}

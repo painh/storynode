@@ -457,6 +457,21 @@ function CanvasInner() {
       if (newNode) {
         // createNode에서 position이 저장되지 않으면 여기서 업데이트
         updateNode(newNode.id, { position })
+
+        // 이미지 노드인 경우 드래그된 이미지 경로 설정
+        if (nodeType === 'image') {
+          const imagePath = e.dataTransfer.getData('application/storynode-image-path')
+          if (imagePath) {
+            updateNode(newNode.id, {
+              imageData: {
+                resourcePath: imagePath,
+                layer: 'character',
+                layerOrder: 0,
+                alignment: 'center',
+              }
+            })
+          }
+        }
       }
     },
     [createNode, currentChapterId, updateNode, screenToFlowPosition, createCommentNode]
