@@ -40,11 +40,15 @@ function CanvasInner() {
     setSelectedNodes,
   } = useEditorStore()
 
-  const { getNodePosition, updateNodePosition } = useCanvasStore()
+  const { getNodePosition, updateNodePosition, getCommentNodes, createCommentNode, updateCommentPosition } = useCanvasStore()
   const { screenToFlowPosition } = useReactFlow()
 
   const chapter = getCurrentChapter()
   const setNodesRef = useRef<typeof setNodes | null>(null)
+
+  // Comment 노드들을 안정적으로 가져오기 (무한 루프 방지)
+  const commentNodes = currentChapterId ? getCommentNodes(currentChapterId) : []
+  const commentNodesKey = JSON.stringify(commentNodes.map(c => ({ id: c.id, pos: c.position, data: c.data })))
 
   // StoryNode를 React Flow Node로 변환
   const initialNodes = useMemo((): Node<EditorNodeData>[] => {
@@ -60,7 +64,8 @@ function CanvasInner() {
       ? autoLayoutNodes(chapter.nodes, chapter.startNodeId)
       : {}
 
-    return chapter.nodes.map((storyNode) => {
+    // Story 노드들
+    const storyNodes: Node<EditorNodeData>[] = chapter.nodes.map((storyNode) => {
       const savedPosition = getNodePosition(chapter.id, storyNode.id)
       const position = savedPosition || autoPositions[storyNode.id] || { x: 100, y: 100 }
 
@@ -75,7 +80,23 @@ function CanvasInner() {
         selected: selectedNodeIds.includes(storyNode.id),
       }
     })
-  }, [chapter, selectedNodeIds, getNodePosition])
+
+    // Comment 노드들 (다른 노드 뒤에 표시)
+    const commentFlowNodes: Node<EditorNodeData>[] = commentNodes.map((comment) => ({
+      id: comment.id,
+      type: 'comment',
+      position: comment.position,
+      data: {
+        commentData: comment.data,
+        label: 'comment',
+      },
+      selected: selectedNodeIds.includes(comment.id),
+      zIndex: -1, // 다른 노드 뒤에 표시
+    }))
+
+    return [...commentFlowNodes, ...storyNodes]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapter, selectedNodeIds, getNodePosition, commentNodesKey])
 
   // 연결 정보를 Edge로 변환
   const initialEdges = useMemo((): Edge[] => {
@@ -152,7 +173,8 @@ function CanvasInner() {
   useEffect(() => {
     setNodes(initialNodes)
     setEdges(initialEdges)
-  }, [currentChapterId, chapter?.nodes, setNodes, setEdges, initialNodes, initialEdges])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentChapterId, commentNodesKey])
 
   // 자동 정렬 이벤트 리스너
   useEffect(() => {
@@ -186,10 +208,14 @@ function CanvasInner() {
   const onNodeDragStop = useCallback(
     (_: React.MouseEvent, node: Node) => {
       if (currentChapterId) {
-        updateNodePosition(currentChapterId, node.id, node.position)
+        if (node.type === 'comment') {
+          updateCommentPosition(currentChapterId, node.id, node.position)
+        } else {
+          updateNodePosition(currentChapterId, node.id, node.position)
+        }
       }
     },
-    [currentChapterId, updateNodePosition]
+    [currentChapterId, updateNodePosition, updateCommentPosition]
   )
 
   // 연결 생성
@@ -257,8 +283,8 @@ function CanvasInner() {
     (e: React.DragEvent) => {
       e.preventDefault()
 
-      const nodeType = e.dataTransfer.getData('application/storynode-type') as StoryNodeType
-      if (!nodeType) return
+      const nodeType = e.dataTransfer.getData('application/storynode-type')
+      if (!nodeType || !currentChapterId) return
 
       // 화면 좌표를 Flow 좌표로 변환 (줌/팬 고려)
       const position = screenToFlowPosition({
@@ -266,12 +292,19 @@ function CanvasInner() {
         y: e.clientY,
       })
 
-      const newNode = createNode(nodeType, position)
-      if (newNode && currentChapterId) {
+      // Comment 노드 처리
+      if (nodeType === 'comment') {
+        createCommentNode(currentChapterId, position)
+        return
+      }
+
+      // Story 노드 처리
+      const newNode = createNode(nodeType as StoryNodeType, position)
+      if (newNode) {
         updateNodePosition(currentChapterId, newNode.id, position)
       }
     },
-    [createNode, currentChapterId, updateNodePosition, screenToFlowPosition]
+    [createNode, currentChapterId, updateNodePosition, screenToFlowPosition, createCommentNode]
   )
 
   return (
@@ -293,10 +326,13 @@ function CanvasInner() {
       panOnDrag={[1, 2]}
       selectionOnDrag
       selectionMode={SelectionMode.Partial}
+      minZoom={0.1}
+      maxZoom={2}
       defaultEdgeOptions={{
         type: 'smart',
         style: { stroke: '#fff', strokeWidth: 2 },
       }}
+      proOptions={{ hideAttribution: true }}
     >
       <Background
         variant={BackgroundVariant.Dots}
@@ -317,10 +353,13 @@ function CanvasInner() {
             chapter_end: '#37474F',
             variable: '#7B1FA2',
             condition: '#00796B',
+            comment: '#5C6BC0',
           }
           return colors[node.type || 'dialogue'] || '#666'
         }}
         maskColor="rgba(0, 0, 0, 0.8)"
+        pannable
+        zoomable
       />
     </ReactFlow>
   )

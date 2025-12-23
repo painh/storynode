@@ -37,6 +37,9 @@ export const VariableNode = memo(function VariableNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
   const t = useTranslation()
+
+  if (!storyNode) return null
+
   const operations = storyNode.variableOperations || []
 
   return (

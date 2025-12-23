@@ -10,6 +10,8 @@ export const DialogueNode = memo(function DialogueNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
 
+  if (!storyNode) return null
+
   return (
     <BaseNode
       nodeType="dialogue"

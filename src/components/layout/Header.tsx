@@ -8,7 +8,8 @@ import {
   saveProjectToFolder,
   loadProjectFromFolder,
 } from '../../utils/fileUtils'
-import { useTranslation, type Language } from '../../i18n'
+import { useTranslation } from '../../i18n'
+import { SettingsModal } from '../common/SettingsModal'
 import styles from './Header.module.css'
 
 // Tauri dialog import (조건부)
@@ -16,14 +17,14 @@ let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
 
 export function Header() {
   const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject } = useEditorStore()
-  const { settings, addRecentProject, clearRecentProjects, setLanguage } = useSettingsStore()
-  const { menu, settings: settingsT } = useTranslation()
+  const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
+  const { menu } = useTranslation()
   const currentStage = getCurrentStage()
   const [showFileMenu, setShowFileMenu] = useState(false)
   const [showEditMenu, setShowEditMenu] = useState(false)
   const [showViewMenu, setShowViewMenu] = useState(false)
   const [showRecentSubmenu, setShowRecentSubmenu] = useState(false)
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -172,6 +173,9 @@ export function Header() {
 
   const handleNew = () => {
     if (confirm('Create a new project? Unsaved changes will be lost.')) {
+      // 새 프로젝트 생성 시 lastProjectPath 초기화 (자동저장이 이전 경로에 저장하지 않도록)
+      useSettingsStore.getState().setLastProjectPath(null)
+
       setProject({
         name: 'New Story Project',
         version: '1.0.0',
@@ -215,18 +219,23 @@ export function Header() {
                 setShowFileMenu(!showFileMenu)
                 setShowEditMenu(false)
                 setShowViewMenu(false)
-                setShowSettingsMenu(false)
               }}
             >
               File
             </button>
             {showFileMenu && (
               <div className={styles.dropdown}>
-                <button onClick={handleNew}>New Project</button>
+                <button onClick={handleNew}>
+                  <span>New Project</span>
+                  <span className={styles.shortcut}>⌘N</span>
+                </button>
                 <div className={styles.divider} />
                 {isDesktop ? (
                   <>
-                    <button onClick={handleOpenFolder}>Open Folder...</button>
+                    <button onClick={handleOpenFolder}>
+                      <span>Open Folder...</span>
+                      <span className={styles.shortcut}>⌘O</span>
+                    </button>
                     {/* Open Recent 서브메뉴 */}
                     <div
                       className={styles.submenu}
@@ -258,7 +267,10 @@ export function Header() {
                         </div>
                       )}
                     </div>
-                    <button onClick={handleSaveToFolder}>Save to Folder...</button>
+                    <button onClick={handleSaveToFolder}>
+                      <span>Save to Folder...</span>
+                      <span className={styles.shortcut}>⌘S</span>
+                    </button>
                     <div className={styles.divider} />
                   </>
                 ) : null}
@@ -266,6 +278,10 @@ export function Header() {
                 <button onClick={handleExportJson}>Export as JSON</button>
                 <div className={styles.divider} />
                 <button onClick={handleExportForGame}>Export for Game</button>
+                <div className={styles.divider} />
+                <button onClick={() => { setShowSettingsModal(true); setShowFileMenu(false) }}>
+                  {menu.settings}...
+                </button>
               </div>
             )}
           </div>
@@ -278,7 +294,6 @@ export function Header() {
                 setShowEditMenu(!showEditMenu)
                 setShowFileMenu(false)
                 setShowViewMenu(false)
-                setShowSettingsMenu(false)
               }}
             >
               Edit
@@ -303,9 +318,10 @@ export function Header() {
                 </button>
                 <div className={styles.divider} />
                 <button onClick={() => {
-                  const chapter = getCurrentStage()?.chapters.find(c => c.id === currentChapterId)
+                  const { getCurrentChapter, setSelectedNodes } = useEditorStore.getState()
+                  const chapter = getCurrentChapter()
                   if (chapter) {
-                    useEditorStore.getState().setSelectedNodes(chapter.nodes.map(n => n.id))
+                    setSelectedNodes(chapter.nodes.map(n => n.id))
                   }
                   setShowEditMenu(false)
                 }}>
@@ -313,8 +329,9 @@ export function Header() {
                   <span className={styles.shortcut}>⌘A</span>
                 </button>
                 <button onClick={() => {
-                  const { selectedNodeIds, deleteNode } = useEditorStore.getState()
-                  selectedNodeIds.forEach(deleteNode)
+                  const { selectedNodeIds, deleteNode, setSelectedNodes } = useEditorStore.getState()
+                  selectedNodeIds.forEach(id => deleteNode(id))
+                  setSelectedNodes([])
                   setShowEditMenu(false)
                 }}>
                   <span>Delete</span>
@@ -332,7 +349,6 @@ export function Header() {
                 setShowViewMenu(!showViewMenu)
                 setShowFileMenu(false)
                 setShowEditMenu(false)
-                setShowSettingsMenu(false)
               }}
             >
               View
@@ -346,44 +362,28 @@ export function Header() {
                   <span>{menu.autoLayout}</span>
                   <span className={styles.shortcut}>⌘L</span>
                 </button>
-              </div>
-            )}
-          </div>
-
-          {/* Settings Menu */}
-          <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuItem}
-              onClick={() => {
-                setShowSettingsMenu(!showSettingsMenu)
-                setShowFileMenu(false)
-                setShowEditMenu(false)
-                setShowViewMenu(false)
-              }}
-            >
-              {menu.settings}
-            </button>
-            {showSettingsMenu && (
-              <div className={styles.dropdown}>
-                <div className={styles.settingRow}>
-                  <span className={styles.settingLabel}>{settingsT.language}</span>
-                  <select
-                    className={styles.settingSelect}
-                    value={settings.language}
-                    onChange={(e) => setLanguage(e.target.value as Language)}
-                  >
-                    <option value="ko">한국어</option>
-                    <option value="en">English</option>
-                  </select>
-                </div>
-                <div className={styles.divider} />
-                <SettingsCheckbox
-                  label={settingsT.openLastProjectOnStartup}
-                  checked={settings.openLastProjectOnStartup}
-                  onChange={(checked) => {
-                    useSettingsStore.getState().setOpenLastProjectOnStartup(checked)
-                  }}
-                />
+                {import.meta.env.DEV && (
+                  <>
+                    <div className={styles.divider} />
+                    <button onClick={() => {
+                      window.location.reload()
+                      setShowViewMenu(false)
+                    }}>
+                      <span>Reload</span>
+                      <span className={styles.shortcut}>⌘R</span>
+                    </button>
+                    <button onClick={async () => {
+                      if (isTauri()) {
+                        const { invoke } = await import('@tauri-apps/api/core')
+                        await invoke('toggle_devtools')
+                      }
+                      setShowViewMenu(false)
+                    }}>
+                      <span>Toggle DevTools</span>
+                      <span className={styles.shortcut}>⌥⌘I</span>
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -428,39 +428,12 @@ export function Header() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
-    </header>
-  )
-}
 
-// 설정 체크박스 컴포넌트
-function SettingsCheckbox({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  return (
-    <label
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '8px 12px',
-        cursor: 'pointer',
-        fontSize: '12px',
-        color: 'var(--text-primary)',
-      }}
-    >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ cursor: 'pointer' }}
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
       />
-      {label}
-    </label>
+    </header>
   )
 }

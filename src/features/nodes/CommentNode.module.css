@@ -1,0 +1,82 @@
+.comment {
+  background: color-mix(in srgb, var(--comment-color) 15%, transparent);
+  border: 2px dashed var(--comment-color);
+  border-radius: 8px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: -1;
+}
+
+.comment.selected {
+  border-style: solid;
+  box-shadow: 0 0 0 2px var(--selection-border),
+              0 0 20px var(--selection-glow);
+}
+
+.header {
+  padding: 8px 12px;
+  background: var(--comment-color);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  cursor: text;
+  display: block;
+}
+
+.titleInput {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+}
+
+.titleInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.body {
+  flex: 1;
+  padding: 8px 12px;
+  min-height: 0;
+}
+
+.description {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  resize: none;
+  font-family: inherit;
+}
+
+.description::placeholder {
+  color: var(--text-muted);
+}
+
+/* NodeResizer 스타일 */
+.resizerLine {
+  border-color: var(--selection-border) !important;
+}
+
+.resizerHandle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--selection-border) !important;
+  border: 2px solid var(--bg-secondary) !important;
+  border-radius: 2px !important;
+}

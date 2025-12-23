@@ -1,5 +1,6 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useEditorStore } from '../stores/editorStore'
+import { useSettingsStore } from '../stores/settingsStore'
 import {
   isTauri,
   saveProjectToFolder,
@@ -8,9 +9,11 @@ import {
 
 // Tauri dialog import (조건부)
 let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
+let confirmDialog: typeof import('@tauri-apps/plugin-dialog').confirm | null = null
 if (isTauri()) {
   import('@tauri-apps/plugin-dialog').then((mod) => {
     openDialog = mod.open
+    confirmDialog = mod.confirm
   })
 }
 
@@ -36,16 +39,19 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
   // Cmd+A: 모든 노드 선택
   const selectAllNodes = useCallback(() => {
+    const { getCurrentChapter, setSelectedNodes } = useEditorStore.getState()
     const chapter = getCurrentChapter()
     if (chapter) {
       setSelectedNodes(chapter.nodes.map(n => n.id))
     }
-  }, [getCurrentChapter, setSelectedNodes])
+  }, [])
 
   // Delete: 선택된 노드 삭제
   const deleteSelectedNodes = useCallback(() => {
-    selectedNodeIds.forEach(deleteNode)
-  }, [selectedNodeIds, deleteNode])
+    const { selectedNodeIds, deleteNode, setSelectedNodes } = useEditorStore.getState()
+    selectedNodeIds.forEach(id => deleteNode(id))
+    setSelectedNodes([])
+  }, [])
 
   // Escape: 선택 해제
   const handleEscape = useCallback(() => {
@@ -61,6 +67,11 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   const handleRedo = useCallback(() => {
     redo()
   }, [redo])
+
+  // Cmd+L: 자동 정렬
+  const handleAutoLayout = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('storynode:auto-layout'))
+  }, [])
 
   // Cmd+S: 저장
   const handleSave = useCallback(async () => {
@@ -120,34 +131,50 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
   }, [options, setProject])
 
   // Cmd+N: 새 프로젝트
-  const handleNew = useCallback(() => {
+  const isNewDialogOpenRef = useRef(false)
+  const handleNew = useCallback(async () => {
     if (options.onNew) {
       options.onNew()
       return
     }
 
-    if (confirm('Create a new project? Unsaved changes will be lost.')) {
-      setProject({
-        name: 'New Story Project',
-        version: '1.0.0',
-        stages: [
-          {
-            id: 'stage_1',
-            title: 'Stage 1',
-            description: 'First stage',
-            partyCharacters: ['kairen'],
-            chapters: [
-              {
-                id: 'chapter_1',
-                title: 'Chapter 1',
-                description: 'First chapter',
-                nodes: [],
-                startNodeId: '',
-              }
-            ]
-          }
-        ]
-      })
+    // 중복 실행 방지
+    if (isNewDialogOpenRef.current) return
+    isNewDialogOpenRef.current = true
+
+    try {
+      const confirmed = confirmDialog
+        ? await confirmDialog('Create a new project? Unsaved changes will be lost.', { title: 'New Project', kind: 'warning' })
+        : confirm('Create a new project? Unsaved changes will be lost.')
+
+      if (confirmed) {
+        // 새 프로젝트 생성 시 lastProjectPath 초기화 (자동저장이 이전 경로에 저장하지 않도록)
+        useSettingsStore.getState().setLastProjectPath(null)
+
+        setProject({
+          name: 'New Story Project',
+          version: '1.0.0',
+          stages: [
+            {
+              id: 'stage_1',
+              title: 'Stage 1',
+              description: 'First stage',
+              partyCharacters: ['kairen'],
+              chapters: [
+                {
+                  id: 'chapter_1',
+                  title: 'Chapter 1',
+                  description: 'First chapter',
+                  nodes: [],
+                  startNodeId: '',
+                }
+              ]
+            }
+          ]
+        })
+      }
+    } finally {
+      isNewDialogOpenRef.current = false
     }
   }, [options, setProject])
 
@@ -200,6 +227,13 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         return
       }
 
+      // Cmd+L: 자동 정렬 (항상 가로채기)
+      if (isMod && e.key === 'l') {
+        e.preventDefault()
+        handleAutoLayout()
+        return
+      }
+
       // 입력 필드에 포커스가 있으면 아래 단축키는 무시
       if (isInputFocused) return
 
@@ -236,6 +270,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleNew,
     handleUndo,
     handleRedo,
+    handleAutoLayout,
   ])
 
   return {
@@ -247,5 +282,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     handleNew,
     handleUndo,
     handleRedo,
+    handleAutoLayout,
   }
 }

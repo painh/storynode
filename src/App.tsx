@@ -4,6 +4,7 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import { useAutoSave } from './hooks/useAutoSave'
 import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
 import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
@@ -16,6 +17,9 @@ function App() {
 
   // 전역 단축키 활성화
   useKeyboardShortcuts()
+
+  // 자동 저장 활성화
+  useAutoSave()
 
   // 앱 시작 시 설정 로드
   useEffect(() => {

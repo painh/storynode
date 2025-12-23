@@ -12,6 +12,8 @@ export const BattleNode = memo(function BattleNode({
   const { storyNode } = data
   const { common } = useTranslation()
 
+  if (!storyNode) return null
+
   return (
     <BaseNode
       nodeType="battle"

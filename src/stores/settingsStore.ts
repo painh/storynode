@@ -10,6 +10,9 @@ export interface RecentProject {
   lastOpened: number // timestamp
 }
 
+// 자동 저장 모드
+export type AutoSaveMode = 'onChange' | 'interval' | 'both'
+
 // 설정 인터페이스
 export interface AppSettings {
   // 일반 설정
@@ -17,6 +20,11 @@ export interface AppSettings {
 
   // 언어 설정
   language: Language
+
+  // 자동 저장 설정
+  autoSaveEnabled: boolean
+  autoSaveMode: AutoSaveMode
+  autoSaveIntervalMinutes: number // 분 단위
 
   // 최근 프로젝트 목록
   recentProjects: RecentProject[]
@@ -29,6 +37,9 @@ export interface AppSettings {
 const defaultSettings: AppSettings = {
   openLastProjectOnStartup: true,
   language: detectSystemLanguage(),
+  autoSaveEnabled: true,
+  autoSaveMode: 'onChange',
+  autoSaveIntervalMinutes: 5,
   recentProjects: [],
   lastProjectPath: null,
 }
@@ -52,6 +63,9 @@ interface SettingsState {
   setOpenLastProjectOnStartup: (value: boolean) => void
   setLastProjectPath: (path: string | null) => void
   setLanguage: (language: Language) => void
+  setAutoSaveEnabled: (value: boolean) => void
+  setAutoSaveMode: (mode: AutoSaveMode) => void
+  setAutoSaveIntervalMinutes: (minutes: number) => void
 }
 
 const MAX_RECENT_PROJECTS = 10
@@ -193,6 +207,27 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setLanguage: (language) => {
     set((state) => ({
       settings: { ...state.settings, language }
+    }))
+    get().saveSettings()
+  },
+
+  setAutoSaveEnabled: (value) => {
+    set((state) => ({
+      settings: { ...state.settings, autoSaveEnabled: value }
+    }))
+    get().saveSettings()
+  },
+
+  setAutoSaveMode: (mode) => {
+    set((state) => ({
+      settings: { ...state.settings, autoSaveMode: mode }
+    }))
+    get().saveSettings()
+  },
+
+  setAutoSaveIntervalMinutes: (minutes) => {
+    set((state) => ({
+      settings: { ...state.settings, autoSaveIntervalMinutes: minutes }
     }))
     get().saveSettings()
   },

@@ -63,6 +63,15 @@ html, body, #root {
   height: 100%;
   overflow: hidden;
   background: var(--bg-primary);
+  /* 웹뷰 기본 컨텍스트 메뉴 비활성화 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 입력 필드는 텍스트 선택 허용 */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* 스크롤바 스타일 */

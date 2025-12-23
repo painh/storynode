@@ -99,6 +99,19 @@ fn get_config_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to get config dir: {}", e))
 }
 
+// Toggle DevTools (debug only)
+#[tauri::command]
+fn toggle_devtools(webview_window: tauri::WebviewWindow) {
+    #[cfg(debug_assertions)]
+    {
+        if webview_window.is_devtools_open() {
+            webview_window.close_devtools();
+        } else {
+            webview_window.open_devtools();
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -111,7 +124,8 @@ pub fn run() {
             file_exists,
             create_directory,
             delete_path,
-            get_config_dir
+            get_config_dir,
+            toggle_devtools
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
-import { NODE_COLORS, NODE_ICONS } from '../../types/editor'
+import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
 import type { StoryNodeType } from '../../types/story'
 import { useTranslation } from '../../i18n'
 import styles from './Sidebar.module.css'
@@ -10,6 +10,7 @@ const NODE_CATEGORIES = {
   flow: ['start', 'chapter_end'] as StoryNodeType[],
   content: ['dialogue', 'choice', 'battle', 'shop', 'event'] as StoryNodeType[],
   logic: ['variable', 'condition'] as StoryNodeType[],
+  editor: ['comment'] as AllNodeType[],
 }
 
 export function Sidebar() {
@@ -37,13 +38,15 @@ export function Sidebar() {
 
   const currentStage = getCurrentStage()
 
-  const handleDragStart = (e: React.DragEvent, nodeType: StoryNodeType) => {
+  const handleDragStart = (e: React.DragEvent, nodeType: AllNodeType) => {
     e.dataTransfer.setData('application/storynode-type', nodeType)
     e.dataTransfer.effectAllowed = 'move'
   }
 
-  const handleClick = (nodeType: StoryNodeType) => {
-    createNode(nodeType)
+  const handleClick = (nodeType: AllNodeType) => {
+    // Comment 노드는 클릭으로 생성 불가 (드래그로만 생성)
+    if (nodeType === 'comment') return
+    createNode(nodeType as StoryNodeType)
   }
 
   // Stage 관리
@@ -98,7 +101,7 @@ export function Sidebar() {
     }
   }
 
-  const renderNodeCategory = (title: string, nodeTypes: StoryNodeType[]) => (
+  const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => (
     <div className={styles.nodeCategory}>
       <div className={styles.categoryTitle}>{title}</div>
       <div className={styles.nodeList}>
@@ -112,7 +115,7 @@ export function Sidebar() {
             onClick={() => handleClick(type)}
           >
             <span className={styles.nodeIcon}>{NODE_ICONS[type]}</span>
-            <span className={styles.nodeLabel}>{nodes[type]}</span>
+            <span className={styles.nodeLabel}>{nodes[type as keyof typeof nodes] || type}</span>
           </div>
         ))}
       </div>
@@ -224,6 +227,7 @@ export function Sidebar() {
         {renderNodeCategory(sidebar.flow, NODE_CATEGORIES.flow)}
         {renderNodeCategory(sidebar.content, NODE_CATEGORIES.content)}
         {renderNodeCategory(sidebar.logic, NODE_CATEGORIES.logic)}
+        {renderNodeCategory(sidebar.editor || 'Editor', NODE_CATEGORIES.editor)}
       </div>
     </aside>
   )

@@ -36,6 +36,9 @@ export const ConditionNode = memo(function ConditionNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
   const { common } = useTranslation()
+
+  if (!storyNode) return null
+
   const branches = storyNode.conditionBranches || []
 
   return (

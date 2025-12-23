@@ -9,6 +9,9 @@ export const ChoiceNode = memo(function ChoiceNode({
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
+
+  if (!storyNode) return null
+
   const choices = storyNode.choices || []
 
   return (

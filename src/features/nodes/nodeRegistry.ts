@@ -7,6 +7,7 @@ import { EventNode } from './EventNode'
 import { ChapterEndNode } from './ChapterEndNode'
 import { VariableNode } from './VariableNode'
 import { ConditionNode } from './ConditionNode'
+import { CommentNode } from './CommentNode'
 import type { NodeTypes } from '@xyflow/react'
 
 export const nodeTypes: NodeTypes = {
@@ -19,4 +20,5 @@ export const nodeTypes: NodeTypes = {
   chapter_end: ChapterEndNode,
   variable: VariableNode,
   condition: ConditionNode,
+  comment: CommentNode,
 }

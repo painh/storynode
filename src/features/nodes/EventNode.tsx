@@ -12,6 +12,8 @@ export const EventNode = memo(function EventNode({
   const { storyNode } = data
   const { common } = useTranslation()
 
+  if (!storyNode) return null
+
   return (
     <BaseNode
       nodeType="event"

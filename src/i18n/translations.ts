@@ -14,6 +14,7 @@ export interface Translations {
     chapter_end: string
     variable: string
     condition: string
+    comment: string
   }
 
   // 노드 설명
@@ -56,6 +57,14 @@ export interface Translations {
   settings: {
     language: string
     openLastProjectOnStartup: string
+    autoSave: string
+    autoSaveEnabled: string
+    autoSaveMode: string
+    autoSaveModeOnChange: string
+    autoSaveModeInterval: string
+    autoSaveModeBoth: string
+    autoSaveInterval: string
+    autoSaveIntervalMinutes: string
   }
 
   // Inspector
@@ -107,6 +116,7 @@ export interface Translations {
     flow: string
     content: string
     logic: string
+    editor: string
   }
 }
 
@@ -122,6 +132,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: '챕터 종료',
       variable: '변수',
       condition: '조건',
+      comment: '코멘트',
     },
     nodeDescriptions: {
       start: '스토리 시작점',
@@ -158,6 +169,14 @@ export const translations: Record<Language, Translations> = {
     settings: {
       language: '언어',
       openLastProjectOnStartup: '시작 시 마지막 프로젝트 열기',
+      autoSave: '자동 저장',
+      autoSaveEnabled: '자동 저장 활성화',
+      autoSaveMode: '저장 방식',
+      autoSaveModeOnChange: '변경 시 저장',
+      autoSaveModeInterval: '일정 시간마다 저장',
+      autoSaveModeBoth: '둘 다',
+      autoSaveInterval: '저장 간격',
+      autoSaveIntervalMinutes: '분',
     },
     inspector: {
       nodeId: '노드 ID',
@@ -203,6 +222,7 @@ export const translations: Record<Language, Translations> = {
       flow: '흐름',
       content: '콘텐츠',
       logic: '로직',
+      editor: '에디터',
     },
   },
   en: {
@@ -216,6 +236,7 @@ export const translations: Record<Language, Translations> = {
       chapter_end: 'Chapter End',
       variable: 'Variable',
       condition: 'Condition',
+      comment: 'Comment',
     },
     nodeDescriptions: {
       start: 'Story start point',
@@ -252,6 +273,14 @@ export const translations: Record<Language, Translations> = {
     settings: {
       language: 'Language',
       openLastProjectOnStartup: 'Open last project on startup',
+      autoSave: 'Auto Save',
+      autoSaveEnabled: 'Enable auto save',
+      autoSaveMode: 'Save mode',
+      autoSaveModeOnChange: 'Save on change',
+      autoSaveModeInterval: 'Save at interval',
+      autoSaveModeBoth: 'Both',
+      autoSaveInterval: 'Save interval',
+      autoSaveIntervalMinutes: 'min',
     },
     inspector: {
       nodeId: 'Node ID',
@@ -297,6 +326,7 @@ export const translations: Record<Language, Translations> = {
       flow: 'Flow',
       content: 'Content',
       logic: 'Logic',
+      editor: 'Editor',
     },
   },
 }

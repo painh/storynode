@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
+// 웹뷰 기본 컨텍스트 메뉴 비활성화
+document.addEventListener('contextmenu', (e) => {
+  e.preventDefault()
+})
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

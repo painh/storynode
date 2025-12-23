@@ -28,32 +28,6 @@ npm run tauri dev
 npm run tauri build
 ```
 
-## 폴더 구조
-
-```
-src/
-├── components/layout/    # Header, Sidebar, Inspector
-├── features/
-│   ├── canvas/          # React Flow 캔버스
-│   ├── nodes/           # 노드 컴포넌트들
-│   ├── edges/           # 엣지 컴포넌트
-│   └── inspector/       # 속성 편집기
-├── stores/              # Zustand 상태 관리
-├── types/               # TypeScript 타입 정의
-├── utils/               # 유틸리티 함수
-└── i18n/                # 다국어 지원 (한국어/영어)
-```
-
-## 노드 타입
-- `start`: 시작 노드
-- `dialogue`: 대사 노드
-- `choice`: 선택지 노드
-- `battle`: 전투 노드
-- `shop`: 상점 노드
-- `event`: 이벤트 노드
-- `chapter_end`: 챕터 종료 노드
-- `variable`: 변수 조작 노드
-- `condition`: 조건 분기 노드
 
 ## 작업 완료 후 커밋
 작업이 끝나면 반드시 변경사항을 커밋해주세요:

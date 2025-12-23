@@ -1,23 +1,60 @@
-import type { StoryNode } from '../types/story'
+import type { StoryNode, StoryNodeType } from '../types/story'
 
 interface LayoutResult {
   [nodeId: string]: { x: number; y: number }
 }
 
-const NODE_WIDTH = 260
-const NODE_HEIGHT = 100
+interface PlacedNode {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+// 노드 타입별 너비 (실제 렌더링되는 CSS 기준)
+const NODE_WIDTHS: Record<StoryNodeType, number> = {
+  start: 200,
+  dialogue: 260,
+  choice: 260,
+  battle: 220,
+  shop: 220,
+  event: 220,
+  chapter_end: 200,
+  variable: 260,
+  condition: 280,
+}
+
+const DEFAULT_NODE_WIDTH = 260
+const NODE_HEIGHT = 120
 const HORIZONTAL_GAP = 80
 const VERTICAL_GAP = 40
 const SNAP_GRID = 20
 
-// snap grid에 맞추기
 const snap = (value: number) => Math.round(value / SNAP_GRID) * SNAP_GRID
+
+function getNodeWidth(node: StoryNode): number {
+  return NODE_WIDTHS[node.type] || DEFAULT_NODE_WIDTH
+}
+
+/**
+ * 두 사각형이 겹치는지 확인
+ */
+function rectsOverlap(
+  x1: number, y1: number, w1: number, h1: number,
+  x2: number, y2: number, w2: number, h2: number,
+  margin: number = 20
+): boolean {
+  return !(
+    x1 + w1 + margin <= x2 ||
+    x2 + w2 + margin <= x1 ||
+    y1 + h1 + margin <= y2 ||
+    y2 + h2 + margin <= y1
+  )
+}
 
 /**
  * 스토리 노드들을 연결 관계에 따라 자동 배치
- * - DFS 기반으로 메인 흐름을 따라가며 배치
- * - choice 분기는 세로로 분산
- * - 합류점은 가장 깊은 레벨에 배치
  */
 export function autoLayoutNodes(
   nodes: StoryNode[],
@@ -26,26 +63,48 @@ export function autoLayoutNodes(
   if (nodes.length === 0) return {}
 
   const result: LayoutResult = {}
-  const visited = new Set<string>()
   const nodeMap = new Map(nodes.map(n => [n.id, n]))
+  const placed = new Set<string>()
+  const placedNodes: PlacedNode[] = []
 
-  // 각 노드가 몇 번 참조되는지 카운트 (합류점 찾기)
+  // 노드에서 연결된 다음 노드 ID들 가져오기
+  function getNextNodeIds(node: StoryNode): string[] {
+    const ids: string[] = []
+
+    if (node.nextNodeId && nodeMap.has(node.nextNodeId)) {
+      ids.push(node.nextNodeId)
+    }
+
+    node.choices?.forEach(choice => {
+      if (choice.nextNodeId && nodeMap.has(choice.nextNodeId)) {
+        ids.push(choice.nextNodeId)
+      }
+    })
+
+    node.conditionBranches?.forEach(branch => {
+      if (branch.nextNodeId && nodeMap.has(branch.nextNodeId)) {
+        ids.push(branch.nextNodeId)
+      }
+    })
+
+    if (node.defaultNextNodeId && nodeMap.has(node.defaultNextNodeId)) {
+      ids.push(node.defaultNextNodeId)
+    }
+
+    return ids
+  }
+
+  // 각 노드가 몇 번 참조되는지 카운트
   const incomingCount = new Map<string, number>()
   nodes.forEach(node => {
-    if (node.nextNodeId) {
-      incomingCount.set(node.nextNodeId, (incomingCount.get(node.nextNodeId) || 0) + 1)
-    }
-    node.choices?.forEach(choice => {
-      if (choice.nextNodeId) {
-        incomingCount.set(choice.nextNodeId, (incomingCount.get(choice.nextNodeId) || 0) + 1)
-      }
+    const nextIds = getNextNodeIds(node)
+    nextIds.forEach(nextId => {
+      incomingCount.set(nextId, (incomingCount.get(nextId) || 0) + 1)
     })
   })
 
-  // startNodeId 또는 첫 번째 노드에서 시작
+  // startNodeId 또는 incoming이 0인 노드 찾기
   let startId = startNodeId && nodeMap.has(startNodeId) ? startNodeId : null
-
-  // startNodeId가 없으면 incoming이 0인 노드(루트) 찾기
   if (!startId) {
     for (const node of nodes) {
       if (!incomingCount.has(node.id) || incomingCount.get(node.id) === 0) {
@@ -56,66 +115,137 @@ export function autoLayoutNodes(
   }
   if (!startId) startId = nodes[0].id
 
-  // Y 위치 트래커
-  let currentY = 100
+  // 주어진 위치에 노드를 배치할 수 있는지 확인, 불가능하면 Y를 조정
+  function findFreePosition(x: number, y: number, width: number, height: number): number {
+    let newY = y
+    let maxAttempts = 50
 
-  // DFS로 노드 배치
-  function layoutNode(nodeId: string, x: number, baseY: number): number {
-    if (visited.has(nodeId)) return baseY
+    while (maxAttempts > 0) {
+      let hasOverlap = false
 
-    const node = nodeMap.get(nodeId)
-    if (!node) return baseY
-
-    visited.add(nodeId)
-
-    // 현재 노드 배치 (snap grid에 맞춤)
-    result[nodeId] = { x: snap(x), y: snap(baseY) }
-
-    let nextY = baseY
-
-    // choice 노드: 각 선택지를 세로로 분기
-    if (node.choices && node.choices.length > 0) {
-      const validChoices = node.choices.filter(c => c.nextNodeId && nodeMap.has(c.nextNodeId))
-
-      if (validChoices.length > 0) {
-        let branchY = baseY
-
-        for (let i = 0; i < validChoices.length; i++) {
-          const choice = validChoices[i]
-          if (choice.nextNodeId && !visited.has(choice.nextNodeId)) {
-            const endY = layoutNode(choice.nextNodeId, x + NODE_WIDTH + HORIZONTAL_GAP, branchY)
-            branchY = endY + NODE_HEIGHT + VERTICAL_GAP
-          }
+      for (const p of placedNodes) {
+        if (rectsOverlap(x, newY, width, height, p.x, p.y, p.width, p.height)) {
+          // 겹치면 해당 노드 바로 아래로 이동
+          newY = p.y + p.height + VERTICAL_GAP
+          hasOverlap = true
+          break
         }
-        nextY = Math.max(nextY, branchY - NODE_HEIGHT - VERTICAL_GAP)
       }
-    }
-    // 일반 노드: 다음 노드로 진행
-    else if (node.nextNodeId && nodeMap.has(node.nextNodeId)) {
-      if (!visited.has(node.nextNodeId)) {
-        nextY = layoutNode(node.nextNodeId, x + NODE_WIDTH + HORIZONTAL_GAP, baseY)
-      }
+
+      if (!hasOverlap) break
+      maxAttempts--
     }
 
-    return nextY
+    return snap(newY)
   }
 
-  // 시작 노드부터 레이아웃
-  layoutNode(startId, 100, currentY)
+  // BFS로 레벨별 배치
+  interface QueueItem {
+    nodeId: string
+    level: number
+    preferredY: number
+  }
 
-  // 방문하지 않은 노드들 (연결되지 않은 노드) 처리
-  // 메인 흐름 아래에 별도 행으로 배치
-  const unvisitedNodes = nodes.filter(n => !visited.has(n.id))
-  if (unvisitedNodes.length > 0) {
-    // 기존 배치된 노드들의 최대 Y 찾기
-    const maxY = Math.max(...Object.values(result).map(p => p.y), 0)
-    let unvisitedY = maxY + NODE_HEIGHT + VERTICAL_GAP * 3  // 메인 흐름과 간격 두기
+  const queue: QueueItem[] = [{ nodeId: startId, level: 0, preferredY: 100 }]
+  const levelNodes: Map<number, string[]> = new Map()
 
-    for (const node of unvisitedNodes) {
-      if (!visited.has(node.id)) {
-        // 이 노드에서 시작하는 서브트리 배치
-        const subtreeEndY = layoutNode(node.id, 100, unvisitedY)
-        unvisitedY = subtreeEndY + NODE_HEIGHT + VERTICAL_GAP * 2
+  // 첫 번째 패스: 레벨 할당
+  while (queue.length > 0) {
+    const { nodeId, level, preferredY } = queue.shift()!
+
+    if (placed.has(nodeId)) continue
+    placed.add(nodeId)
+
+    if (!levelNodes.has(level)) {
+      levelNodes.set(level, [])
+    }
+    levelNodes.get(level)!.push(nodeId)
+
+    const node = nodeMap.get(nodeId)
+    if (!node) continue
+
+    const nextIds = getNextNodeIds(node)
+    let nextY = preferredY
+
+    for (let i = 0; i < nextIds.length; i++) {
+      const nextId = nextIds[i]
+      if (!placed.has(nextId)) {
+        queue.push({
+          nodeId: nextId,
+          level: level + 1,
+          preferredY: i === 0 ? preferredY : nextY
+        })
+        if (i > 0) {
+          nextY += NODE_HEIGHT + VERTICAL_GAP
+        }
+      }
+    }
+  }
+
+  // 두 번째 패스: 실제 배치
+  placed.clear()
+  const nodePreferredY = new Map<string, number>()
+  nodePreferredY.set(startId, 100)
+
+  // 다시 BFS로 배치
+  const placeQueue: QueueItem[] = [{ nodeId: startId, level: 0, preferredY: 100 }]
+
+  while (placeQueue.length > 0) {
+    const { nodeId, level, preferredY } = placeQueue.shift()!
+
+    if (placed.has(nodeId)) continue
+
+    const node = nodeMap.get(nodeId)
+    if (!node) continue
+
+    placed.add(nodeId)
+
+    const nodeWidth = getNodeWidth(node)
+    const x = snap(100 + level * (DEFAULT_NODE_WIDTH + HORIZONTAL_GAP))
+    const y = findFreePosition(x, preferredY, nodeWidth, NODE_HEIGHT)
+
+    result[nodeId] = { x, y }
+    placedNodes.push({ id: nodeId, x, y, width: nodeWidth, height: NODE_HEIGHT })
+
+    // 자식 노드들 큐에 추가
+    const nextIds = getNextNodeIds(node)
+    let childY = y
+
+    for (let i = 0; i < nextIds.length; i++) {
+      const nextId = nextIds[i]
+      if (!placed.has(nextId)) {
+        placeQueue.push({
+          nodeId: nextId,
+          level: level + 1,
+          preferredY: childY
+        })
+        // 분기일 경우 다음 분기는 현재 노드 아래에 배치 시도
+        if (nextIds.length > 1) {
+          childY += NODE_HEIGHT + VERTICAL_GAP
+        }
+      }
+    }
+  }
+
+  // 아직 배치되지 않은 노드들 (연결되지 않은 노드들)
+  const unplacedNodes = nodes.filter(n => !placed.has(n.id))
+
+  if (unplacedNodes.length > 0) {
+    let globalMaxY = 100
+    for (const p of placedNodes) {
+      globalMaxY = Math.max(globalMaxY, p.y + p.height)
+    }
+
+    for (const node of unplacedNodes) {
+      if (!placed.has(node.id)) {
+        placed.add(node.id)
+        const nodeWidth = getNodeWidth(node)
+        const x = snap(100)
+        const y = findFreePosition(x, globalMaxY + VERTICAL_GAP * 2, nodeWidth, NODE_HEIGHT)
+
+        result[node.id] = { x, y }
+        placedNodes.push({ id: node.id, x, y, width: nodeWidth, height: NODE_HEIGHT })
+        globalMaxY = Math.max(globalMaxY, y + NODE_HEIGHT)
       }
     }
   }
@@ -125,7 +255,6 @@ export function autoLayoutNodes(
 
 /**
  * 기존 위치가 없는 노드들만 자동 배치
- * 기존 위치가 있는 노드는 유지
  */
 export function autoLayoutNewNodes(
   nodes: StoryNode[],

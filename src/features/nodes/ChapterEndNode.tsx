@@ -10,6 +10,8 @@ export const ChapterEndNode = memo(function ChapterEndNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
 
+  if (!storyNode) return null
+
   return (
     <BaseNode
       nodeType="chapter_end"
