@@ -24,5 +24,13 @@ dist-ssr
 *.sw?
 
 # Project files (user content)
-projects/*
-!projects/.gitkeep
+editor/projects/*
+!editor/projects/.gitkeep
+
+# Tauri build
+**/src-tauri/target/
+
+# Rust
+Cargo.lock
+!editor/src-tauri/Cargo.lock
+!player/src-tauri/Cargo.lock
