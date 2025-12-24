@@ -1,9 +1,54 @@
-import type { StoryProject, ProjectResource } from '../../types/story'
+import type { StoryProject, ProjectResource, StoryNode } from '../../types/story'
 
 // ID 생성 함수
 export const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 export const generateResourceId = () => `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 export const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+
+// 새 챕터용 기본 노드 생성
+export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: string } => {
+  const startId = generateId()
+  const dialogue1Id = generateId()
+  const dialogue2Id = generateId()
+  const choiceId = generateId()
+
+  const nodes: StoryNode[] = [
+    {
+      id: startId,
+      type: 'start',
+      position: { x: 100, y: 200 },
+      nextNodeId: dialogue1Id,
+    },
+    {
+      id: dialogue1Id,
+      type: 'dialogue',
+      position: { x: 350, y: 200 },
+      speaker: '화자',
+      text: '첫 번째 대사입니다.',
+      nextNodeId: dialogue2Id,
+    },
+    {
+      id: dialogue2Id,
+      type: 'dialogue',
+      position: { x: 600, y: 200 },
+      speaker: '화자',
+      text: '두 번째 대사입니다.',
+      nextNodeId: choiceId,
+    },
+    {
+      id: choiceId,
+      type: 'choice',
+      position: { x: 850, y: 200 },
+      text: '선택지를 고르세요.',
+      choices: [
+        { id: generateId(), text: '선택 1', nextNodeId: '' },
+        { id: generateId(), text: '선택 2', nextNodeId: '' },
+      ],
+    },
+  ]
+
+  return { nodes, startNodeId: startId }
+}
 
 // Base path 가져오기 (GitHub Pages 등에서 사용)
 const getBasePath = (): string => {
@@ -42,33 +87,37 @@ export const defaultTemplateResources: ProjectResource[] = [
 ]
 
 // 기본 프로젝트 생성
-export const createDefaultProject = (): StoryProject => ({
-  name: 'New Story Project',
-  version: '1.0.0',
-  stages: [
-    {
-      id: 'stage_1',
-      title: 'Stage 1',
-      description: 'First stage',
-      partyCharacters: ['kairen'],
-      chapters: [
-        {
-          id: 'chapter_1',
-          title: 'Chapter 1',
-          description: 'First chapter',
-          nodes: [],
-          startNodeId: '',
-        }
-      ]
-    }
-  ],
-  gameSettings: {
-    defaultGameMode: 'visualNovel',
-    defaultThemeId: 'dark',
-    customThemes: [],
-  },
-  resources: [...defaultTemplateResources],
-})
+export const createDefaultProject = (): StoryProject => {
+  const { nodes, startNodeId } = createDefaultChapterNodes()
+
+  return {
+    name: 'New Story Project',
+    version: '1.0.0',
+    stages: [
+      {
+        id: 'stage_1',
+        title: 'Stage 1',
+        description: 'First stage',
+        partyCharacters: ['kairen'],
+        chapters: [
+          {
+            id: 'chapter_1',
+            title: 'Chapter 1',
+            description: 'First chapter',
+            nodes,
+            startNodeId,
+          }
+        ]
+      }
+    ],
+    gameSettings: {
+      defaultGameMode: 'visualNovel',
+      defaultThemeId: 'dark',
+      customThemes: [],
+    },
+    resources: [...defaultTemplateResources],
+  }
+}
 
 // 기본 gameSettings 생성
 export const createDefaultGameSettings = () => ({

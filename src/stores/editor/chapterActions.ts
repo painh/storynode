@@ -1,17 +1,23 @@
 import type { StoryChapter } from '../../types/story'
 import type { EditorState, ImmerSet } from './types'
+import { createDefaultChapterNodes } from '../utils/editorUtils'
 
 export const createChapterActions = (set: ImmerSet, get: () => EditorState) => ({
   createChapter: (stageId: string, chapter: Partial<StoryChapter>) => set((state) => {
     const stage = state.project.stages.find(s => s.id === stageId)
     if (stage) {
+      // 노드가 제공되지 않으면 기본 노드 생성
+      const defaultNodes = chapter.nodes?.length ? { nodes: chapter.nodes, startNodeId: chapter.startNodeId || '' } : createDefaultChapterNodes()
+
       const newChapter: StoryChapter = {
         id: `chapter_${Date.now()}`,
         title: chapter.title || 'New Chapter',
         description: chapter.description || '',
-        nodes: chapter.nodes || [],
-        startNodeId: chapter.startNodeId || '',
+        nodes: defaultNodes.nodes,
+        startNodeId: defaultNodes.startNodeId,
         ...chapter,
+        // chapter에서 nodes/startNodeId가 비어있으면 기본값 사용
+        ...(chapter.nodes?.length ? {} : { nodes: defaultNodes.nodes, startNodeId: defaultNodes.startNodeId }),
       }
       stage.chapters.push(newChapter)
       state.isDirty = true
