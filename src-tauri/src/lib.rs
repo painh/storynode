@@ -89,6 +89,51 @@ fn delete_path(path: String) -> Result<(), String> {
     }
 }
 
+// Copy a directory recursively
+#[tauri::command]
+fn copy_directory(src: String, dest: String) -> Result<(), String> {
+    let src_path = Path::new(&src);
+    let dest_path = Path::new(&dest);
+
+    if !src_path.exists() {
+        return Err(format!("Source directory does not exist: {}", src));
+    }
+
+    copy_dir_recursive(src_path, dest_path)
+}
+
+fn copy_dir_recursive(src: &Path, dest: &Path) -> Result<(), String> {
+    if !dest.exists() {
+        fs::create_dir_all(dest).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
+    let entries = fs::read_dir(src).map_err(|e| format!("Failed to read directory: {}", e))?;
+
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
+        let src_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
+
+        if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dest_path)?;
+        } else {
+            fs::copy(&src_path, &dest_path)
+                .map_err(|e| format!("Failed to copy file: {}", e))?;
+        }
+    }
+
+    Ok(())
+}
+
+// Write a text file (for index.html export)
+#[tauri::command]
+fn write_text_file(path: String, content: String) -> Result<(), String> {
+    if let Some(parent) = Path::new(&path).parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+    fs::write(&path, content).map_err(|e| format!("Failed to write file: {}", e))
+}
+
 // Image resource info with base64 data
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ImageResource {
@@ -187,6 +232,8 @@ pub fn run() {
             file_exists,
             create_directory,
             delete_path,
+            copy_directory,
+            write_text_file,
             get_config_dir,
             toggle_devtools
         ])

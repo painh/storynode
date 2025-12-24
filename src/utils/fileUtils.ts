@@ -529,3 +529,61 @@ export async function downloadProjectAsZip(project: StoryProject): Promise<void>
   const json = JSON.stringify(project, null, 2)
   downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
 }
+
+// ============================================
+// 게임 빌드 익스포트
+// ============================================
+
+// Copy directory (Tauri only)
+async function copyDirectory(src: string, dest: string): Promise<void> {
+  if (isTauri()) {
+    await invoke('copy_directory', { src, dest })
+    return
+  }
+  throw new Error('Copy directory is only available in Tauri environment')
+}
+
+// Write text file (Tauri only)
+async function writeTextFile(path: string, content: string): Promise<void> {
+  if (isTauri()) {
+    await invoke('write_text_file', { path, content })
+    return
+  }
+  throw new Error('Write text file is only available in Tauri environment')
+}
+
+/**
+ * 게임 빌드 익스포트 (Tauri 환경)
+ * 프로젝트 폴더를 복사하고 index.html 추가
+ */
+export async function exportGameBuild(
+  projectDir: string,
+  exportDir: string,
+  htmlTemplate: string
+): Promise<void> {
+  if (!isTauri()) {
+    throw new Error('Export game build is only available in Tauri environment')
+  }
+
+  // 1. 프로젝트 폴더 복사
+  await copyDirectory(projectDir, exportDir)
+
+  // 2. index.html 생성
+  await writeTextFile(`${exportDir}/index.html`, htmlTemplate)
+}
+
+/**
+ * 게임 빌드를 단일 HTML로 다운로드 (웹 환경 폴백)
+ * 모든 데이터를 HTML에 임베딩
+ */
+export function downloadGameBuildAsHtml(htmlContent: string, projectName: string): void {
+  const blob = new Blob([htmlContent], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${projectName.toLowerCase().replace(/\s+/g, '_')}_game.html`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
