@@ -8,8 +8,8 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react()],
 
-  // GitHub Pages 배포 시 base path 설정
-  base: process.env.GITHUB_ACTIONS ? '/storynode/' : '/',
+  // GitHub Pages 배포 시 base path 설정 (Tauri 빌드 시에는 항상 '/' 사용)
+  base: process.env.GITHUB_ACTIONS && !process.env.TAURI_ENV_PLATFORM ? '/storynode/' : '/',
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
