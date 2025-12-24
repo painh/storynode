@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
-import type { StoryNodeType } from '../../types/story'
+import type { StoryNodeType, VariableType } from '../../types/story'
 import { useTranslation } from '../../i18n'
 import { isTauri, createDirectory } from '../../utils/fileUtils'
 import styles from './Sidebar.module.css'
@@ -52,6 +52,10 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
     getCurrentStage,
     getTemplates,
     createNodeFromTemplate,
+    getVariables,
+    createVariable,
+    updateVariable,
+    deleteVariable,
   } = useEditorStore()
 
   const { settings } = useSettingsStore()
@@ -60,6 +64,7 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<SidebarTab>('story')
   const [editingStageId, setEditingStageId] = useState<string | null>(null)
   const [editingChapterId, setEditingChapterId] = useState<string | null>(null)
+  const [editingVariableId, setEditingVariableId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [nodeFilter, setNodeFilter] = useState('')
   const [resourceFilter, setResourceFilter] = useState('')
@@ -151,6 +156,37 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
     }
   }
 
+  // Variable 관리
+  const variables = getVariables()
+
+  const handleAddVariable = () => {
+    createVariable()
+  }
+
+  const handleVariableNameChange = (variableId: string, name: string) => {
+    updateVariable(variableId, { name })
+  }
+
+  const handleVariableTypeChange = (variableId: string, type: VariableType) => {
+    updateVariable(variableId, { type })
+  }
+
+  const handleVariableDefaultValueChange = (variableId: string, type: VariableType, value: string) => {
+    let parsedValue: boolean | number | string = value
+    if (type === 'boolean') {
+      parsedValue = value === 'true'
+    } else if (type === 'number') {
+      parsedValue = Number(value) || 0
+    }
+    updateVariable(variableId, { defaultValue: parsedValue })
+  }
+
+  const handleDeleteVariable = (e: React.MouseEvent, variableId: string) => {
+    e.stopPropagation()
+    if (confirm('Delete this variable?')) {
+      deleteVariable(variableId)
+    }
+  }
 
   const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => {
     const filteredTypes = nodeTypes.filter(type => {
@@ -277,6 +313,95 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
               )}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Variables 섹션 */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Variables</span>
+          <button className={styles.addButton} onClick={handleAddVariable} title="Add Variable">+</button>
+        </div>
+        <div className={styles.variableList}>
+          {variables.map((variable) => (
+            <div key={variable.id} className={styles.variableItem}>
+              {editingVariableId === variable.id ? (
+                <input
+                  type="text"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={() => {
+                    handleVariableNameChange(variable.id, editingTitle)
+                    setEditingVariableId(null)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleVariableNameChange(variable.id, editingTitle)
+                      setEditingVariableId(null)
+                    }
+                    if (e.key === 'Escape') setEditingVariableId(null)
+                  }}
+                  className={styles.editInput}
+                  autoFocus
+                />
+              ) : (
+                <>
+                  <div className={styles.variableHeader}>
+                    <span
+                      className={styles.variableName}
+                      onDoubleClick={() => {
+                        setEditingVariableId(variable.id)
+                        setEditingTitle(variable.name)
+                      }}
+                    >
+                      {variable.name}
+                    </span>
+                    <button
+                      className={styles.deleteButton}
+                      onClick={(e) => handleDeleteVariable(e, variable.id)}
+                      title="Delete Variable"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className={styles.variableControls}>
+                    <select
+                      className={styles.variableTypeSelect}
+                      value={variable.type}
+                      onChange={(e) => handleVariableTypeChange(variable.id, e.target.value as VariableType)}
+                    >
+                      <option value="boolean">Boolean</option>
+                      <option value="number">Number</option>
+                      <option value="string">String</option>
+                    </select>
+                    {variable.type === 'boolean' ? (
+                      <select
+                        className={styles.variableValueInput}
+                        value={String(variable.defaultValue)}
+                        onChange={(e) => handleVariableDefaultValueChange(variable.id, variable.type, e.target.value)}
+                      >
+                        <option value="false">false</option>
+                        <option value="true">true</option>
+                      </select>
+                    ) : (
+                      <input
+                        type={variable.type === 'number' ? 'number' : 'text'}
+                        className={styles.variableValueInput}
+                        value={String(variable.defaultValue)}
+                        onChange={(e) => handleVariableDefaultValueChange(variable.id, variable.type, e.target.value)}
+                        placeholder="Default value"
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+          {variables.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyText}>No variables defined</div>
+            </div>
+          )}
         </div>
       </div>
     </>

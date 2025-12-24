@@ -1,22 +1,8 @@
 import type { StoryNode, ImageNodeData, ImageAlignment, ImageEffectType, ImageExitEffectType, ImageTransitionTiming, ProjectResource } from '../../../types/story'
 import { IMAGE_EFFECT_GROUPS, COMBINABLE_EFFECTS } from '../../../types/story'
 import { HelpTooltip } from './HelpTooltip'
+import { useTranslation } from '../../../i18n'
 import styles from '../Inspector.module.css'
-
-// 필드별 도움말 텍스트
-const HELP_TEXTS = {
-  imageResource: '표시할 이미지를 선택합니다.\n프로젝트의 리소스 탭에서 먼저 이미지를 추가해야 합니다.',
-  layer: '이미지가 표시될 레이어입니다.\n• background: 배경 레이어 (가장 뒤)\n• character: 캐릭터 레이어 (배경 앞)',
-  layerOrder: '같은 레이어 내에서의 표시 순서입니다.\n숫자가 클수록 앞에 표시됩니다.\n같은 레이어+순서의 이미지는 교체됩니다.',
-  alignment: '이미지의 가로 정렬 위치입니다.\n• Left: 왼쪽 정렬\n• Center: 중앙 정렬\n• Right: 오른쪽 정렬\n• Custom: 직접 x, y 좌표 지정',
-  flipHorizontal: '이미지를 좌우로 뒤집습니다.\n캐릭터가 반대 방향을 바라보게 할 때 유용합니다.',
-  effects: '이미지 등장 시 재생할 효과입니다.\n여러 효과를 조합할 수 있습니다.\n• Fade In: 서서히 나타남\n• Shake: 흔들림\n• Bounce: 튀어오름\n• Flash: 깜빡임\n• Pulse: 확대/축소 펄스',
-  slide: '이미지가 화면 밖에서 들어오는 효과입니다.\n1개만 선택할 수 있습니다.',
-  zoom: '이미지의 크기 변화 효과입니다.\n• Zoom In: 작은 상태에서 확대\n• Zoom Out: 큰 상태에서 축소',
-  duration: '효과 애니메이션의 지속 시간입니다.\n밀리초(ms) 단위로 설정합니다.\n예: 500 = 0.5초',
-  exitEffect: '같은 레이어+순서에 있는 기존 이미지의 퇴장 효과입니다.\n새 이미지로 교체될 때 적용됩니다.',
-  transitionTiming: '퇴장과 등장 효과의 타이밍입니다.\n• 순차: 기존 이미지가 사라진 후 새 이미지 등장\n• 동시: 기존 이미지가 사라지면서 새 이미지 등장',
-}
 
 // 효과 표시 이름
 const EFFECT_LABELS: Record<ImageEffectType, string> = {
@@ -58,6 +44,8 @@ interface ImageNodeInspectorProps {
 }
 
 export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNodeInspectorProps) {
+  const t = useTranslation()
+
   const handleImageDataChange = (field: keyof ImageNodeData, value: unknown) => {
     const currentImageData = node.imageData || {
       resourcePath: '',
@@ -106,7 +94,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Image Resource</label>
-          <HelpTooltip content={HELP_TEXTS.imageResource} />
+          <HelpTooltip content={t.help.imageResource} />
         </div>
         <select
           className={styles.select}
@@ -140,7 +128,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Layer</label>
-          <HelpTooltip content={HELP_TEXTS.layer} />
+          <HelpTooltip content={t.help.layer} />
         </div>
         <select
           className={styles.select}
@@ -156,7 +144,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Layer Order</label>
-          <HelpTooltip content={HELP_TEXTS.layerOrder} />
+          <HelpTooltip content={t.help.layerOrder} />
         </div>
         <input
           type="number"
@@ -170,7 +158,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Alignment</label>
-          <HelpTooltip content={HELP_TEXTS.alignment} />
+          <HelpTooltip content={t.help.alignment} />
         </div>
         <select
           className={styles.select}
@@ -212,7 +200,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Flip</label>
-          <HelpTooltip content={HELP_TEXTS.flipHorizontal} />
+          <HelpTooltip content={t.help.flipHorizontal} />
         </div>
         <label className={styles.checkbox}>
           <input
@@ -228,7 +216,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Effects (조합 가능)</label>
-          <HelpTooltip content={HELP_TEXTS.effects} />
+          <HelpTooltip content={t.help.effects} />
         </div>
         <div className={styles.effectGroup}>
           {COMBINABLE_EFFECTS.map(effect => (
@@ -251,7 +239,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Slide (1개만 선택)</label>
-          <HelpTooltip content={HELP_TEXTS.slide} />
+          <HelpTooltip content={t.help.slide} />
         </div>
         <div className={styles.effectRadioGroup}>
           <label
@@ -286,7 +274,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Zoom (1개만 선택)</label>
-          <HelpTooltip content={HELP_TEXTS.zoom} />
+          <HelpTooltip content={t.help.zoom} />
         </div>
         <div className={styles.effectRadioGroup}>
           <label
@@ -322,7 +310,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
         <div className={styles.field}>
           <div className={styles.labelWithHelp}>
             <label className={styles.label}>Duration (ms)</label>
-            <HelpTooltip content={HELP_TEXTS.duration} />
+            <HelpTooltip content={t.help.duration} />
           </div>
           <input
             type="number"
@@ -342,7 +330,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
       <div className={styles.field}>
         <div className={styles.labelWithHelp}>
           <label className={styles.label}>Exit Effect (기존 이미지)</label>
-          <HelpTooltip content={HELP_TEXTS.exitEffect} />
+          <HelpTooltip content={t.help.exitEffect} />
         </div>
         <select
           className={styles.select}
@@ -375,7 +363,7 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
           <div className={styles.field}>
             <div className={styles.labelWithHelp}>
               <label className={styles.label}>Transition Timing</label>
-              <HelpTooltip content={HELP_TEXTS.transitionTiming} />
+              <HelpTooltip content={t.help.transitionTiming} />
             </div>
             <select
               className={styles.select}

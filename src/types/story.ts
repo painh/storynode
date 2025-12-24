@@ -164,12 +164,24 @@ export interface StoryBattleReward {
 
 // Variable 노드용 타입
 export type VariableAction = 'set' | 'add' | 'subtract' | 'multiply'
-export type VariableTarget = 'flag' | 'gold' | 'hp' | 'affection' | 'reputation'
+export type VariableTarget = 'flag' | 'gold' | 'hp' | 'affection' | 'reputation' | 'variable'
+
+// 변수 정의 (선언)
+export type VariableType = 'boolean' | 'number' | 'string'
+
+export interface VariableDefinition {
+  id: string
+  name: string
+  type: VariableType
+  defaultValue: boolean | number | string
+  description?: string  // 변수 설명 (선택)
+}
 
 export interface VariableOperation {
   target: VariableTarget
   action: VariableAction
   key?: string              // flag용
+  variableId?: string       // variable용 (선언된 변수 참조)
   characterId?: CharacterId // affection용
   factionId?: FactionId     // reputation용
   value: number | string | boolean
@@ -253,6 +265,8 @@ export interface StoryChapter {
   }
   // 에디터용 코멘트 노드
   commentNodes?: CommentNode[]
+  // 변수 정의 (선언된 변수 목록)
+  variables?: VariableDefinition[]
 }
 
 // 스토리 스테이지 (챕터 묶음)

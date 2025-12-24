@@ -1,4 +1,5 @@
 import type { StoryNode, VariableOperation, VariableAction, VariableTarget, CharacterId, FactionId } from '../../../types/story'
+import { useEditorStore } from '../../../stores/editorStore'
 import { HelpTooltip } from './HelpTooltip'
 import styles from '../Inspector.module.css'
 
@@ -8,7 +9,8 @@ interface VariableNodeInspectorProps {
 }
 
 const VARIABLE_TARGETS: { value: VariableTarget; label: string }[] = [
-  { value: 'flag', label: '플래그' },
+  { value: 'variable', label: '변수' },
+  { value: 'flag', label: '플래그 (레거시)' },
   { value: 'gold', label: '골드' },
   { value: 'hp', label: 'HP' },
   { value: 'affection', label: '호감도' },
@@ -40,20 +42,30 @@ const FACTION_IDS: { value: FactionId; label: string }[] = [
 
 const HELP_TEXTS = {
   operations: '변수 연산 목록입니다.\n위에서부터 순서대로 실행됩니다.',
-  target: '변경할 대상을 선택합니다.\n- 플래그: 커스텀 변수\n- 골드: 보유 골드\n- HP: 체력\n- 호감도: 캐릭터 호감도\n- 평판: 세력 평판',
+  target: '변경할 대상을 선택합니다.\n- 변수: 선언된 변수\n- 플래그: 레거시 커스텀 변수\n- 골드: 보유 골드\n- HP: 체력\n- 호감도: 캐릭터 호감도\n- 평판: 세력 평판',
   action: '연산 종류를 선택합니다.\n- 설정: 값을 직접 설정\n- 더하기: 현재 값에 더함\n- 빼기: 현재 값에서 뺌\n- 곱하기: 현재 값에 곱함',
 }
 
 export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorProps) {
   const operations = node.variableOperations || []
+  const variables = useEditorStore(state => state.getVariables())
 
   const handleAddOperation = () => {
-    const newOp: VariableOperation = {
-      target: 'flag',
-      action: 'set',
-      key: '',
-      value: '',
-    }
+    // 선언된 변수가 있으면 variable 타입으로 시작, 없으면 flag로 시작
+    const hasVariables = variables.length > 0
+    const newOp: VariableOperation = hasVariables
+      ? {
+          target: 'variable',
+          action: 'set',
+          variableId: variables[0]?.id,
+          value: variables[0]?.defaultValue ?? 0,
+        }
+      : {
+          target: 'flag',
+          action: 'set',
+          key: '',
+          value: '',
+        }
     onUpdate({ variableOperations: [...operations, newOp] })
   }
 
@@ -74,6 +86,15 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
     let newOp: VariableOperation = { target, action: op.action, value: op.value }
 
     switch (target) {
+      case 'variable':
+        const firstVar = variables[0]
+        newOp = {
+          target,
+          action: 'set',
+          variableId: firstVar?.id,
+          value: firstVar?.defaultValue ?? 0,
+        }
+        break
       case 'flag':
         newOp = { target, action: 'set', key: '', value: '' }
         break
@@ -94,6 +115,92 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
 
   const renderOperationEditor = (index: number, op: VariableOperation) => {
     switch (op.target) {
+      case 'variable': {
+        const selectedVar = variables.find(v => v.id === op.variableId)
+        const varType = selectedVar?.type || 'number'
+
+        if (variables.length === 0) {
+          return (
+            <div className={styles.field}>
+              <div className={styles.noChoices}>
+                선언된 변수가 없습니다.<br />
+                사이드바의 Variables 섹션에서 변수를 먼저 선언해주세요.
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <>
+            <div className={styles.field}>
+              <label className={styles.label}>변수</label>
+              <select
+                className={styles.select}
+                value={op.variableId || ''}
+                onChange={(e) => {
+                  const newVar = variables.find(v => v.id === e.target.value)
+                  handleOperationChange(index, {
+                    variableId: e.target.value,
+                    value: newVar?.defaultValue ?? 0,
+                  })
+                }}
+              >
+                {variables.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.name} ({v.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+            {varType !== 'boolean' && (
+              <div className={styles.field}>
+                <div className={styles.labelWithHelp}>
+                  <label className={styles.label}>연산</label>
+                  <HelpTooltip content={HELP_TEXTS.action} />
+                </div>
+                <select
+                  className={styles.select}
+                  value={op.action}
+                  onChange={(e) => handleOperationChange(index, { action: e.target.value as VariableAction })}
+                >
+                  {VARIABLE_ACTIONS.map(va => (
+                    <option key={va.value} value={va.value}>{va.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              {varType === 'boolean' ? (
+                <select
+                  className={styles.select}
+                  value={String(op.value)}
+                  onChange={(e) => handleOperationChange(index, { value: e.target.value === 'true' })}
+                >
+                  <option value="true">true (참)</option>
+                  <option value="false">false (거짓)</option>
+                </select>
+              ) : varType === 'number' ? (
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={typeof op.value === 'number' ? op.value : 0}
+                  onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+                />
+              ) : (
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={String(op.value)}
+                  onChange={(e) => handleOperationChange(index, { value: e.target.value })}
+                  placeholder="값 입력"
+                />
+              )}
+            </div>
+          </>
+        )
+      }
+
       case 'flag':
         return (
           <>

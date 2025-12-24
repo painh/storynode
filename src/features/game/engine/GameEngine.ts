@@ -78,6 +78,13 @@ export class GameEngine {
       currentNodeId: startNodeId,
     }
 
+    // 챕터에 선언된 변수들의 초기값 적용
+    if (chapter.variables) {
+      for (const varDef of chapter.variables) {
+        this.state.variables.customVariables[varDef.id] = varDef.defaultValue
+      }
+    }
+
     const currentNode = this.getCurrentNode()
     if (currentNode) {
       this.processNodeEntry(currentNode)
@@ -497,6 +504,20 @@ export class GameEngine {
     const numValue = typeof op.value === 'number' ? op.value : 0
 
     switch (op.target) {
+      case 'variable':
+        if (op.variableId) {
+          const currentValue = vars.customVariables[op.variableId]
+          if (op.action === 'set') {
+            vars.customVariables[op.variableId] = op.value
+          } else if (typeof currentValue === 'number') {
+            vars.customVariables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
+          } else if (typeof currentValue === 'string' && op.action === 'add') {
+            // 문자열 더하기 (concatenation)
+            vars.customVariables[op.variableId] = currentValue + String(op.value)
+          }
+        }
+        break
+
       case 'gold':
         vars.gold = this.applyAction(vars.gold, op.action, numValue)
         break

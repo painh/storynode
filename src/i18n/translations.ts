@@ -148,6 +148,27 @@ export interface Translations {
     previous: string
     next: string
   }
+
+  // 도움말 툴팁
+  help: {
+    // 공통
+    id: string
+    speaker: string
+    text: string
+    javascript: string
+    // 이미지 노드
+    imageResource: string
+    layer: string
+    layerOrder: string
+    alignment: string
+    flipHorizontal: string
+    effects: string
+    slide: string
+    zoom: string
+    duration: string
+    exitEffect: string
+    transitionTiming: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -282,6 +303,23 @@ export const translations: Record<Language, Translations> = {
       previous: '이전',
       next: '다음',
     },
+    help: {
+      id: '노드의 고유 식별자입니다.\n자동으로 생성되며 수정할 수 없습니다.',
+      speaker: '대사를 말하는 화자의 이름입니다.\n비워두면 나레이터로 처리됩니다.',
+      text: '노드에 표시될 텍스트 내용입니다.\n대사, 선택지 질문, 챕터 종료 메시지 등에 사용됩니다.',
+      javascript: 'JavaScript 코드를 실행합니다.\ngameState, setFlag, getFlag 등의 함수를 사용할 수 있습니다.',
+      imageResource: '표시할 이미지를 선택합니다.\n프로젝트의 리소스 탭에서 먼저 이미지를 추가해야 합니다.',
+      layer: '이미지가 표시될 레이어입니다.\n• background: 배경 레이어 (가장 뒤)\n• character: 캐릭터 레이어 (배경 앞)',
+      layerOrder: '같은 레이어 내에서의 표시 순서입니다.\n숫자가 클수록 앞에 표시됩니다.\n같은 레이어+순서의 이미지는 교체됩니다.',
+      alignment: '이미지의 가로 정렬 위치입니다.\n• Left: 왼쪽 정렬\n• Center: 중앙 정렬\n• Right: 오른쪽 정렬\n• Custom: 직접 x, y 좌표 지정',
+      flipHorizontal: '이미지를 좌우로 뒤집습니다.\n캐릭터가 반대 방향을 바라보게 할 때 유용합니다.',
+      effects: '이미지 등장 시 재생할 효과입니다.\n여러 효과를 조합할 수 있습니다.\n• Fade In: 서서히 나타남\n• Shake: 흔들림\n• Bounce: 튀어오름\n• Flash: 깜빡임\n• Pulse: 확대/축소 펄스',
+      slide: '이미지가 화면 밖에서 들어오는 효과입니다.\n1개만 선택할 수 있습니다.',
+      zoom: '이미지의 크기 변화 효과입니다.\n• Zoom In: 작은 상태에서 확대\n• Zoom Out: 큰 상태에서 축소',
+      duration: '효과 애니메이션의 지속 시간입니다.\n밀리초(ms) 단위로 설정합니다.\n예: 500 = 0.5초',
+      exitEffect: '같은 레이어+순서에 있는 기존 이미지의 퇴장 효과입니다.\n새 이미지로 교체될 때 적용됩니다.',
+      transitionTiming: '퇴장과 등장 효과의 타이밍입니다.\n• 순차: 기존 이미지가 사라진 후 새 이미지 등장\n• 동시: 기존 이미지가 사라지면서 새 이미지 등장',
+    },
   },
   en: {
     nodes: {
@@ -413,6 +451,23 @@ export const translations: Record<Language, Translations> = {
       close: 'Close',
       previous: 'Previous',
       next: 'Next',
+    },
+    help: {
+      id: 'Unique identifier for the node.\nAutomatically generated and cannot be modified.',
+      speaker: 'Name of the character speaking.\nLeft empty for narrator.',
+      text: 'Text content to display in the node.\nUsed for dialogue, choice prompts, chapter end messages, etc.',
+      javascript: 'Execute JavaScript code.\nAvailable functions: gameState, setFlag, getFlag, etc.',
+      imageResource: 'Select the image to display.\nImages must be added in the Resources tab first.',
+      layer: 'Layer where the image will be displayed.\n• background: Background layer (furthest back)\n• character: Character layer (in front of background)',
+      layerOrder: 'Display order within the same layer.\nHigher numbers appear in front.\nImages with same layer+order will be replaced.',
+      alignment: 'Horizontal alignment of the image.\n• Left: Align left\n• Center: Align center\n• Right: Align right\n• Custom: Set x, y coordinates manually',
+      flipHorizontal: 'Flip the image horizontally.\nUseful when character needs to face opposite direction.',
+      effects: 'Effects to play when image appears.\nMultiple effects can be combined.\n• Fade In: Gradually appear\n• Shake: Shaking\n• Bounce: Bouncing\n• Flash: Blinking\n• Pulse: Scale pulse',
+      slide: 'Effect for image sliding in from outside screen.\nOnly one can be selected.',
+      zoom: 'Image scale change effect.\n• Zoom In: Enlarge from small\n• Zoom Out: Shrink from large',
+      duration: 'Duration of the effect animation.\nSet in milliseconds (ms).\nExample: 500 = 0.5 seconds',
+      exitEffect: 'Exit effect for existing image at same layer+order.\nApplied when replaced with new image.',
+      transitionTiming: 'Timing of exit and entrance effects.\n• Sequential: New image appears after old one exits\n• Crossfade: New image appears while old one exits',
     },
   },
 
@@ -548,6 +603,23 @@ export const translations: Record<Language, Translations> = {
       previous: '上一个',
       next: '下一个',
     },
+    help: {
+      id: '节点的唯一标识符。\n自动生成，无法修改。',
+      speaker: '说话角色的名称。\n留空则为旁白。',
+      text: '节点中显示的文本内容。\n用于对话、选项提示、章节结束消息等。',
+      javascript: '执行JavaScript代码。\n可用函数：gameState、setFlag、getFlag等。',
+      imageResource: '选择要显示的图像。\n必须先在资源选项卡中添加图像。',
+      layer: '图像显示的图层。\n• background：背景层（最后面）\n• character：角色层（背景前面）',
+      layerOrder: '同一图层内的显示顺序。\n数字越大越靠前。\n相同图层+顺序的图像会被替换。',
+      alignment: '图像的水平对齐方式。\n• Left：左对齐\n• Center：居中\n• Right：右对齐\n• Custom：手动设置x、y坐标',
+      flipHorizontal: '水平翻转图像。\n当角色需要朝向相反方向时很有用。',
+      effects: '图像出现时播放的效果。\n可以组合多种效果。\n• Fade In：渐显\n• Shake：抖动\n• Bounce：弹跳\n• Flash：闪烁\n• Pulse：脉冲缩放',
+      slide: '图像从屏幕外滑入的效果。\n只能选择一个。',
+      zoom: '图像缩放变化效果。\n• Zoom In：从小放大\n• Zoom Out：从大缩小',
+      duration: '效果动画的持续时间。\n以毫秒（ms）为单位设置。\n例如：500 = 0.5秒',
+      exitEffect: '同一图层+顺序的现有图像的退出效果。\n被新图像替换时应用。',
+      transitionTiming: '退出和进入效果的时机。\n• 顺序：旧图像退出后新图像出现\n• 交叉淡入淡出：新图像出现的同时旧图像退出',
+    },
   },
 
   // 중국어 번체 (Traditional Chinese)
@@ -681,6 +753,23 @@ export const translations: Record<Language, Translations> = {
       close: '關閉',
       previous: '上一個',
       next: '下一個',
+    },
+    help: {
+      id: '節點的唯一識別碼。\n自動產生，無法修改。',
+      speaker: '說話角色的名稱。\n留空則為旁白。',
+      text: '節點中顯示的文字內容。\n用於對話、選項提示、章節結束訊息等。',
+      javascript: '執行JavaScript程式碼。\n可用函式：gameState、setFlag、getFlag等。',
+      imageResource: '選擇要顯示的圖像。\n必須先在資源選項卡中新增圖像。',
+      layer: '圖像顯示的圖層。\n• background：背景層（最後面）\n• character：角色層（背景前面）',
+      layerOrder: '同一圖層內的顯示順序。\n數字越大越靠前。\n相同圖層+順序的圖像會被取代。',
+      alignment: '圖像的水平對齊方式。\n• Left：靠左\n• Center：置中\n• Right：靠右\n• Custom：手動設定x、y座標',
+      flipHorizontal: '水平翻轉圖像。\n當角色需要朝向相反方向時很有用。',
+      effects: '圖像出現時播放的效果。\n可以組合多種效果。\n• Fade In：漸顯\n• Shake：抖動\n• Bounce：彈跳\n• Flash：閃爍\n• Pulse：脈衝縮放',
+      slide: '圖像從螢幕外滑入的效果。\n只能選擇一個。',
+      zoom: '圖像縮放變化效果。\n• Zoom In：從小放大\n• Zoom Out：從大縮小',
+      duration: '效果動畫的持續時間。\n以毫秒（ms）為單位設定。\n例如：500 = 0.5秒',
+      exitEffect: '同一圖層+順序的現有圖像的退出效果。\n被新圖像取代時套用。',
+      transitionTiming: '退出和進入效果的時機。\n• 順序：舊圖像退出後新圖像出現\n• 交叉淡入淡出：新圖像出現的同時舊圖像退出',
     },
   },
 
@@ -816,6 +905,23 @@ export const translations: Record<Language, Translations> = {
       previous: 'Anterior',
       next: 'Siguiente',
     },
+    help: {
+      id: 'Identificador único del nodo.\nGenerado automáticamente y no se puede modificar.',
+      speaker: 'Nombre del personaje que habla.\nDejar vacío para narrador.',
+      text: 'Contenido de texto a mostrar en el nodo.\nUsado para diálogos, opciones, mensajes de fin de capítulo, etc.',
+      javascript: 'Ejecutar código JavaScript.\nFunciones disponibles: gameState, setFlag, getFlag, etc.',
+      imageResource: 'Seleccionar la imagen a mostrar.\nLas imágenes deben agregarse primero en la pestaña Recursos.',
+      layer: 'Capa donde se mostrará la imagen.\n• background: Capa de fondo (más atrás)\n• character: Capa de personaje (frente al fondo)',
+      layerOrder: 'Orden de visualización dentro de la misma capa.\nNúmeros más altos aparecen al frente.\nImágenes con misma capa+orden serán reemplazadas.',
+      alignment: 'Alineación horizontal de la imagen.\n• Left: Alinear izquierda\n• Center: Alinear centro\n• Right: Alinear derecha\n• Custom: Establecer coordenadas x, y manualmente',
+      flipHorizontal: 'Voltear la imagen horizontalmente.\nÚtil cuando el personaje necesita mirar en dirección opuesta.',
+      effects: 'Efectos a reproducir cuando aparece la imagen.\nSe pueden combinar múltiples efectos.\n• Fade In: Aparecer gradualmente\n• Shake: Sacudir\n• Bounce: Rebotar\n• Flash: Parpadear\n• Pulse: Pulso de escala',
+      slide: 'Efecto de imagen deslizándose desde fuera de pantalla.\nSolo se puede seleccionar uno.',
+      zoom: 'Efecto de cambio de escala de imagen.\n• Zoom In: Agrandar desde pequeño\n• Zoom Out: Reducir desde grande',
+      duration: 'Duración de la animación del efecto.\nEstablecer en milisegundos (ms).\nEjemplo: 500 = 0.5 segundos',
+      exitEffect: 'Efecto de salida para imagen existente en misma capa+orden.\nAplicado al ser reemplazada por nueva imagen.',
+      transitionTiming: 'Momento de efectos de salida y entrada.\n• Secuencial: Nueva imagen aparece después de que sale la anterior\n• Cruzado: Nueva imagen aparece mientras sale la anterior',
+    },
   },
 
   // 일본어 (Japanese)
@@ -949,6 +1055,23 @@ export const translations: Record<Language, Translations> = {
       close: '閉じる',
       previous: '前へ',
       next: '次へ',
+    },
+    help: {
+      id: 'ノードの固有識別子です。\n自動生成され、変更できません。',
+      speaker: '話すキャラクターの名前です。\n空の場合はナレーターになります。',
+      text: 'ノードに表示するテキスト内容です。\nセリフ、選択肢の質問、チャプター終了メッセージなどに使用されます。',
+      javascript: 'JavaScriptコードを実行します。\n使用可能な関数：gameState、setFlag、getFlagなど。',
+      imageResource: '表示する画像を選択します。\n先にリソースタブで画像を追加する必要があります。',
+      layer: '画像が表示されるレイヤーです。\n• background：背景レイヤー（最も奥）\n• character：キャラクターレイヤー（背景の手前）',
+      layerOrder: '同じレイヤー内での表示順序です。\n数字が大きいほど手前に表示されます。\n同じレイヤー+順序の画像は置き換えられます。',
+      alignment: '画像の水平方向の配置です。\n• Left：左揃え\n• Center：中央揃え\n• Right：右揃え\n• Custom：x、y座標を手動で設定',
+      flipHorizontal: '画像を水平に反転します。\nキャラクターを反対方向に向かせたい時に便利です。',
+      effects: '画像が表示される時に再生するエフェクトです。\n複数のエフェクトを組み合わせることができます。\n• Fade In：徐々に表示\n• Shake：振動\n• Bounce：バウンス\n• Flash：点滅\n• Pulse：スケールパルス',
+      slide: '画像が画面外からスライドインするエフェクトです。\n1つのみ選択可能です。',
+      zoom: '画像のスケール変化エフェクトです。\n• Zoom In：小さい状態から拡大\n• Zoom Out：大きい状態から縮小',
+      duration: 'エフェクトアニメーションの持続時間です。\nミリ秒（ms）単位で設定します。\n例：500 = 0.5秒',
+      exitEffect: '同じレイヤー+順序にある既存画像の退出エフェクトです。\n新しい画像に置き換えられる時に適用されます。',
+      transitionTiming: '退出と登場エフェクトのタイミングです。\n• 順次：古い画像が退出後に新しい画像が登場\n• クロスフェード：古い画像が退出しながら新しい画像が登場',
     },
   },
 }

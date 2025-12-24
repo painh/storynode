@@ -1,4 +1,4 @@
-import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode, CustomNodeTemplate } from '../../types/story'
+import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode, CustomNodeTemplate, VariableDefinition } from '../../types/story'
 
 export interface EditorState {
   // 프로젝트 데이터
@@ -78,6 +78,13 @@ export interface EditorState {
   createNodeFromTemplate: (templateId: string, position?: { x: number; y: number }) => StoryNode | null
   syncNodeWithTemplate: (nodeId: string) => void
   detachNodeFromTemplate: (nodeId: string) => void
+
+  // Variable Definitions (챕터별 변수 선언)
+  createVariable: (variable?: Partial<VariableDefinition>) => VariableDefinition | null
+  updateVariable: (variableId: string, updates: Partial<VariableDefinition>) => void
+  deleteVariable: (variableId: string) => void
+  getVariables: () => VariableDefinition[]
+  getVariableById: (variableId: string) => VariableDefinition | undefined
 }
 
 // Immer의 set 함수 타입

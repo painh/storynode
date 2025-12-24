@@ -8,19 +8,12 @@ import { CustomNodeInspector } from './inspector/CustomNodeInspector'
 import { ConditionNodeInspector } from './inspector/ConditionNodeInspector'
 import { VariableNodeInspector } from './inspector/VariableNodeInspector'
 import { HelpTooltip } from './inspector/HelpTooltip'
+import { useTranslation } from '../../i18n'
 import styles from './Inspector.module.css'
-
-// 필드별 도움말 텍스트
-const HELP_TEXTS = {
-  id: '노드의 고유 식별자입니다.\n자동으로 생성되며 수정할 수 없습니다.',
-  speaker: '대사를 말하는 화자의 이름입니다.\n비워두면 나레이터로 처리됩니다.',
-  text: '노드에 표시될 텍스트 내용입니다.\n대사, 선택지 질문, 챕터 종료 메시지 등에 사용됩니다.',
-  choices: '플레이어가 선택할 수 있는 선택지 목록입니다.\n각 선택지는 다른 노드로 연결될 수 있습니다.',
-  javascript: 'JavaScript 코드를 실행합니다.\ngameState, setFlag, getFlag 등의 함수를 사용할 수 있습니다.',
-}
 
 export function Inspector() {
   const { selectedNodeIds, selectedCommentId, getNodeById, getCommentById, updateNode, updateCommentNode, project } = useEditorStore()
+  const t = useTranslation()
 
   // 프로젝트 리소스에서 이미지 목록 가져오기
   const imageResources = (project.resources || []).filter(r => r.type === 'image')
@@ -87,7 +80,7 @@ export function Inspector() {
         <div className={styles.field}>
           <div className={styles.labelWithHelp}>
             <label className={styles.label}>ID</label>
-            <HelpTooltip content={HELP_TEXTS.id} />
+            <HelpTooltip content={t.help.id} />
           </div>
           <input
             type="text"
@@ -102,7 +95,7 @@ export function Inspector() {
           <div className={styles.field}>
             <div className={styles.labelWithHelp}>
               <label className={styles.label}>Speaker</label>
-              <HelpTooltip content={HELP_TEXTS.speaker} />
+              <HelpTooltip content={t.help.speaker} />
             </div>
             <input
               type="text"
@@ -119,7 +112,7 @@ export function Inspector() {
           <div className={styles.field}>
             <div className={styles.labelWithHelp}>
               <label className={styles.label}>Text</label>
-              <HelpTooltip content={HELP_TEXTS.text} />
+              <HelpTooltip content={t.help.text} />
             </div>
             <textarea
               className={styles.textarea}
@@ -155,7 +148,7 @@ export function Inspector() {
           <div className={styles.field}>
             <div className={styles.labelWithHelp}>
               <label className={styles.label}>JavaScript Code</label>
-              <HelpTooltip content={HELP_TEXTS.javascript} />
+              <HelpTooltip content={t.help.javascript} />
             </div>
             <textarea
               className={`${styles.textarea} ${styles.codeEditor}`}

@@ -35,6 +35,8 @@ export interface GameVariables {
   affection: Record<CharacterId, number>
   reputation: Record<FactionId, number>
   choicesMade: string[] // 선택한 choice ID 기록
+  // 사용자 정의 변수 (챕터에서 선언한 변수)
+  customVariables: Record<string, boolean | number | string>
 }
 
 // 게임 히스토리 엔트리
@@ -136,4 +138,5 @@ export const DEFAULT_GAME_VARIABLES: GameVariables = {
     dark_lands: 0,
   },
   choicesMade: [],
+  customVariables: {},
 }
