@@ -151,7 +151,38 @@ export const cyberpunkTheme: GameTheme = {
   },
 }
 
-export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme, cyberpunkTheme]
+// 90년대~2000년대 일본 비주얼 노벨 스타일 (Silky's 풍)
+export const classicVnTheme: GameTheme = {
+  id: 'classic-vn',
+  name: 'Classic VN',
+  colors: {
+    background: '#1a1a2e',
+    dialogueBox: 'rgba(20, 20, 45, 0.92)',
+    dialogueBoxBorder: '#4a4a7a',
+    dialogueText: '#ffffff',
+    speakerName: '#ffcc00',
+    speakerNameBg: 'rgba(40, 40, 80, 0.95)',
+    choiceButton: 'rgba(30, 30, 60, 0.95)',
+    choiceButtonHover: 'rgba(60, 60, 100, 0.95)',
+    choiceButtonText: '#ffffff',
+    choiceButtonBorder: '#6a6aaa',
+    accent: '#ffcc00',
+    debugPanelBg: 'rgba(20, 20, 45, 0.95)',
+    debugPanelText: '#00ff00',
+  },
+  fonts: {
+    dialogue: "'MS Gothic', 'Noto Sans JP', 'Noto Sans KR', monospace",
+    speaker: "'MS Gothic', 'Noto Sans JP', 'Noto Sans KR', monospace",
+    ui: "'MS Gothic', 'Noto Sans JP', 'Noto Sans KR', monospace",
+  },
+  effects: {
+    typewriterSpeed: 35,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+}
+
+export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme, cyberpunkTheme, classicVnTheme]
 
 export const getThemeById = (id: string): GameTheme => {
   return themePresets.find((t) => t.id === id) || darkTheme

@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import JSZip from 'jszip'
 import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource, CustomNodeTemplate } from '../types/story'
 
 export interface FileInfo {
@@ -591,4 +592,119 @@ export function downloadGameBuildAsHtml(htmlContent: string, projectName: string
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
+}
+
+/**
+ * 게임 빌드를 ZIP으로 다운로드
+ * 폴더 구조 유지 + 이미지 리소스 포함
+ */
+export async function downloadGameBuildAsZip(
+  project: StoryProject,
+  htmlTemplate: string
+): Promise<void> {
+  const zip = new JSZip()
+
+  // 1. index.html 추가
+  zip.file('index.html', htmlTemplate)
+
+  // 2. project.json 추가 (스테이지 ID 목록만)
+  const projectMeta = {
+    name: project.name,
+    version: project.version,
+    stages: project.stages.map(s => s.id),
+    gameSettings: project.gameSettings,
+  }
+  zip.file('project.json', JSON.stringify(projectMeta, null, 2))
+
+  // 3. 각 스테이지 폴더 생성
+  for (const stage of project.stages) {
+    const stageFolder = zip.folder(stage.id)
+    if (!stageFolder) continue
+
+    // stage.json
+    const stageMeta = {
+      id: stage.id,
+      title: stage.title,
+      description: stage.description || '',
+      partyCharacters: stage.partyCharacters || [],
+      chapters: stage.chapters.map(c => c.id),
+    }
+    stageFolder.file('stage.json', JSON.stringify(stageMeta, null, 2))
+
+    // 각 챕터 JSON
+    for (const chapter of stage.chapters) {
+      // 챕터 데이터에서 이미지 경로를 상대 경로로 변환
+      const chapterData = convertImagePathsForExport(chapter)
+      stageFolder.file(`${chapter.id}.json`, JSON.stringify(chapterData, null, 2))
+    }
+  }
+
+  // 4. 이미지 리소스 추가
+  if (project.resources && project.resources.length > 0) {
+    const resourcesFolder = zip.folder('resources')
+    const imagesFolder = resourcesFolder?.folder('images')
+
+    if (imagesFolder) {
+      for (const resource of project.resources) {
+        if (resource.type === 'image' && resource.path) {
+          // data URL을 바이너리로 변환
+          if (resource.path.startsWith('data:')) {
+            const base64Data = resource.path.split(',')[1]
+            if (base64Data) {
+              const extension = getImageExtension(resource.path)
+              const filename = `${resource.name}.${extension}`
+              imagesFolder.file(filename, base64Data, { base64: true })
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 5. ZIP 생성 및 다운로드
+  const content = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(content)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.zip`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * data URL에서 이미지 확장자 추출
+ */
+function getImageExtension(dataUrl: string): string {
+  const match = dataUrl.match(/^data:image\/(\w+);/)
+  if (match) {
+    const ext = match[1]
+    // jpeg -> jpg
+    return ext === 'jpeg' ? 'jpg' : ext
+  }
+  return 'png' // 기본값
+}
+
+/**
+ * 챕터 데이터의 이미지 경로를 내보내기용 상대 경로로 변환
+ */
+function convertImagePathsForExport(chapter: StoryChapter): StoryChapter {
+  const converted = JSON.parse(JSON.stringify(chapter)) as StoryChapter
+
+  for (const node of converted.nodes) {
+    if (node.type === 'image' && node.imageData?.resourcePath) {
+      const resourcePath = node.imageData.resourcePath
+      // data URL인 경우 파일명만 추출하여 상대 경로로 변환
+      if (resourcePath.startsWith('data:')) {
+        // 리소스 이름으로 경로 생성 (나중에 실제 파일명과 매칭)
+        // 이 경우는 처리하지 않음 - 이미 저장된 프로젝트에서는 파일명이 있어야 함
+      } else if (!resourcePath.startsWith('/') && !resourcePath.includes('://')) {
+        // 이미 상대 경로면 그대로 유지
+        node.imageData.resourcePath = resourcePath
+      }
+    }
+  }
+
+  return converted
 }

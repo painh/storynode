@@ -12,9 +12,9 @@ import {
   pickWebDirectory,
   getWebDirectoryHandle,
   exportGameBuild,
-  downloadGameBuildAsHtml,
+  downloadGameBuildAsZip,
 } from '../../utils/fileUtils'
-import { generateGamePlayerHtml, generateEmbeddedGamePlayerHtml } from '../../utils/gamePlayerTemplate'
+import { generateGamePlayerHtml } from '../../utils/gamePlayerTemplate'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
 import { ProjectSettingsModal } from '../common/ProjectSettingsModal'
@@ -323,10 +323,10 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
       return
     }
 
-    // 웹 환경: 단일 HTML로 다운로드 (모든 데이터 임베딩)
+    // 웹 환경: ZIP으로 다운로드 (폴더 구조 + 리소스 포함)
     try {
-      const htmlContent = generateEmbeddedGamePlayerHtml(project)
-      downloadGameBuildAsHtml(htmlContent, project.name)
+      const htmlTemplate = generateGamePlayerHtml()
+      await downloadGameBuildAsZip(project, htmlTemplate)
     } catch (error) {
       alert('Failed to export: ' + (error as Error).message)
     }
