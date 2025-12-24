@@ -35,6 +35,10 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               >
                 <option value="ko">한국어</option>
                 <option value="en">English</option>
+                <option value="zh-CN">简体中文</option>
+                <option value="zh-TW">繁體中文</option>
+                <option value="es">Español</option>
+                <option value="ja">日本語</option>
               </select>
             </div>
 

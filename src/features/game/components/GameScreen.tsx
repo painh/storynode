@@ -28,6 +28,21 @@ const getEffectClass = (effect?: string): string => {
   }
 }
 
+// 퇴장 효과 클래스 가져오기
+const getExitEffectClass = (effect?: string): string => {
+  if (!effect || effect === 'none') return ''
+  switch (effect) {
+    case 'fadeOut': return styles.exitFadeOut
+    case 'slideOutLeft': return styles.exitSlideOutLeft
+    case 'slideOutRight': return styles.exitSlideOutRight
+    case 'slideOutUp': return styles.exitSlideOutUp
+    case 'slideOutDown': return styles.exitSlideOutDown
+    case 'zoomOut': return styles.exitZoomOut
+    case 'shrink': return styles.exitShrink
+    default: return ''
+  }
+}
+
 // 이미지 레이어 컴포넌트
 function ImageLayers({ images }: { images: ActiveImage[] }) {
   // 레이어 순서로 정렬 (background가 가장 뒤, 그 다음 character)
@@ -62,7 +77,10 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
     if (img.flipHorizontal) {
       style.transform = (style.transform || '') + ' scaleX(-1)'
     }
-    if (img.effectDuration) {
+    // 퇴장 중이면 퇴장 애니메이션 지속 시간, 아니면 등장 애니메이션 지속 시간
+    if (img.isExiting && img.exitEffectDuration) {
+      style.animationDuration = `${img.exitEffectDuration}ms`
+    } else if (img.effectDuration) {
       style.animationDuration = `${img.effectDuration}ms`
     }
     return style
@@ -78,7 +96,7 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
           key={`${img.layer}-${img.layerOrder}-${img.instanceId}`}
           src={img.resourcePath}
           alt=""
-          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${getEffectClass(img.effect)}`}
+          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClass(img.effect)}`}
           style={getImageStyle(img)}
         />
       ))}

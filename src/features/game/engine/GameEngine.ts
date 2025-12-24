@@ -196,7 +196,7 @@ export class GameEngine {
   private processImageNode(node: StoryNode): void {
     if (!node.imageData) return
 
-    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration } = node.imageData
+    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration, exitEffect, exitEffectDuration, transitionTiming = 'sequential' } = node.imageData
 
     // 빈 리소스 경로면 해당 레이어의 이미지 제거
     if (!resourcePath) {
@@ -206,7 +206,53 @@ export class GameEngine {
       return
     }
 
-    // 새 이미지 객체 (instanceId로 애니메이션 재생 보장)
+    // 기존 이미지 찾기
+    const existingImage = this.state.activeImages.find(
+      img => img.layer === layer && img.layerOrder === layerOrder && !img.isExiting
+    )
+
+    // 퇴장 이펙트 처리
+    if (existingImage && exitEffect && exitEffect !== 'none') {
+      // 기존 이미지를 퇴장 상태로 변경
+      existingImage.isExiting = true
+      existingImage.exitEffect = exitEffect
+      existingImage.exitEffectDuration = exitEffectDuration
+
+      // 퇴장 완료 후 제거
+      const exitDuration = exitEffectDuration || 500
+      setTimeout(() => {
+        this.state.activeImages = this.state.activeImages.filter(
+          img => img !== existingImage
+        )
+        this.notifyStateChange()
+      }, exitDuration)
+
+      if (transitionTiming === 'sequential') {
+        // 순차: 퇴장 완료 후 새 이미지 추가
+        setTimeout(() => {
+          this.addNewImage(node)
+          this.notifyStateChange()
+        }, exitDuration)
+        return
+      }
+      // crossfade: 퇴장과 동시에 새 이미지 추가 (아래에서 처리)
+    } else if (existingImage) {
+      // 퇴장 이펙트 없이 기존 이미지 즉시 제거
+      this.state.activeImages = this.state.activeImages.filter(
+        img => img !== existingImage
+      )
+    }
+
+    // 새 이미지 즉시 추가 (crossfade 또는 퇴장 이펙트 없는 경우)
+    this.addNewImage(node)
+  }
+
+  // 새 이미지 추가 헬퍼 함수
+  private addNewImage(node: StoryNode): void {
+    if (!node.imageData) return
+
+    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration } = node.imageData
+
     this.imageInstanceCounter++
     const newImage: ActiveImage = {
       id: node.id,
@@ -219,14 +265,14 @@ export class GameEngine {
       y,
       flipHorizontal,
       effect,
-      effects,  // 다중 효과 지원
+      effects,
       effectDuration,
     }
 
-    // 같은 레이어+순서에 있는 기존 이미지 제거 후 새 이미지 추가
+    // 같은 레이어+순서에 있는 기존 이미지 (퇴장 중 아닌 것) 제거 후 새 이미지 추가
     this.state.activeImages = [
       ...this.state.activeImages.filter(
-        img => !(img.layer === layer && img.layerOrder === layerOrder)
+        img => !(img.layer === layer && img.layerOrder === layerOrder && !img.isExiting)
       ),
       newImage,
     ]

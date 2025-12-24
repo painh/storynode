@@ -30,6 +30,20 @@ export type ImageEffectType =
 // 하위 호환용 (deprecated)
 export type ImageEffect = ImageEffectType | 'none'
 
+// 퇴장 이펙트 타입
+export type ImageExitEffectType =
+  | 'none'           // 즉시 제거
+  | 'fadeOut'
+  | 'slideOutLeft'
+  | 'slideOutRight'
+  | 'slideOutUp'
+  | 'slideOutDown'
+  | 'zoomOut'
+  | 'shrink'         // 축소되며 사라짐
+
+// 이미지 교체 타이밍
+export type ImageTransitionTiming = 'sequential' | 'crossfade'
+
 // 효과 그룹 (동시 적용 불가능한 효과들)
 export const IMAGE_EFFECT_GROUPS: Record<string, ImageEffectType[]> = {
   slide: ['slideLeft', 'slideRight', 'slideUp', 'slideDown'],
@@ -51,6 +65,9 @@ export interface ImageNodeData {
   effect?: ImageEffect      // 이미지 효과 (deprecated, 하위 호환용)
   effects?: ImageEffectType[] // 다중 이미지 효과
   effectDuration?: number   // 효과 지속 시간 (ms)
+  exitEffect?: ImageExitEffectType    // 기존 이미지 퇴장 이펙트
+  exitEffectDuration?: number         // 퇴장 이펙트 지속 시간 (ms)
+  transitionTiming?: ImageTransitionTiming  // 교체 타이밍 (기본: sequential)
 }
 
 // 커스텀 필드 타입

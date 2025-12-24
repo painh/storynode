@@ -390,3 +390,67 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
+
+/* 퇴장 이펙트 애니메이션 */
+.exitFadeOut {
+  animation: exitFadeOut 0.5s ease-out forwards;
+}
+
+.exitSlideOutLeft {
+  animation: exitSlideOutLeft 0.5s ease-out forwards;
+}
+
+.exitSlideOutRight {
+  animation: exitSlideOutRight 0.5s ease-out forwards;
+}
+
+.exitSlideOutUp {
+  animation: exitSlideOutUp 0.5s ease-out forwards;
+}
+
+.exitSlideOutDown {
+  animation: exitSlideOutDown 0.5s ease-out forwards;
+}
+
+.exitZoomOut {
+  animation: exitZoomOut 0.5s ease-out forwards;
+}
+
+.exitShrink {
+  animation: exitShrink 0.5s ease-out forwards;
+}
+
+@keyframes exitFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes exitSlideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes exitSlideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes exitSlideOutUp {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes exitSlideOutDown {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes exitZoomOut {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes exitShrink {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0); opacity: 0; }
+}

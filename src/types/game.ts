@@ -16,6 +16,9 @@ export interface ActiveImage {
   effect?: string          // 이미지 효과 (deprecated, 하위 호환용)
   effects?: ImageEffectType[] // 다중 이미지 효과
   effectDuration?: number  // 효과 지속 시간 (ms)
+  isExiting?: boolean      // 퇴장 중인지 여부
+  exitEffect?: string      // 퇴장 이펙트
+  exitEffectDuration?: number  // 퇴장 지속 시간 (ms)
 }
 
 // 게임 실행 상태
