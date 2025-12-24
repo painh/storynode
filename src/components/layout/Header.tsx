@@ -42,8 +42,10 @@ export function Header() {
     markClean,
     createStage,
     deleteStage,
+    updateStage,
     createChapter,
     deleteChapter,
+    updateChapter,
   } = useEditorStore()
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
@@ -432,6 +434,16 @@ export function Header() {
     }
   }
 
+  const handleStageRename = (stageId: string, newTitle: string) => {
+    updateStage(stageId, { title: newTitle })
+  }
+
+  const handleChapterRename = (chapterId: string, newTitle: string) => {
+    if (currentStageId) {
+      updateChapter(currentStageId, chapterId, { title: newTitle })
+    }
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.left}>
@@ -524,8 +536,10 @@ export function Header() {
           onChapterChange={setCurrentChapter}
           onStageAdd={handleStageAdd}
           onStageDelete={handleStageDelete}
+          onStageRename={handleStageRename}
           onChapterAdd={handleChapterAdd}
           onChapterDelete={handleChapterDelete}
+          onChapterRename={handleChapterRename}
         />
         <PlayButton
           disabled={gameStatus !== 'idle'}
