@@ -307,6 +307,9 @@ export interface GameSettings {
   defaultThemeId: string
   // 커스텀 테마 (사용자 정의)
   customThemes?: CustomTheme[]
+  // 오버라이드 설정 (테마 기본값 대신 사용)
+  fontOverride?: string              // 폰트 오버라이드
+  typewriterSpeedOverride?: number   // 타이프라이터 속도 오버라이드 (ms)
 }
 
 // 커스텀 테마 정의

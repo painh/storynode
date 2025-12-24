@@ -31,9 +31,26 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
 
   const updateGameSettings = useEditorStore((state) => state.updateGameSettings)
   const customThemesFromStore = useEditorStore((state) => state.project.gameSettings?.customThemes)
+  const fontOverride = useEditorStore((state) => state.project.gameSettings?.fontOverride)
+  const typewriterSpeedOverride = useEditorStore((state) => state.project.gameSettings?.typewriterSpeedOverride)
   const customThemes = customThemesFromStore ?? []
 
-  const theme = useMemo(() => getThemeById(currentThemeId), [currentThemeId])
+  // 테마에 오버라이드 적용
+  const theme = useMemo(() => {
+    const baseTheme = getThemeById(currentThemeId)
+    return {
+      ...baseTheme,
+      fonts: fontOverride ? {
+        dialogue: fontOverride,
+        speaker: fontOverride,
+        ui: fontOverride,
+      } : baseTheme.fonts,
+      effects: {
+        ...baseTheme.effects,
+        typewriterSpeed: typewriterSpeedOverride ?? baseTheme.effects.typewriterSpeed,
+      },
+    }
+  }, [currentThemeId, fontOverride, typewriterSpeedOverride])
 
   // 테마 변경 시 프로젝트 설정에도 저장
   const handleThemeChange = useCallback((themeId: string) => {

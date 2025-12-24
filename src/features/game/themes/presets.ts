@@ -182,7 +182,182 @@ export const classicVnTheme: GameTheme = {
   },
 }
 
-export const themePresets: GameTheme[] = [darkTheme, lightTheme, retroTheme, novelTheme, cyberpunkTheme, classicVnTheme]
+// DOS 스타일 (80x25 터미널 감성)
+export const dosTheme: GameTheme = {
+  id: 'dos',
+  name: 'DOS',
+  colors: {
+    background: '#000080',
+    dialogueBox: '#000080',
+    dialogueBoxBorder: '#ffffff',
+    dialogueText: '#ffffff',
+    speakerName: '#ffff00',
+    speakerNameBg: '#000080',
+    choiceButton: '#000080',
+    choiceButtonHover: '#0000aa',
+    choiceButtonText: '#ffff00',
+    choiceButtonBorder: '#ffffff',
+    accent: '#ffff00',
+    debugPanelBg: '#000000',
+    debugPanelText: '#00ff00',
+  },
+  fonts: {
+    dialogue: "'Perfect DOS VGA 437', 'Consolas', 'Courier New', monospace",
+    speaker: "'Perfect DOS VGA 437', 'Consolas', 'Courier New', monospace",
+    ui: "'Perfect DOS VGA 437', 'Consolas', 'Courier New', monospace",
+  },
+  effects: {
+    typewriterSpeed: 25,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+  window: {
+    style: 'dos',
+    titleBarHeight: 20,
+    showCloseButton: false,
+    showMinMaxButtons: false,
+    borderWidth: 2,
+    titleBarColor: '#00aaaa',
+    titleBarTextColor: '#000000',
+    buttonStyle: 'flat',
+  },
+}
+
+// Windows 3.1 스타일
+export const win31Theme: GameTheme = {
+  id: 'win31',
+  name: 'Windows 3.1',
+  colors: {
+    background: '#c0c0c0',
+    dialogueBox: '#ffffff',
+    dialogueBoxBorder: '#000000',
+    dialogueText: '#000000',
+    speakerName: '#000000',
+    speakerNameBg: '#c0c0c0',
+    choiceButton: '#c0c0c0',
+    choiceButtonHover: '#dfdfdf',
+    choiceButtonText: '#000000',
+    choiceButtonBorder: '#000000',
+    accent: '#000080',
+    debugPanelBg: '#ffffff',
+    debugPanelText: '#000000',
+  },
+  fonts: {
+    dialogue: "'MS Sans Serif', 'Segoe UI', 'Arial', sans-serif",
+    speaker: "'MS Sans Serif', 'Segoe UI', 'Arial', sans-serif",
+    ui: "'MS Sans Serif', 'Segoe UI', 'Arial', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 30,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+  window: {
+    style: 'win31',
+    titleBarHeight: 20,
+    showCloseButton: true,
+    showMinMaxButtons: true,
+    borderWidth: 3,
+    titleBarColor: '#000080',
+    titleBarTextColor: '#ffffff',
+    buttonStyle: '3d',
+  },
+}
+
+// Windows 95 스타일
+export const win95Theme: GameTheme = {
+  id: 'win95',
+  name: 'Windows 95',
+  colors: {
+    background: '#008080',
+    dialogueBox: '#c0c0c0',
+    dialogueBoxBorder: '#000000',
+    dialogueText: '#000000',
+    speakerName: '#000000',
+    speakerNameBg: '#c0c0c0',
+    choiceButton: '#c0c0c0',
+    choiceButtonHover: '#dfdfdf',
+    choiceButtonText: '#000000',
+    choiceButtonBorder: '#000000',
+    accent: '#000080',
+    debugPanelBg: '#c0c0c0',
+    debugPanelText: '#000000',
+  },
+  fonts: {
+    dialogue: "'MS Sans Serif', 'Tahoma', 'Segoe UI', sans-serif",
+    speaker: "'MS Sans Serif', 'Tahoma', 'Segoe UI', sans-serif",
+    ui: "'MS Sans Serif', 'Tahoma', 'Segoe UI', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 25,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+  window: {
+    style: 'win95',
+    titleBarHeight: 22,
+    showCloseButton: true,
+    showMinMaxButtons: true,
+    borderWidth: 2,
+    titleBarGradient: 'linear-gradient(90deg, #000080 0%, #1084d0 100%)',
+    titleBarTextColor: '#ffffff',
+    buttonStyle: '3d',
+  },
+}
+
+// Mac System 7 스타일
+export const system7Theme: GameTheme = {
+  id: 'system7',
+  name: 'System 7',
+  colors: {
+    background: '#6699cc',
+    dialogueBox: '#ffffff',
+    dialogueBoxBorder: '#000000',
+    dialogueText: '#000000',
+    speakerName: '#000000',
+    speakerNameBg: '#ffffff',
+    choiceButton: '#ffffff',
+    choiceButtonHover: '#dddddd',
+    choiceButtonText: '#000000',
+    choiceButtonBorder: '#000000',
+    accent: '#000000',
+    debugPanelBg: '#ffffff',
+    debugPanelText: '#000000',
+  },
+  fonts: {
+    dialogue: "'Chicago', 'Geneva', 'Helvetica Neue', sans-serif",
+    speaker: "'Chicago', 'Geneva', 'Helvetica Neue', sans-serif",
+    ui: "'Chicago', 'Geneva', 'Helvetica Neue', sans-serif",
+  },
+  effects: {
+    typewriterSpeed: 30,
+    fadeTransition: false,
+    dialogueAnimation: 'typewriter',
+  },
+  window: {
+    style: 'system7',
+    titleBarHeight: 20,
+    showCloseButton: true,
+    showMinMaxButtons: false,
+    borderWidth: 1,
+    titleBarColor: '#ffffff',
+    titleBarTextColor: '#000000',
+    buttonStyle: 'pixel',
+  },
+}
+
+export const themePresets: GameTheme[] = [
+  darkTheme,
+  lightTheme,
+  retroTheme,
+  novelTheme,
+  cyberpunkTheme,
+  classicVnTheme,
+  dosTheme,
+  win31Theme,
+  win95Theme,
+  system7Theme,
+]
 
 export const getThemeById = (id: string): GameTheme => {
   return themePresets.find((t) => t.id === id) || darkTheme

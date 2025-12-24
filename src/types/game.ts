@@ -106,6 +106,22 @@ export interface GameThemeEffects {
   dialogueAnimation: 'typewriter' | 'instant' | 'fade'
 }
 
+// 레트로 GUI 윈도우 스타일
+export type WindowStyle = 'none' | 'dos' | 'win31' | 'win95' | 'system7'
+
+// 윈도우 스타일 설정
+export interface GameThemeWindow {
+  style: WindowStyle
+  titleBarHeight?: number
+  showCloseButton?: boolean
+  showMinMaxButtons?: boolean
+  borderWidth?: number
+  titleBarColor?: string
+  titleBarTextColor?: string
+  titleBarGradient?: string  // CSS gradient
+  buttonStyle?: 'flat' | '3d' | 'pixel'
+}
+
 // 전체 테마 설정
 export interface GameTheme {
   id: string
@@ -113,6 +129,7 @@ export interface GameTheme {
   colors: GameThemeColors
   fonts: GameThemeFonts
   effects: GameThemeEffects
+  window?: GameThemeWindow  // 레트로 GUI 윈도우 스타일 (선택적)
 }
 
 // 초기 게임 변수

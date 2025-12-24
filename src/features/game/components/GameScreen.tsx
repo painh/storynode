@@ -2,11 +2,75 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
-import type { GameTheme, ActiveImage } from '../../../types/game'
+import type { GameTheme, ActiveImage, WindowStyle } from '../../../types/game'
 import styles from '../styles/GameScreen.module.css'
 
 interface GameScreenProps {
   theme: GameTheme
+}
+
+// 윈도우 스타일 클래스 가져오기
+const getWindowStyleClass = (style?: WindowStyle): string => {
+  switch (style) {
+    case 'dos': return styles.windowDos
+    case 'win31': return styles.windowWin31
+    case 'win95': return styles.windowWin95
+    case 'system7': return styles.windowSystem7
+    default: return ''
+  }
+}
+
+// 윈도우 타이틀바 컴포넌트
+function WindowTitleBar({ theme, title }: { theme: GameTheme; title: string }) {
+  const windowConfig = theme.window
+  if (!windowConfig || windowConfig.style === 'none') return null
+
+  const renderButtons = () => {
+    const buttons = []
+
+    if (windowConfig.showMinMaxButtons) {
+      if (windowConfig.style === 'win95') {
+        buttons.push(
+          <button key="min" className={styles.titleBarButton}>_</button>,
+          <button key="max" className={styles.titleBarButton}>□</button>
+        )
+      } else if (windowConfig.style === 'win31') {
+        buttons.push(
+          <button key="min" className={styles.titleBarButton}>▼</button>,
+          <button key="max" className={styles.titleBarButton}>▲</button>
+        )
+      }
+    }
+
+    if (windowConfig.showCloseButton) {
+      buttons.push(
+        <button
+          key="close"
+          className={`${styles.titleBarButton} ${windowConfig.style === 'win95' ? styles.close : ''}`}
+        >
+          {windowConfig.style === 'system7' ? '' : '×'}
+        </button>
+      )
+    }
+
+    return buttons
+  }
+
+  return (
+    <div
+      className={styles.titleBar}
+      style={{
+        background: windowConfig.titleBarGradient || windowConfig.titleBarColor,
+        color: windowConfig.titleBarTextColor,
+        height: windowConfig.titleBarHeight,
+      }}
+    >
+      <span className={styles.titleBarText}>{title}</span>
+      <div className={styles.titleBarButtons}>
+        {renderButtons()}
+      </div>
+    </div>
+  )
 }
 
 // 효과 클래스 가져오기 (단일)
@@ -284,6 +348,8 @@ export function GameScreen({ theme }: GameScreenProps) {
   // 일반 대사 / 선택지 노드
   const isChoiceNode = currentNode.type === 'choice'
   const showContinue = !isTyping && !isChoiceNode && status === 'playing'
+  const windowStyleClass = getWindowStyleClass(theme.window?.style)
+  const hasWindowStyle = theme.window && theme.window.style !== 'none'
 
   return (
     <div className={styles.screen}>
@@ -294,41 +360,50 @@ export function GameScreen({ theme }: GameScreenProps) {
         {/* 캐릭터 스탠딩 이미지 영역 */}
       </div>
 
-      <div
-        className={`${styles.dialogueBox} ${isChoiceNode ? styles.noClick : ''}`}
-        onClick={isChoiceNode ? undefined : handleAdvance}
-      >
-        {currentNode.speaker && (
-          <span className={styles.speakerName}>
-            {currentNode.speaker}
-          </span>
-        )}
+      <div className={`${styles.windowFrame} ${windowStyleClass}`}>
+        {/* 레트로 윈도우 타이틀바 */}
+        <WindowTitleBar
+          theme={theme}
+          title={currentNode.speaker || 'Message'}
+        />
 
-        <div className={styles.dialogueText}>
-          {displayedText}
-          {isTyping && <span className={styles.cursor} />}
+        <div
+          className={`${styles.dialogueBox} ${isChoiceNode ? styles.noClick : ''}`}
+          onClick={isChoiceNode ? undefined : handleAdvance}
+        >
+          {/* 윈도우 스타일이 아닐 때만 화자 이름 표시 (타이틀바에 표시되므로) */}
+          {currentNode.speaker && !hasWindowStyle && (
+            <span className={styles.speakerName}>
+              {currentNode.speaker}
+            </span>
+          )}
+
+          <div className={styles.dialogueText}>
+            {displayedText}
+            {isTyping && <span className={styles.cursor} />}
+          </div>
+
+          {showContinue && (
+            <div className={styles.continueIndicator}>
+              Click or Press Space ▼
+            </div>
+          )}
+
+          {/* 선택지 */}
+          {isChoiceNode && currentNode.choices && currentNode.choices.length > 0 && !isTyping && (
+            <div className={styles.choicesArea}>
+              {currentNode.choices.map((choice, index) => (
+                <button
+                  key={choice.id}
+                  className={styles.choiceButton}
+                  onClick={() => handleSelectChoice(index)}
+                >
+                  {choice.text}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-
-        {showContinue && (
-          <div className={styles.continueIndicator}>
-            Click or Press Space ▼
-          </div>
-        )}
-
-        {/* 선택지 */}
-        {isChoiceNode && currentNode.choices && currentNode.choices.length > 0 && !isTyping && (
-          <div className={styles.choicesArea}>
-            {currentNode.choices.map((choice, index) => (
-              <button
-                key={choice.id}
-                className={styles.choiceButton}
-                onClick={() => handleSelectChoice(index)}
-              >
-                {choice.text}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   )

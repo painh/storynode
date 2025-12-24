@@ -454,3 +454,230 @@
   from { transform: scale(1); opacity: 1; }
   to { transform: scale(0); opacity: 0; }
 }
+
+/* ======================================
+   레트로 GUI 윈도우 스타일
+   ====================================== */
+
+/* 윈도우 프레임 컨테이너 */
+.windowFrame {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 타이틀바 공통 */
+.titleBar {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.titleBarText {
+  flex: 1;
+  font-size: 12px;
+  font-weight: bold;
+  padding-left: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleBarButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.titleBarButton {
+  width: 16px;
+  height: 14px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* DOS 스타일 */
+.windowDos {
+  border: 2px solid #ffffff;
+  box-shadow: none;
+}
+
+.windowDos .titleBar {
+  background: #00aaaa;
+  color: #000000;
+  height: 20px;
+  border-bottom: 2px solid #ffffff;
+}
+
+.windowDos .dialogueBox {
+  border-radius: 0;
+  border: none;
+}
+
+/* Windows 3.1 스타일 */
+.windowWin31 {
+  border: 3px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  box-shadow: inset 1px 1px 0 #ffffff;
+}
+
+.windowWin31 .titleBar {
+  background: #000080;
+  color: #ffffff;
+  height: 20px;
+}
+
+.windowWin31 .titleBarButton {
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  font-family: 'Marlett', sans-serif;
+}
+
+.windowWin31 .titleBarButton:active {
+  border-color: #808080 #dfdfdf #dfdfdf #808080;
+}
+
+.windowWin31 .dialogueBox {
+  border-radius: 0;
+  border: none;
+}
+
+/* Windows 95 스타일 */
+.windowWin95 {
+  border: 2px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #404040;
+}
+
+.windowWin95 .titleBar {
+  background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+  color: #ffffff;
+  height: 22px;
+  padding: 2px 3px;
+}
+
+.windowWin95 .titleBarText {
+  font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+  text-shadow: none;
+}
+
+.windowWin95 .titleBarButton {
+  width: 16px;
+  height: 14px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+  font-size: 8px;
+  font-weight: bold;
+  font-family: 'Marlett', 'Webdings', sans-serif;
+}
+
+.windowWin95 .titleBarButton:active {
+  border-color: #808080 #dfdfdf #dfdfdf #808080;
+}
+
+.windowWin95 .titleBarButton.close {
+  margin-left: 2px;
+}
+
+.windowWin95 .dialogueBox {
+  border-radius: 0;
+  border: none;
+  background: #c0c0c0;
+}
+
+/* System 7 스타일 */
+.windowSystem7 {
+  border: 1px solid #000000;
+  box-shadow: 1px 1px 0 #000000;
+}
+
+.windowSystem7 .titleBar {
+  background: #ffffff;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    #000000 1px,
+    #000000 2px
+  );
+  background-size: 100% 2px;
+  color: #000000;
+  height: 20px;
+  border-bottom: 1px solid #000000;
+  padding: 0 6px;
+}
+
+.windowSystem7 .titleBar::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border: 1px solid #000000;
+  box-shadow: inset -1px -1px 0 #808080;
+}
+
+.windowSystem7 .titleBarText {
+  text-align: center;
+  background: #ffffff;
+  padding: 0 8px;
+  font-family: 'Chicago', 'Geneva', sans-serif;
+}
+
+.windowSystem7 .titleBarButton {
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border: 1px solid #000000;
+  box-shadow: inset -1px -1px 0 #808080;
+  margin-left: auto;
+}
+
+.windowSystem7 .dialogueBox {
+  border-radius: 0;
+  border: none;
+}
+
+/* 선택지 버튼 레트로 스타일 */
+.windowWin31 .choiceButton,
+.windowWin95 .choiceButton {
+  border-radius: 0;
+  border: 2px solid;
+  border-color: #dfdfdf #808080 #808080 #dfdfdf;
+}
+
+.windowWin31 .choiceButton:hover,
+.windowWin95 .choiceButton:hover {
+  transform: none;
+  border-color: #808080 #dfdfdf #dfdfdf #808080;
+}
+
+.windowDos .choiceButton {
+  border-radius: 0;
+  border: 1px solid #ffffff;
+}
+
+.windowDos .choiceButton:hover {
+  transform: none;
+  background: #0000aa;
+}
+
+.windowSystem7 .choiceButton {
+  border-radius: 6px;
+  border: 1px solid #000000;
+  box-shadow: inset -1px -1px 0 #808080, inset 1px 1px 0 #ffffff;
+}
+
+.windowSystem7 .choiceButton:hover {
+  transform: none;
+  box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #ffffff;
+}

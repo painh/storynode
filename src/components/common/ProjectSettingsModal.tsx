@@ -1,7 +1,17 @@
 import { useEditorStore } from '../../stores/editorStore'
 import { useTranslation } from '../../i18n'
-import { themePresets } from '../../features/game/themes'
+import { themePresets, getThemeById } from '../../features/game/themes'
 import styles from './SettingsModal.module.css'
+
+// 폰트 프리셋
+const fontPresets = [
+  { id: 'default', name: '테마 기본값', value: '' },
+  { id: 'noto-sans', name: 'Noto Sans KR', value: "'Noto Sans KR', sans-serif" },
+  { id: 'noto-serif', name: 'Noto Serif KR', value: "'Noto Serif KR', serif" },
+  { id: 'gothic', name: 'Gothic (모노스페이스)', value: "'MS Gothic', 'Noto Sans JP', monospace" },
+  { id: 'consolas', name: 'Consolas', value: "'Consolas', 'Courier New', monospace" },
+  { id: 'times', name: 'Times New Roman', value: "'Times New Roman', serif" },
+]
 
 interface ProjectSettingsModalProps {
   isOpen: boolean
@@ -11,6 +21,9 @@ interface ProjectSettingsModalProps {
 export function ProjectSettingsModal({ isOpen, onClose }: ProjectSettingsModalProps) {
   const { project } = useEditorStore()
   const { projectSettings: t } = useTranslation()
+
+  // 현재 테마의 기본값 가져오기
+  const currentTheme = getThemeById(project.gameSettings?.defaultThemeId || 'dark')
 
   if (!isOpen) return null
 
@@ -86,7 +99,10 @@ export function ProjectSettingsModal({ isOpen, onClose }: ProjectSettingsModalPr
               <select
                 className={styles.select}
                 value={project.gameSettings?.defaultThemeId || 'dark'}
-                onChange={(e) => updateGameSettings({ defaultThemeId: e.target.value })}
+                onChange={(e) => {
+                  updateGameSettings({ defaultThemeId: e.target.value })
+                  // 테마 변경 시 오버라이드 초기화 (옵션)
+                }}
               >
                 {themePresets.map((theme) => (
                   <option key={theme.id} value={theme.id}>
@@ -94,6 +110,48 @@ export function ProjectSettingsModal({ isOpen, onClose }: ProjectSettingsModalPr
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className={styles.settingRow}>
+              <span className={styles.settingLabel}>폰트</span>
+              <select
+                className={styles.select}
+                value={project.gameSettings?.fontOverride || ''}
+                onChange={(e) => updateGameSettings({ fontOverride: e.target.value || undefined })}
+              >
+                {fontPresets.map((font) => (
+                  <option key={font.id} value={font.value}>
+                    {font.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className={styles.settingRow}>
+              <span className={styles.settingLabel}>타이프라이터 속도</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input
+                  type="range"
+                  min="10"
+                  max="100"
+                  step="5"
+                  value={project.gameSettings?.typewriterSpeedOverride || currentTheme.effects.typewriterSpeed}
+                  onChange={(e) => updateGameSettings({ typewriterSpeedOverride: parseInt(e.target.value) })}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ minWidth: 50, textAlign: 'right', fontSize: 12 }}>
+                  {project.gameSettings?.typewriterSpeedOverride || currentTheme.effects.typewriterSpeed}ms
+                </span>
+                {project.gameSettings?.typewriterSpeedOverride && (
+                  <button
+                    onClick={() => updateGameSettings({ typewriterSpeedOverride: undefined })}
+                    style={{ padding: '2px 6px', fontSize: 11 }}
+                    title="테마 기본값으로 초기화"
+                  >
+                    ↩
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
