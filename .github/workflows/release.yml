@@ -7,7 +7,78 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Phase 1: Build Player for all platforms
+  build-player:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'windows-latest'
+            target: 'x86_64-pc-windows-msvc'
+            binary_name: 'storynode-player.exe'
+            artifact_name: 'player-windows'
+          - platform: 'macos-latest'
+            target: 'aarch64-apple-darwin'
+            binary_name: 'storynode-player'
+            artifact_name: 'player-macos-aarch64'
+          - platform: 'macos-latest'
+            target: 'x86_64-apple-darwin'
+            binary_name: 'storynode-player'
+            artifact_name: 'player-macos-x64'
+          - platform: 'ubuntu-22.04'
+            target: 'x86_64-unknown-linux-gnu'
+            binary_name: 'storynode-player'
+            artifact_name: 'player-linux'
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Player Frontend
+        working-directory: player
+        run: npm run build
+
+      - name: Build Player Tauri
+        working-directory: player/src-tauri
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare Player Binary
+        run: |
+          mkdir -p player-binaries
+          cp player/src-tauri/target/${{ matrix.target }}/release/${{ matrix.binary_name }} player-binaries/
+        shell: bash
+
+      - name: Upload Player Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: player-binaries/${{ matrix.binary_name }}
+          retention-days: 1
+
+  # Phase 2: Build Editor with Player binaries
   release:
+    needs: build-player
     permissions:
       contents: write
     strategy:
@@ -43,8 +114,38 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
+      # Download all player binaries
+      - name: Download Player Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: player-binaries
+
+      - name: Setup Player Binaries for Editor
+        run: |
+          mkdir -p editor/src-tauri/resources/player
+
+          # Copy Windows player
+          if [ -f player-binaries/player-windows/storynode-player.exe ]; then
+            cp player-binaries/player-windows/storynode-player.exe editor/src-tauri/resources/player/
+          fi
+
+          # Copy macOS players
+          if [ -f player-binaries/player-macos-aarch64/storynode-player ]; then
+            cp player-binaries/player-macos-aarch64/storynode-player editor/src-tauri/resources/player/storynode-player-macos-aarch64
+          fi
+          if [ -f player-binaries/player-macos-x64/storynode-player ]; then
+            cp player-binaries/player-macos-x64/storynode-player editor/src-tauri/resources/player/storynode-player-macos-x64
+          fi
+
+          # Copy Linux player
+          if [ -f player-binaries/player-linux/storynode-player ]; then
+            cp player-binaries/player-linux/storynode-player editor/src-tauri/resources/player/storynode-player-linux
+          fi
+
+          ls -la editor/src-tauri/resources/player/
+        shell: bash
+
       - name: Install frontend dependencies
-        working-directory: editor
         run: npm install
 
       - uses: tauri-apps/tauri-action@v0
@@ -72,6 +173,10 @@ jobs:
 
             ### 온라인 버전
             설치 없이 브라우저에서 바로 사용: **[https://painh.github.io/storynode/](https://painh.github.io/storynode/)**
+
+            ### 새로운 기능
+            - 🎮 실행 파일로 게임 내보내기 (Windows/macOS/Linux)
+            - 📦 웹용 ZIP 파일 내보내기
 
             ---
             [전체 변경사항 보기](https://github.com/painh/storynode/commits/${{ github.ref_name }})

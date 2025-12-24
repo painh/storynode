@@ -100,6 +100,28 @@ export interface Translations {
     themeCyberpunk: string
   }
 
+  // 내보내기
+  export: {
+    title: string
+    exportType: string
+    exportTypeWeb: string
+    exportTypeWebDesc: string
+    exportTypeExecutable: string
+    exportTypeExecutableDesc: string
+    platform: string
+    platformWindows: string
+    platformMacOS: string
+    platformLinux: string
+    noBinariesAvailable: string
+    outputPath: string
+    selectOutputPath: string
+    export: string
+    exporting: string
+    exportSuccess: string
+    exportFailed: string
+    cancel: string
+  }
+
   // Inspector
   inspector: {
     nodeId: string
@@ -279,6 +301,26 @@ export const translations: Record<Language, Translations> = {
       themeNovel: '노벨',
       themeCyberpunk: '사이버펑크',
     },
+    export: {
+      title: '게임 내보내기',
+      exportType: '내보내기 유형',
+      exportTypeWeb: '웹 (ZIP)',
+      exportTypeWebDesc: '웹 브라우저에서 실행 가능한 ZIP 파일',
+      exportTypeExecutable: '실행 파일',
+      exportTypeExecutableDesc: '독립 실행 가능한 데스크톱 애플리케이션',
+      platform: '플랫폼',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: '사용 가능한 플레이어 바이너리가 없습니다',
+      outputPath: '저장 경로',
+      selectOutputPath: '경로 선택...',
+      export: '내보내기',
+      exporting: '내보내는 중...',
+      exportSuccess: '내보내기 완료!',
+      exportFailed: '내보내기 실패',
+      cancel: '취소',
+    },
     inspector: {
       nodeId: '노드 ID',
       nodeType: '노드 타입',
@@ -444,6 +486,26 @@ export const translations: Record<Language, Translations> = {
       themeRetro: 'Retro',
       themeNovel: 'Novel',
       themeCyberpunk: 'Cyberpunk',
+    },
+    export: {
+      title: 'Export Game',
+      exportType: 'Export Type',
+      exportTypeWeb: 'Web (ZIP)',
+      exportTypeWebDesc: 'ZIP file that runs in web browsers',
+      exportTypeExecutable: 'Executable',
+      exportTypeExecutableDesc: 'Standalone desktop application',
+      platform: 'Platform',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: 'No player binaries available',
+      outputPath: 'Output Path',
+      selectOutputPath: 'Select path...',
+      export: 'Export',
+      exporting: 'Exporting...',
+      exportSuccess: 'Export completed!',
+      exportFailed: 'Export failed',
+      cancel: 'Cancel',
     },
     inspector: {
       nodeId: 'Node ID',
@@ -613,6 +675,26 @@ export const translations: Record<Language, Translations> = {
       themeNovel: '小说',
       themeCyberpunk: '赛博朋克',
     },
+    export: {
+      title: '导出游戏',
+      exportType: '导出类型',
+      exportTypeWeb: '网页 (ZIP)',
+      exportTypeWebDesc: '可在网页浏览器中运行的ZIP文件',
+      exportTypeExecutable: '可执行文件',
+      exportTypeExecutableDesc: '独立运行的桌面应用程序',
+      platform: '平台',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: '没有可用的播放器二进制文件',
+      outputPath: '输出路径',
+      selectOutputPath: '选择路径...',
+      export: '导出',
+      exporting: '正在导出...',
+      exportSuccess: '导出完成！',
+      exportFailed: '导出失败',
+      cancel: '取消',
+    },
     inspector: {
       nodeId: '节点ID',
       nodeType: '节点类型',
@@ -780,6 +862,26 @@ export const translations: Record<Language, Translations> = {
       themeRetro: '復古',
       themeNovel: '小說',
       themeCyberpunk: '賽博龐克',
+    },
+    export: {
+      title: '匯出遊戲',
+      exportType: '匯出類型',
+      exportTypeWeb: '網頁 (ZIP)',
+      exportTypeWebDesc: '可在網頁瀏覽器中執行的ZIP檔案',
+      exportTypeExecutable: '可執行檔',
+      exportTypeExecutableDesc: '獨立執行的桌面應用程式',
+      platform: '平台',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: '沒有可用的播放器二進位檔案',
+      outputPath: '輸出路徑',
+      selectOutputPath: '選擇路徑...',
+      export: '匯出',
+      exporting: '正在匯出...',
+      exportSuccess: '匯出完成！',
+      exportFailed: '匯出失敗',
+      cancel: '取消',
     },
     inspector: {
       nodeId: '節點ID',
@@ -949,6 +1051,26 @@ export const translations: Record<Language, Translations> = {
       themeNovel: 'Novela',
       themeCyberpunk: 'Ciberpunk',
     },
+    export: {
+      title: 'Exportar Juego',
+      exportType: 'Tipo de Exportación',
+      exportTypeWeb: 'Web (ZIP)',
+      exportTypeWebDesc: 'Archivo ZIP ejecutable en navegadores web',
+      exportTypeExecutable: 'Ejecutable',
+      exportTypeExecutableDesc: 'Aplicación de escritorio independiente',
+      platform: 'Plataforma',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: 'No hay binarios de reproductor disponibles',
+      outputPath: 'Ruta de Salida',
+      selectOutputPath: 'Seleccionar ruta...',
+      export: 'Exportar',
+      exporting: 'Exportando...',
+      exportSuccess: '¡Exportación completada!',
+      exportFailed: 'Exportación fallida',
+      cancel: 'Cancelar',
+    },
     inspector: {
       nodeId: 'ID del Nodo',
       nodeType: 'Tipo de Nodo',
@@ -1116,6 +1238,26 @@ export const translations: Record<Language, Translations> = {
       themeRetro: 'レトロ',
       themeNovel: 'ノベル',
       themeCyberpunk: 'サイバーパンク',
+    },
+    export: {
+      title: 'ゲームをエクスポート',
+      exportType: 'エクスポートタイプ',
+      exportTypeWeb: 'ウェブ (ZIP)',
+      exportTypeWebDesc: 'ウェブブラウザで実行可能なZIPファイル',
+      exportTypeExecutable: '実行ファイル',
+      exportTypeExecutableDesc: 'スタンドアロンデスクトップアプリケーション',
+      platform: 'プラットフォーム',
+      platformWindows: 'Windows',
+      platformMacOS: 'macOS',
+      platformLinux: 'Linux',
+      noBinariesAvailable: '利用可能なプレイヤーバイナリがありません',
+      outputPath: '出力パス',
+      selectOutputPath: 'パスを選択...',
+      export: 'エクスポート',
+      exporting: 'エクスポート中...',
+      exportSuccess: 'エクスポート完了！',
+      exportFailed: 'エクスポート失敗',
+      cancel: 'キャンセル',
     },
     inspector: {
       nodeId: 'ノードID',

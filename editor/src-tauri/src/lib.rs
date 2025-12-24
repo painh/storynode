@@ -1,8 +1,11 @@
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write as IoWrite;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+
+const MAGIC_BYTES: &[u8; 4] = b"SNPK";
 
 // --dev 옵션으로 실행되었는지 저장
 static DEV_MODE: AtomicBool = AtomicBool::new(false);
@@ -226,6 +229,118 @@ fn check_dev_mode() -> bool {
     DEV_MODE.load(Ordering::Relaxed)
 }
 
+// Get resource directory path (for player binaries)
+#[tauri::command]
+fn get_resource_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
+    app_handle
+        .path()
+        .resource_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .map_err(|e| format!("Failed to get resource dir: {}", e))
+}
+
+// List available player binaries
+#[tauri::command]
+fn list_player_binaries(app_handle: tauri::AppHandle) -> Result<Vec<String>, String> {
+    let resource_dir = app_handle
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Failed to get resource dir: {}", e))?;
+
+    let player_dir = resource_dir.join("player");
+    if !player_dir.exists() {
+        return Ok(vec![]);
+    }
+
+    let entries = fs::read_dir(&player_dir)
+        .map_err(|e| format!("Failed to read player directory: {}", e))?;
+
+    let mut binaries = Vec::new();
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        // Filter for executable files
+        if name.starts_with("storynode-player") {
+            binaries.push(name);
+        }
+    }
+
+    Ok(binaries)
+}
+
+// Export standalone game executable
+// Combines player binary with game data ZIP
+#[tauri::command]
+fn export_standalone_game(
+    app_handle: tauri::AppHandle,
+    player_binary_name: String,
+    game_zip_data: Vec<u8>,
+    output_path: String,
+) -> Result<(), String> {
+    let resource_dir = app_handle
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("Failed to get resource dir: {}", e))?;
+
+    let player_path = resource_dir.join("player").join(&player_binary_name);
+
+    if !player_path.exists() {
+        return Err(format!("Player binary not found: {}", player_binary_name));
+    }
+
+    // Copy player binary to output path
+    fs::copy(&player_path, &output_path)
+        .map_err(|e| format!("Failed to copy player binary: {}", e))?;
+
+    // Append game data to the executable
+    // Format: [original exe][ZIP data][ZIP size: 8 bytes][magic: 4 bytes]
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(&output_path)
+        .map_err(|e| format!("Failed to open output file: {}", e))?;
+
+    // Write ZIP data
+    file.write_all(&game_zip_data)
+        .map_err(|e| format!("Failed to write game data: {}", e))?;
+
+    // Write ZIP size (8 bytes, little endian)
+    let zip_size = game_zip_data.len() as u64;
+    file.write_all(&zip_size.to_le_bytes())
+        .map_err(|e| format!("Failed to write size: {}", e))?;
+
+    // Write magic bytes
+    file.write_all(MAGIC_BYTES)
+        .map_err(|e| format!("Failed to write magic bytes: {}", e))?;
+
+    // Make executable on Unix
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = fs::metadata(&output_path)
+            .map_err(|e| format!("Failed to get metadata: {}", e))?
+            .permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&output_path, perms)
+            .map_err(|e| format!("Failed to set permissions: {}", e))?;
+    }
+
+    Ok(())
+}
+
+// Read a binary file (for loading player binary in frontend if needed)
+#[tauri::command]
+fn read_binary_file(path: String) -> Result<Vec<u8>, String> {
+    fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))
+}
+
+// Write a binary file
+#[tauri::command]
+fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
+    if let Some(parent) = Path::new(&path).parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+    fs::write(&path, data).map_err(|e| format!("Failed to write file: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 커맨드라인 인자에서 --dev 옵션 확인
@@ -250,7 +365,12 @@ pub fn run() {
             write_text_file,
             get_config_dir,
             toggle_devtools,
-            check_dev_mode
+            check_dev_mode,
+            get_resource_dir,
+            list_player_binaries,
+            export_standalone_game,
+            read_binary_file,
+            write_binary_file
         ])
         .setup(|app| {
             println!("[Tauri] App started");

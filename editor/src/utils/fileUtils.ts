@@ -692,3 +692,106 @@ function convertImagePathsForExport(chapter: StoryChapter): StoryChapter {
 
   return converted
 }
+
+// ============================================
+// 실행 파일 내보내기 (Standalone Game Export)
+// ============================================
+
+/**
+ * 사용 가능한 플레이어 바이너리 목록 조회
+ */
+export async function listPlayerBinaries(): Promise<string[]> {
+  if (!isTauri()) {
+    return []
+  }
+  try {
+    return await invoke<string[]>('list_player_binaries')
+  } catch (error) {
+    console.error('Failed to list player binaries:', error)
+    return []
+  }
+}
+
+/**
+ * 프로젝트를 ZIP 데이터로 변환 (바이너리용)
+ */
+export async function createGameZipData(project: StoryProject): Promise<Uint8Array> {
+  const zip = new JSZip()
+
+  // project.json
+  const projectMeta = {
+    name: project.name,
+    version: project.version,
+    stages: project.stages.map(s => s.id),
+    gameSettings: project.gameSettings,
+    variables: project.variables,
+  }
+  zip.file('project.json', JSON.stringify(projectMeta, null, 2))
+
+  // 각 스테이지 폴더
+  for (const stage of project.stages) {
+    const stageFolder = zip.folder(stage.id)
+    if (!stageFolder) continue
+
+    const stageMeta = {
+      id: stage.id,
+      title: stage.title,
+      description: stage.description || '',
+      partyCharacters: stage.partyCharacters || [],
+      chapters: stage.chapters.map(c => c.id),
+    }
+    stageFolder.file('stage.json', JSON.stringify(stageMeta, null, 2))
+
+    for (const chapter of stage.chapters) {
+      const chapterData = convertImagePathsForExport(chapter)
+      stageFolder.file(`${chapter.id}.json`, JSON.stringify(chapterData, null, 2))
+    }
+  }
+
+  // 이미지 리소스
+  if (project.resources && project.resources.length > 0) {
+    const resourcesFolder = zip.folder('resources')
+    const imagesFolder = resourcesFolder?.folder('images')
+
+    if (imagesFolder) {
+      for (const resource of project.resources) {
+        if (resource.type === 'image' && resource.path) {
+          if (resource.path.startsWith('data:')) {
+            const base64Data = resource.path.split(',')[1]
+            if (base64Data) {
+              const extension = getImageExtension(resource.path)
+              const filename = `${resource.name}.${extension}`
+              imagesFolder.file(filename, base64Data, { base64: true })
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const arrayBuffer = await zip.generateAsync({ type: 'arraybuffer' })
+  return new Uint8Array(arrayBuffer)
+}
+
+/**
+ * 독립 실행 파일로 게임 내보내기 (Tauri only)
+ */
+export async function exportStandaloneGame(
+  project: StoryProject,
+  playerBinaryName: string,
+  outputPath: string
+): Promise<void> {
+  if (!isTauri()) {
+    throw new Error('Standalone export is only available in Tauri environment')
+  }
+
+  // 1. 프로젝트를 ZIP 데이터로 변환
+  const zipData = await createGameZipData(project)
+
+  // 2. Rust 백엔드에서 바이너리 결합
+  await invoke('export_standalone_game', {
+    playerBinaryName,
+    gameZipData: Array.from(zipData),
+    outputPath,
+  })
+}

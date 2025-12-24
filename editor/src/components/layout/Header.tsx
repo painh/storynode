@@ -11,13 +11,11 @@ import {
   isFileSystemAccessSupported,
   pickWebDirectory,
   getWebDirectoryHandle,
-  exportGameBuild,
-  downloadGameBuildAsZip,
 } from '../../utils/fileUtils'
-import { generateGamePlayerHtml } from '../../utils/gamePlayerTemplate'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
 import { ProjectSettingsModal } from '../common/ProjectSettingsModal'
+import { ExportModal } from '../common/ExportModal'
 import { useMenuState } from './header/useMenuState'
 import { FileMenu } from './header/FileMenu'
 import { EditMenu } from './header/EditMenu'
@@ -75,6 +73,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
 
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [showProjectSettingsModal, setShowProjectSettingsModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -294,42 +293,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
     closeAllMenus()
   }
 
-  const handleExportForGame = async () => {
+  const handleExportForGame = () => {
     closeAllMenus()
-
-    // Tauri 환경: 폴더 선택 후 프로젝트 복사 + index.html 생성
-    if (isTauri() && openDialog) {
-      const lastPath = settings.lastProjectPath
-      if (!lastPath) {
-        alert('Please save the project first before exporting.')
-        return
-      }
-
-      try {
-        const selected = await openDialog({
-          directory: true,
-          multiple: false,
-          title: menu.exportSelectFolder || 'Select folder to export game',
-        })
-
-        if (selected && typeof selected === 'string') {
-          const htmlTemplate = generateGamePlayerHtml()
-          await exportGameBuild(lastPath, selected, htmlTemplate)
-          alert(menu.exportSuccess || 'Export completed!\n\nTo run the game:\n1. Open terminal in the export folder\n2. Run: npx serve\n3. Open http://localhost:3000 in browser')
-        }
-      } catch (error) {
-        alert('Failed to export: ' + (error as Error).message)
-      }
-      return
-    }
-
-    // 웹 환경: ZIP으로 다운로드 (폴더 구조 + 리소스 포함)
-    try {
-      const htmlTemplate = generateGamePlayerHtml()
-      await downloadGameBuildAsZip(project, htmlTemplate)
-    } catch (error) {
-      alert('Failed to export: ' + (error as Error).message)
-    }
+    setShowExportModal(true)
   }
 
   const handleImportJson = () => {
@@ -574,6 +540,12 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
       <ProjectSettingsModal
         isOpen={showProjectSettingsModal}
         onClose={() => setShowProjectSettingsModal(false)}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
       />
 
       {/* Help Modal */}

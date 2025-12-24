@@ -40,6 +40,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "resources/player/*"
+    ],
     "windows": {
       "webviewInstallMode": {
         "type": "embedBootstrapper"
