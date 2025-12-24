@@ -1,0 +1,330 @@
+import type { StoryNode, VariableOperation, VariableAction, VariableTarget, CharacterId, FactionId } from '../../../types/story'
+import { HelpTooltip } from './HelpTooltip'
+import styles from '../Inspector.module.css'
+
+interface VariableNodeInspectorProps {
+  node: StoryNode
+  onUpdate: (updates: Partial<StoryNode>) => void
+}
+
+const VARIABLE_TARGETS: { value: VariableTarget; label: string }[] = [
+  { value: 'flag', label: '플래그' },
+  { value: 'gold', label: '골드' },
+  { value: 'hp', label: 'HP' },
+  { value: 'affection', label: '호감도' },
+  { value: 'reputation', label: '평판' },
+]
+
+const VARIABLE_ACTIONS: { value: VariableAction; label: string }[] = [
+  { value: 'set', label: '설정 (=)' },
+  { value: 'add', label: '더하기 (+)' },
+  { value: 'subtract', label: '빼기 (-)' },
+  { value: 'multiply', label: '곱하기 (×)' },
+]
+
+const CHARACTER_IDS: { value: CharacterId; label: string }[] = [
+  { value: 'kairen', label: 'Kairen' },
+  { value: 'zed', label: 'Zed' },
+  { value: 'lyra', label: 'Lyra' },
+  { value: 'elise', label: 'Elise' },
+]
+
+const FACTION_IDS: { value: FactionId; label: string }[] = [
+  { value: 'kingdom', label: '왕국' },
+  { value: 'elves', label: '엘프' },
+  { value: 'dwarves', label: '드워프' },
+  { value: 'free_cities', label: '자유도시' },
+  { value: 'mage_tower', label: '마법사 탑' },
+  { value: 'dark_lands', label: '암흑 대륙' },
+]
+
+const HELP_TEXTS = {
+  operations: '변수 연산 목록입니다.\n위에서부터 순서대로 실행됩니다.',
+  target: '변경할 대상을 선택합니다.\n- 플래그: 커스텀 변수\n- 골드: 보유 골드\n- HP: 체력\n- 호감도: 캐릭터 호감도\n- 평판: 세력 평판',
+  action: '연산 종류를 선택합니다.\n- 설정: 값을 직접 설정\n- 더하기: 현재 값에 더함\n- 빼기: 현재 값에서 뺌\n- 곱하기: 현재 값에 곱함',
+}
+
+export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorProps) {
+  const operations = node.variableOperations || []
+
+  const handleAddOperation = () => {
+    const newOp: VariableOperation = {
+      target: 'flag',
+      action: 'set',
+      key: '',
+      value: '',
+    }
+    onUpdate({ variableOperations: [...operations, newOp] })
+  }
+
+  const handleRemoveOperation = (index: number) => {
+    const newOps = [...operations]
+    newOps.splice(index, 1)
+    onUpdate({ variableOperations: newOps })
+  }
+
+  const handleOperationChange = (index: number, updates: Partial<VariableOperation>) => {
+    const newOps = [...operations]
+    newOps[index] = { ...newOps[index], ...updates }
+    onUpdate({ variableOperations: newOps })
+  }
+
+  const handleTargetChange = (index: number, target: VariableTarget) => {
+    const op = operations[index]
+    let newOp: VariableOperation = { target, action: op.action, value: op.value }
+
+    switch (target) {
+      case 'flag':
+        newOp = { target, action: 'set', key: '', value: '' }
+        break
+      case 'gold':
+      case 'hp':
+        newOp = { target, action: op.action === 'set' ? 'set' : op.action, value: typeof op.value === 'number' ? op.value : 0 }
+        break
+      case 'affection':
+        newOp = { target, action: op.action, characterId: 'kairen', value: typeof op.value === 'number' ? op.value : 0 }
+        break
+      case 'reputation':
+        newOp = { target, action: op.action, factionId: 'kingdom', value: typeof op.value === 'number' ? op.value : 0 }
+        break
+    }
+
+    handleOperationChange(index, newOp)
+  }
+
+  const renderOperationEditor = (index: number, op: VariableOperation) => {
+    switch (op.target) {
+      case 'flag':
+        return (
+          <>
+            <div className={styles.field}>
+              <label className={styles.label}>플래그 키</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={op.key || ''}
+                onChange={(e) => handleOperationChange(index, { key: e.target.value })}
+                placeholder="예: has_sword"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              <select
+                className={styles.select}
+                value={typeof op.value === 'boolean' ? String(op.value) : (typeof op.value === 'number' ? 'number' : 'string')}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === 'true') handleOperationChange(index, { value: true })
+                  else if (val === 'false') handleOperationChange(index, { value: false })
+                  else if (val === 'number') handleOperationChange(index, { value: 0 })
+                  else handleOperationChange(index, { value: '' })
+                }}
+              >
+                <option value="true">true (참)</option>
+                <option value="false">false (거짓)</option>
+                <option value="number">숫자</option>
+                <option value="string">문자열</option>
+              </select>
+            </div>
+            {typeof op.value === 'number' && (
+              <div className={styles.field}>
+                <label className={styles.label}>숫자 값</label>
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={op.value}
+                  onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+                />
+              </div>
+            )}
+            {typeof op.value === 'string' && (
+              <div className={styles.field}>
+                <label className={styles.label}>문자열 값</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={op.value}
+                  onChange={(e) => handleOperationChange(index, { value: e.target.value })}
+                  placeholder="값 입력"
+                />
+              </div>
+            )}
+          </>
+        )
+
+      case 'gold':
+      case 'hp':
+        return (
+          <>
+            <div className={styles.field}>
+              <div className={styles.labelWithHelp}>
+                <label className={styles.label}>연산</label>
+                <HelpTooltip content={HELP_TEXTS.action} />
+              </div>
+              <select
+                className={styles.select}
+                value={op.action}
+                onChange={(e) => handleOperationChange(index, { action: e.target.value as VariableAction })}
+              >
+                {VARIABLE_ACTIONS.map(va => (
+                  <option key={va.value} value={va.value}>{va.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={typeof op.value === 'number' ? op.value : 0}
+                onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+              />
+            </div>
+          </>
+        )
+
+      case 'affection':
+        return (
+          <>
+            <div className={styles.field}>
+              <label className={styles.label}>캐릭터</label>
+              <select
+                className={styles.select}
+                value={op.characterId || 'kairen'}
+                onChange={(e) => handleOperationChange(index, { characterId: e.target.value as CharacterId })}
+              >
+                {CHARACTER_IDS.map(char => (
+                  <option key={char.value} value={char.value}>{char.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <div className={styles.labelWithHelp}>
+                <label className={styles.label}>연산</label>
+                <HelpTooltip content={HELP_TEXTS.action} />
+              </div>
+              <select
+                className={styles.select}
+                value={op.action}
+                onChange={(e) => handleOperationChange(index, { action: e.target.value as VariableAction })}
+              >
+                {VARIABLE_ACTIONS.map(va => (
+                  <option key={va.value} value={va.value}>{va.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={typeof op.value === 'number' ? op.value : 0}
+                onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+              />
+            </div>
+          </>
+        )
+
+      case 'reputation':
+        return (
+          <>
+            <div className={styles.field}>
+              <label className={styles.label}>세력</label>
+              <select
+                className={styles.select}
+                value={op.factionId || 'kingdom'}
+                onChange={(e) => handleOperationChange(index, { factionId: e.target.value as FactionId })}
+              >
+                {FACTION_IDS.map(faction => (
+                  <option key={faction.value} value={faction.value}>{faction.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <div className={styles.labelWithHelp}>
+                <label className={styles.label}>연산</label>
+                <HelpTooltip content={HELP_TEXTS.action} />
+              </div>
+              <select
+                className={styles.select}
+                value={op.action}
+                onChange={(e) => handleOperationChange(index, { action: e.target.value as VariableAction })}
+              >
+                {VARIABLE_ACTIONS.map(va => (
+                  <option key={va.value} value={va.value}>{va.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={typeof op.value === 'number' ? op.value : 0}
+                onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+              />
+            </div>
+          </>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <>
+      <div className={styles.field}>
+        <div className={styles.labelRow}>
+          <div className={styles.labelWithHelp}>
+            <label className={styles.label}>변수 연산</label>
+            <HelpTooltip content={HELP_TEXTS.operations} />
+          </div>
+          <button className={styles.addBtn} onClick={handleAddOperation}>
+            + 연산 추가
+          </button>
+        </div>
+        <div className={styles.choiceList}>
+          {operations.length === 0 ? (
+            <div className={styles.noChoices}>변수 연산이 없습니다.</div>
+          ) : (
+            operations.map((op, index) => (
+              <div key={index} className={styles.choiceItem}>
+                <div className={styles.choiceHeader}>
+                  <span className={styles.choiceIndex}>연산 {index + 1}</span>
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => handleRemoveOperation(index)}
+                    title="연산 삭제"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* 대상 선택 */}
+                <div className={styles.field}>
+                  <div className={styles.labelWithHelp}>
+                    <label className={styles.label}>대상</label>
+                    <HelpTooltip content={HELP_TEXTS.target} />
+                  </div>
+                  <select
+                    className={styles.select}
+                    value={op.target}
+                    onChange={(e) => handleTargetChange(index, e.target.value as VariableTarget)}
+                  >
+                    {VARIABLE_TARGETS.map(vt => (
+                      <option key={vt.value} value={vt.value}>{vt.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 대상별 에디터 */}
+                {renderOperationEditor(index, op)}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  )
+}

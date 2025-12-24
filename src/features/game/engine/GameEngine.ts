@@ -196,7 +196,7 @@ export class GameEngine {
   private processImageNode(node: StoryNode): void {
     if (!node.imageData) return
 
-    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration, exitEffect, exitEffectDuration, transitionTiming = 'sequential' } = node.imageData
+    const { resourcePath, layer, layerOrder, exitEffect, exitEffectDuration, transitionTiming = 'sequential' } = node.imageData
 
     // 빈 리소스 경로면 해당 레이어의 이미지 제거
     if (!resourcePath) {

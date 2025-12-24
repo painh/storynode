@@ -5,7 +5,19 @@ import { CommentNodeInspector } from './inspector/CommentNodeInspector'
 import { ImageNodeInspector } from './inspector/ImageNodeInspector'
 import { ChoiceListEditor } from './inspector/ChoiceListEditor'
 import { CustomNodeInspector } from './inspector/CustomNodeInspector'
+import { ConditionNodeInspector } from './inspector/ConditionNodeInspector'
+import { VariableNodeInspector } from './inspector/VariableNodeInspector'
+import { HelpTooltip } from './inspector/HelpTooltip'
 import styles from './Inspector.module.css'
+
+// 필드별 도움말 텍스트
+const HELP_TEXTS = {
+  id: '노드의 고유 식별자입니다.\n자동으로 생성되며 수정할 수 없습니다.',
+  speaker: '대사를 말하는 화자의 이름입니다.\n비워두면 나레이터로 처리됩니다.',
+  text: '노드에 표시될 텍스트 내용입니다.\n대사, 선택지 질문, 챕터 종료 메시지 등에 사용됩니다.',
+  choices: '플레이어가 선택할 수 있는 선택지 목록입니다.\n각 선택지는 다른 노드로 연결될 수 있습니다.',
+  javascript: 'JavaScript 코드를 실행합니다.\ngameState, setFlag, getFlag 등의 함수를 사용할 수 있습니다.',
+}
 
 export function Inspector() {
   const { selectedNodeIds, selectedCommentId, getNodeById, getCommentById, updateNode, updateCommentNode, project } = useEditorStore()
@@ -73,7 +85,10 @@ export function Inspector() {
 
       <div className={styles.content}>
         <div className={styles.field}>
-          <label className={styles.label}>ID</label>
+          <div className={styles.labelWithHelp}>
+            <label className={styles.label}>ID</label>
+            <HelpTooltip content={HELP_TEXTS.id} />
+          </div>
           <input
             type="text"
             className={styles.input}
@@ -85,7 +100,10 @@ export function Inspector() {
         {/* Dialogue: speaker */}
         {selectedNode.type === 'dialogue' && (
           <div className={styles.field}>
-            <label className={styles.label}>Speaker</label>
+            <div className={styles.labelWithHelp}>
+              <label className={styles.label}>Speaker</label>
+              <HelpTooltip content={HELP_TEXTS.speaker} />
+            </div>
             <input
               type="text"
               className={styles.input}
@@ -99,7 +117,10 @@ export function Inspector() {
         {/* Dialogue & Choice & Chapter End: text */}
         {(selectedNode.type === 'dialogue' || selectedNode.type === 'choice' || selectedNode.type === 'chapter_end') && (
           <div className={styles.field}>
-            <label className={styles.label}>Text</label>
+            <div className={styles.labelWithHelp}>
+              <label className={styles.label}>Text</label>
+              <HelpTooltip content={HELP_TEXTS.text} />
+            </div>
             <textarea
               className={styles.textarea}
               value={selectedNode.text || ''}
@@ -132,7 +153,10 @@ export function Inspector() {
         {/* JavaScript: code */}
         {selectedNode.type === 'javascript' && (
           <div className={styles.field}>
-            <label className={styles.label}>JavaScript Code</label>
+            <div className={styles.labelWithHelp}>
+              <label className={styles.label}>JavaScript Code</label>
+              <HelpTooltip content={HELP_TEXTS.javascript} />
+            </div>
             <textarea
               className={`${styles.textarea} ${styles.codeEditor}`}
               value={selectedNode.javascriptCode || ''}
@@ -147,6 +171,22 @@ export function Inspector() {
         {/* Custom: customData */}
         {selectedNode.type === 'custom' && (
           <CustomNodeInspector
+            node={selectedNode}
+            onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+          />
+        )}
+
+        {/* Condition: conditionBranches */}
+        {selectedNode.type === 'condition' && (
+          <ConditionNodeInspector
+            node={selectedNode}
+            onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+          />
+        )}
+
+        {/* Variable: variableOperations */}
+        {selectedNode.type === 'variable' && (
+          <VariableNodeInspector
             node={selectedNode}
             onUpdate={(updates) => updateNode(selectedNode.id, updates)}
           />

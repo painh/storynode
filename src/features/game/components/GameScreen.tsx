@@ -9,7 +9,7 @@ interface GameScreenProps {
   theme: GameTheme
 }
 
-// 효과 클래스 가져오기
+// 효과 클래스 가져오기 (단일)
 const getEffectClass = (effect?: string): string => {
   if (!effect || effect === 'none') return ''
   switch (effect) {
@@ -26,6 +26,13 @@ const getEffectClass = (effect?: string): string => {
     case 'pulse': return styles.effectPulse
     default: return ''
   }
+}
+
+// 다중 효과 클래스 가져오기 (effects 배열 지원)
+const getEffectClasses = (effects?: string[], effect?: string): string => {
+  // effects 배열이 있으면 사용, 없으면 기존 effect 사용
+  const effectList = effects && effects.length > 0 ? effects : (effect && effect !== 'none' ? [effect] : [])
+  return effectList.map(e => getEffectClass(e)).filter(Boolean).join(' ')
 }
 
 // 퇴장 효과 클래스 가져오기
@@ -96,7 +103,7 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
           key={`${img.layer}-${img.layerOrder}-${img.instanceId}`}
           src={img.resourcePath}
           alt=""
-          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClass(img.effect)}`}
+          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClasses(img.effects, img.effect)}`}
           style={getImageStyle(img)}
         />
       ))}

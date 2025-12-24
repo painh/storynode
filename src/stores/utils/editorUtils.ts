@@ -13,12 +13,17 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
   const bgImageId = generateId()
   const char1ImageId = generateId()
   const char2ImageId = generateId()
+  const variableInitId = generateId()
   const dialogue1Id = generateId()
   const dialogue2Id = generateId()
   const choiceId = generateId()
+  const choice1ResultId = generateId()
+  const choice2ResultId = generateId()
+  const choice3ResultId = generateId()
   const conditionId = generateId()
-  const endBranch1Id = generateId()
-  const endBranch2Id = generateId()
+  const goldBranchId = generateId()
+  const flagBranchId = generateId()
+  const defaultBranchId = generateId()
   const chapterEndId = generateId()
 
   const nodes: StoryNode[] = [
@@ -64,7 +69,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       id: char2ImageId,
       type: 'image',
       position: { x: 600, y: 400 },
-      nextNodeId: dialogue1Id,
+      nextNodeId: variableInitId,
       imageData: {
         resourcePath: 'templates/default/characters/char2.png',
         layer: 'character',
@@ -75,72 +80,171 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
         effectDuration: 300,
       },
     },
+    // 변수 초기화 (골드, 플래그 설정)
+    {
+      id: variableInitId,
+      type: 'variable',
+      position: { x: 850, y: 300 },
+      nextNodeId: dialogue1Id,
+      variableOperations: [
+        { target: 'gold', action: 'set', value: 100 },
+        { target: 'flag', action: 'set', key: 'met_merchant', value: false },
+        { target: 'flag', action: 'set', key: 'bought_item', value: false },
+      ],
+    },
     // 대사 1
     {
       id: dialogue1Id,
       type: 'dialogue',
-      position: { x: 850, y: 200 },
-      speaker: '캐릭터 1',
-      text: '안녕하세요!',
+      position: { x: 1100, y: 200 },
+      speaker: '상인',
+      text: '어서오세요! 무엇을 도와드릴까요?',
       nextNodeId: dialogue2Id,
     },
     // 대사 2
     {
       id: dialogue2Id,
       type: 'dialogue',
-      position: { x: 1100, y: 200 },
-      speaker: '캐릭터 2',
-      text: '반갑습니다! 어떻게 할까요?',
+      position: { x: 1350, y: 200 },
+      speaker: '상인',
+      text: '좋은 물건이 많이 있답니다. 골드가 충분하신가요?',
       nextNodeId: choiceId,
     },
-    // 선택지
+    // 선택지 노드 - 모든 입력값 활용
     {
       id: choiceId,
       type: 'choice',
-      position: { x: 1350, y: 200 },
-      text: '무엇을 선택하시겠습니까?',
+      position: { x: 1600, y: 200 },
+      text: '어떻게 하시겠습니까?',
       choices: [
-        { id: generateId(), text: '선택 1', nextNodeId: conditionId },
-        { id: generateId(), text: '선택 2', nextNodeId: conditionId },
+        // 선택지 1: 조건부 선택지 (골드가 50 이상일 때만 표시)
+        {
+          id: generateId(),
+          text: '물건 구매하기 (50골드)',
+          nextNodeId: choice1ResultId,
+          condition: { type: 'gold', min: 50 },
+          effects: {
+            gold: -50,
+            setFlags: { bought_item: true, met_merchant: true },
+            affection: [{ characterId: 'kairen', delta: 5 }],
+          },
+          resultText: '물건을 구매했습니다!',
+        },
+        // 선택지 2: 효과가 있는 선택지 (플래그 설정 + 호감도)
+        {
+          id: generateId(),
+          text: '그냥 구경만 하기',
+          nextNodeId: choice2ResultId,
+          effects: {
+            setFlags: { met_merchant: true },
+            reputation: [{ factionId: 'free_cities', delta: 1 }],
+          },
+          resultText: '가게를 둘러보았습니다.',
+        },
+        // 선택지 3: 조건부 선택지 (특정 플래그가 있을 때)
+        {
+          id: generateId(),
+          text: '비밀 거래 제안하기',
+          nextNodeId: choice3ResultId,
+          condition: { type: 'flag', flagKey: 'knows_secret', flagValue: true },
+          effects: {
+            gold: 100,
+            setFlags: { secret_deal_done: true },
+            affection: [
+              { characterId: 'zed', delta: 10 },
+              { characterId: 'lyra', delta: -5 },
+            ],
+          },
+          resultText: '비밀 거래가 성사되었습니다.',
+        },
       ],
     },
-    // 조건 노드
+    // 선택 결과 1 - 구매
+    {
+      id: choice1ResultId,
+      type: 'dialogue',
+      position: { x: 1850, y: 50 },
+      speaker: '상인',
+      text: '좋은 선택이십니다! 감사합니다.',
+      nextNodeId: conditionId,
+    },
+    // 선택 결과 2 - 구경
+    {
+      id: choice2ResultId,
+      type: 'dialogue',
+      position: { x: 1850, y: 200 },
+      speaker: '상인',
+      text: '천천히 구경하세요~',
+      nextNodeId: conditionId,
+    },
+    // 선택 결과 3 - 비밀 거래
+    {
+      id: choice3ResultId,
+      type: 'dialogue',
+      position: { x: 1850, y: 350 },
+      speaker: '상인',
+      text: '(소곤) 좋아요, 거래 성사!',
+      nextNodeId: conditionId,
+    },
+    // 조건 노드 - 여러 조건 타입 활용
     {
       id: conditionId,
       type: 'condition',
-      position: { x: 1600, y: 200 },
+      position: { x: 2100, y: 200 },
       conditionBranches: [
+        // 조건 1: 골드 범위 체크
         {
           id: generateId(),
-          condition: { type: 'flag', flagKey: 'example_flag', flagValue: true },
-          nextNodeId: endBranch1Id,
+          condition: { type: 'gold', min: 100, max: 999 },
+          nextNodeId: goldBranchId,
         },
+        // 조건 2: 플래그 체크
+        {
+          id: generateId(),
+          condition: { type: 'flag', flagKey: 'bought_item', flagValue: true },
+          nextNodeId: flagBranchId,
+        },
+        // 조건 3: 호감도 체크 (예시)
+        // {
+        //   id: generateId(),
+        //   condition: { type: 'affection', characterId: 'kairen', min: 10 },
+        //   nextNodeId: affinityBranchId,
+        // },
       ],
-      defaultNextNodeId: endBranch2Id,
+      defaultNextNodeId: defaultBranchId,
     },
-    // 분기 결과 1
+    // 골드 분기 결과
     {
-      id: endBranch1Id,
+      id: goldBranchId,
       type: 'dialogue',
-      position: { x: 1850, y: 100 },
+      position: { x: 2350, y: 50 },
       speaker: '시스템',
-      text: '조건을 만족했습니다!',
+      text: '당신은 부자군요! (골드 100 이상)',
       nextNodeId: chapterEndId,
     },
-    // 분기 결과 2 (기본)
+    // 플래그 분기 결과
     {
-      id: endBranch2Id,
+      id: flagBranchId,
       type: 'dialogue',
-      position: { x: 1850, y: 350 },
+      position: { x: 2350, y: 200 },
       speaker: '시스템',
-      text: '기본 분기입니다.',
+      text: '물건을 구매하셨군요!',
+      nextNodeId: chapterEndId,
+    },
+    // 기본 분기 결과
+    {
+      id: defaultBranchId,
+      type: 'dialogue',
+      position: { x: 2350, y: 350 },
+      speaker: '시스템',
+      text: '특별한 조건을 만족하지 않았습니다.',
       nextNodeId: chapterEndId,
     },
     // 챕터 종료
     {
       id: chapterEndId,
       type: 'chapter_end',
-      position: { x: 2100, y: 225 },
+      position: { x: 2600, y: 200 },
     },
   ]
 

@@ -464,3 +464,90 @@
   background: #c62828;
   color: white;
 }
+
+/* Help Tooltip */
+.helpContainer {
+  position: relative;
+  display: inline-flex;
+  margin-left: auto;
+}
+
+.helpButton {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.helpButton:hover {
+  background: var(--selection-border);
+  border-color: var(--selection-border);
+  color: var(--bg-primary);
+}
+
+.helpTooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 250px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  animation: tooltipFadeIn 0.15s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.helpTooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-left: 1px solid var(--border-default);
+  border-top: 1px solid var(--border-default);
+  transform: rotate(45deg);
+}
+
+.helpTooltipContent {
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+/* Label with help button */
+.labelWithHelp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-default);
+  margin: 8px 0;
+}
