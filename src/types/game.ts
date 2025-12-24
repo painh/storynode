@@ -1,6 +1,6 @@
 // 게임 실행 관련 타입 정의
 
-import type { CharacterId, FactionId, ImageLayer, ImageAlignment } from './story'
+import type { CharacterId, FactionId, ImageLayer, ImageAlignment, ImageEffectType } from './story'
 
 // 활성 이미지 (현재 화면에 표시 중인 이미지)
 export interface ActiveImage {
@@ -13,7 +13,8 @@ export interface ActiveImage {
   x?: number
   y?: number
   flipHorizontal?: boolean
-  effect?: string          // 이미지 효과 (fadeIn, shake 등)
+  effect?: string          // 이미지 효과 (deprecated, 하위 호환용)
+  effects?: ImageEffectType[] // 다중 이미지 효과
   effectDuration?: number  // 효과 지속 시간 (ms)
 }
 
@@ -46,7 +47,8 @@ export interface GameHistoryEntry {
     resourcePath: string
     layer: string
     isRemoval?: boolean // 이미지 제거인 경우 true
-    effect?: string
+    effect?: string  // deprecated, 하위 호환용
+    effects?: ImageEffectType[] // 다중 이미지 효과
     effectDuration?: number
   }
 }

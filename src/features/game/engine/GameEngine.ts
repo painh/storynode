@@ -153,18 +153,21 @@ export class GameEngine {
 
       // 효과가 있으면 효과 완료 후 진행, 없으면 즉시 진행
       const effectDuration = node.imageData?.effectDuration || 0
-      const hasEffect = node.imageData?.effect && node.imageData.effect !== 'none'
+      // 다중 효과 지원: effects 배열 우선, 없으면 기존 effect 사용
+      const effects = node.imageData?.effects || []
+      const legacyEffect = node.imageData?.effect && node.imageData.effect !== 'none' ? node.imageData.effect : null
+      const hasEffect = effects.length > 0 || legacyEffect
 
       console.log('[GameEngine] Image node processing:', {
         nodeId: node.id,
-        effect: node.imageData?.effect,
+        effects: effects.length > 0 ? effects : legacyEffect,
         effectDuration,
         hasEffect,
         nextNodeId: node.nextNodeId,
       })
 
       if (hasEffect && effectDuration > 0 && node.nextNodeId) {
-        console.log(`[GameEngine] Waiting ${effectDuration}ms for effect: ${node.imageData?.effect}`)
+        console.log(`[GameEngine] Waiting ${effectDuration}ms for effects: ${effects.length > 0 ? effects.join(', ') : legacyEffect}`)
         // 효과 재생 중에는 대기, 완료 후 다음 노드로
         setTimeout(() => {
           console.log(`[GameEngine] Effect timer completed, advancing to: ${node.nextNodeId}`)
@@ -193,7 +196,7 @@ export class GameEngine {
   private processImageNode(node: StoryNode): void {
     if (!node.imageData) return
 
-    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effectDuration } = node.imageData
+    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration } = node.imageData
 
     // 빈 리소스 경로면 해당 레이어의 이미지 제거
     if (!resourcePath) {
@@ -216,6 +219,7 @@ export class GameEngine {
       y,
       flipHorizontal,
       effect,
+      effects,  // 다중 효과 지원
       effectDuration,
     }
 
@@ -232,7 +236,7 @@ export class GameEngine {
   private addImageToHistory(node: StoryNode): void {
     if (!node.imageData) return
 
-    const { resourcePath, layer, effect, effectDuration } = node.imageData
+    const { resourcePath, layer, effect, effects, effectDuration } = node.imageData
     const isRemoval = !resourcePath
 
     this.state.history.push({
@@ -245,6 +249,7 @@ export class GameEngine {
         layer,
         isRemoval,
         effect,
+        effects,  // 다중 효과 지원
         effectDuration,
       },
     })

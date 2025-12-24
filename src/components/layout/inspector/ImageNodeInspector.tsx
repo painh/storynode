@@ -1,5 +1,21 @@
-import type { StoryNode, ImageNodeData, ImageAlignment, ImageEffect, ProjectResource } from '../../../types/story'
+import type { StoryNode, ImageNodeData, ImageAlignment, ImageEffectType, ProjectResource } from '../../../types/story'
+import { IMAGE_EFFECT_GROUPS, COMBINABLE_EFFECTS } from '../../../types/story'
 import styles from '../Inspector.module.css'
+
+// 효과 표시 이름
+const EFFECT_LABELS: Record<ImageEffectType, string> = {
+  fadeIn: 'Fade In',
+  shake: 'Shake',
+  slideLeft: 'Slide Left',
+  slideRight: 'Slide Right',
+  slideUp: 'Slide Up',
+  slideDown: 'Slide Down',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  bounce: 'Bounce',
+  flash: 'Flash',
+  pulse: 'Pulse',
+}
 
 interface ImageNodeInspectorProps {
   node: StoryNode
@@ -18,6 +34,36 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
     onUpdate({
       imageData: { ...currentImageData, [field]: value }
     })
+  }
+
+  // 현재 선택된 효과들 (하위 호환: effect가 있으면 effects로 변환)
+  const currentEffects: ImageEffectType[] = node.imageData?.effects ||
+    (node.imageData?.effect && node.imageData.effect !== 'none' ? [node.imageData.effect as ImageEffectType] : [])
+
+  // 현재 선택된 그룹 효과들
+  const selectedGroupEffects: Record<string, ImageEffectType | null> = {}
+  for (const groupName of Object.keys(IMAGE_EFFECT_GROUPS)) {
+    selectedGroupEffects[groupName] = currentEffects.find(e => IMAGE_EFFECT_GROUPS[groupName].includes(e)) || null
+  }
+
+  // 조합 가능한 효과 토글
+  const handleCombinableEffectToggle = (effect: ImageEffectType) => {
+    const newEffects = currentEffects.includes(effect)
+      ? currentEffects.filter(e => e !== effect)
+      : [...currentEffects, effect]
+    handleImageDataChange('effects', newEffects)
+  }
+
+  // 그룹 효과 선택 (라디오 버튼처럼 동작)
+  const handleGroupEffectSelect = (groupName: string, effect: ImageEffectType | null) => {
+    const groupEffects = IMAGE_EFFECT_GROUPS[groupName]
+    // 기존 그룹 효과 제거
+    let newEffects = currentEffects.filter(e => !groupEffects.includes(e))
+    // 새 효과 추가 (null이 아니면)
+    if (effect) {
+      newEffects = [...newEffects, effect]
+    }
+    handleImageDataChange('effects', newEffects)
   }
 
   return (
@@ -128,39 +174,92 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
         </label>
       </div>
 
-      {/* 효과 */}
+      {/* 효과 - 조합 가능한 효과들 */}
       <div className={styles.field}>
-        <label className={styles.label}>Effect</label>
-        <select
-          className={styles.select}
-          value={node.imageData?.effect || 'none'}
-          onChange={(e) => handleImageDataChange('effect', e.target.value as ImageEffect)}
-        >
-          <option value="none">None</option>
-          <optgroup label="Fade">
-            <option value="fadeIn">Fade In</option>
-          </optgroup>
-          <optgroup label="Slide">
-            <option value="slideLeft">Slide Left</option>
-            <option value="slideRight">Slide Right</option>
-            <option value="slideUp">Slide Up</option>
-            <option value="slideDown">Slide Down</option>
-          </optgroup>
-          <optgroup label="Zoom">
-            <option value="zoomIn">Zoom In</option>
-            <option value="zoomOut">Zoom Out</option>
-          </optgroup>
-          <optgroup label="Motion">
-            <option value="shake">Shake</option>
-            <option value="bounce">Bounce</option>
-            <option value="pulse">Pulse</option>
-            <option value="flash">Flash</option>
-          </optgroup>
-        </select>
+        <label className={styles.label}>Effects (조합 가능)</label>
+        <div className={styles.effectGroup}>
+          {COMBINABLE_EFFECTS.map(effect => (
+            <label
+              key={effect}
+              className={`${styles.effectCheckbox} ${currentEffects.includes(effect) ? styles.active : ''}`}
+            >
+              <input
+                type="checkbox"
+                checked={currentEffects.includes(effect)}
+                onChange={() => handleCombinableEffectToggle(effect)}
+              />
+              <span>{EFFECT_LABELS[effect]}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* 효과 - Slide 그룹 (1개만 선택 가능) */}
+      <div className={styles.field}>
+        <label className={styles.label}>Slide (1개만 선택)</label>
+        <div className={styles.effectRadioGroup}>
+          <label
+            className={`${styles.effectRadio} ${!selectedGroupEffects.slide ? styles.active : ''}`}
+          >
+            <input
+              type="radio"
+              name="slideEffect"
+              checked={!selectedGroupEffects.slide}
+              onChange={() => handleGroupEffectSelect('slide', null)}
+            />
+            <span>None</span>
+          </label>
+          {IMAGE_EFFECT_GROUPS.slide.map(effect => (
+            <label
+              key={effect}
+              className={`${styles.effectRadio} ${selectedGroupEffects.slide === effect ? styles.active : ''}`}
+            >
+              <input
+                type="radio"
+                name="slideEffect"
+                checked={selectedGroupEffects.slide === effect}
+                onChange={() => handleGroupEffectSelect('slide', effect)}
+              />
+              <span>{EFFECT_LABELS[effect]}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* 효과 - Zoom 그룹 (1개만 선택 가능) */}
+      <div className={styles.field}>
+        <label className={styles.label}>Zoom (1개만 선택)</label>
+        <div className={styles.effectRadioGroup}>
+          <label
+            className={`${styles.effectRadio} ${!selectedGroupEffects.zoom ? styles.active : ''}`}
+          >
+            <input
+              type="radio"
+              name="zoomEffect"
+              checked={!selectedGroupEffects.zoom}
+              onChange={() => handleGroupEffectSelect('zoom', null)}
+            />
+            <span>None</span>
+          </label>
+          {IMAGE_EFFECT_GROUPS.zoom.map(effect => (
+            <label
+              key={effect}
+              className={`${styles.effectRadio} ${selectedGroupEffects.zoom === effect ? styles.active : ''}`}
+            >
+              <input
+                type="radio"
+                name="zoomEffect"
+                checked={selectedGroupEffects.zoom === effect}
+                onChange={() => handleGroupEffectSelect('zoom', effect)}
+              />
+              <span>{EFFECT_LABELS[effect]}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* 효과 지속 시간 */}
-      {node.imageData?.effect && node.imageData.effect !== 'none' && (
+      {currentEffects.length > 0 && (
         <div className={styles.field}>
           <label className={styles.label}>Duration (ms)</label>
           <input

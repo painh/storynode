@@ -327,3 +327,89 @@
   height: 16px;
   accent-color: var(--selection-border);
 }
+
+/* Effect Checkbox Group */
+.effectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.effectGroupLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.effectCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.effectCheckbox:hover {
+  border-color: var(--border-hover);
+}
+
+.effectCheckbox.active {
+  border-color: var(--selection-border);
+  background: rgba(255, 160, 0, 0.1);
+}
+
+.effectCheckbox.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.effectCheckbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--selection-border);
+}
+
+.effectRadioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.effectRadio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.effectRadio:hover {
+  border-color: var(--border-hover);
+}
+
+.effectRadio.active {
+  border-color: var(--selection-border);
+  background: rgba(255, 160, 0, 0.1);
+}
+
+.effectRadio input[type="radio"] {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--selection-border);
+}

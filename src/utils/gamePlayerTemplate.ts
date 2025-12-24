@@ -519,6 +519,13 @@ function getStyles(): string {
     .effect-bounce { animation: bounce var(--effect-duration, 500ms) ease-out; }
     .effect-flash { animation: flash var(--effect-duration, 500ms) ease-out; }
     .effect-pulse { animation: pulse var(--effect-duration, 500ms) ease-out; }
+
+    /* 다중 효과 조합 (effects 배열용) */
+    .multi-effect {
+      animation-duration: var(--effect-duration, 500ms);
+      animation-timing-function: ease-out;
+      animation-fill-mode: both;
+    }
   `
 }
 
@@ -644,7 +651,10 @@ function getGameEngineScript(): string {
           this.addImageToHistory(node);
 
           const effectDuration = node.imageData?.effectDuration || 0;
-          const hasEffect = node.imageData?.effect && node.imageData.effect !== 'none';
+          // 다중 효과 지원
+          const effects = node.imageData?.effects || [];
+          const legacyEffect = node.imageData?.effect && node.imageData.effect !== 'none' ? node.imageData.effect : null;
+          const hasEffect = effects.length > 0 || legacyEffect;
 
           if (hasEffect && effectDuration > 0 && node.nextNodeId) {
             setTimeout(() => {
@@ -669,7 +679,7 @@ function getGameEngineScript(): string {
       processImageNode(node) {
         if (!node.imageData) return;
 
-        const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effectDuration } = node.imageData;
+        const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration } = node.imageData;
 
         if (!resourcePath) {
           this.state.activeImages = this.state.activeImages.filter(
@@ -690,6 +700,7 @@ function getGameEngineScript(): string {
           y,
           flipHorizontal,
           effect,
+          effects,  // 다중 효과 지원
           effectDuration,
         };
 
@@ -704,7 +715,7 @@ function getGameEngineScript(): string {
       addImageToHistory(node) {
         if (!node.imageData) return;
 
-        const { resourcePath, layer, effect, effectDuration } = node.imageData;
+        const { resourcePath, layer, effect, effects, effectDuration } = node.imageData;
         const isRemoval = !resourcePath;
 
         this.state.history.push({
@@ -717,6 +728,7 @@ function getGameEngineScript(): string {
             layer,
             isRemoval,
             effect,
+            effects,  // 다중 효과 지원
             effectDuration,
           },
         });
@@ -1322,6 +1334,29 @@ function getPlayerScript(): string {
         \`;
       }
 
+      getEffectClasses(img) {
+        // 다중 효과 지원: effects 배열 우선, 없으면 기존 effect 사용
+        if (img.effects && img.effects.length > 0) {
+          return img.effects.map(e => 'effect-' + e).join(' ');
+        }
+        if (img.effect && img.effect !== 'none') {
+          return 'effect-' + img.effect;
+        }
+        return '';
+      }
+
+      getEffectStyle(img) {
+        const styles = [];
+        if (img.effectDuration) {
+          styles.push('--effect-duration: ' + img.effectDuration + 'ms');
+        }
+        // 다중 효과일 경우 animation-name을 직접 설정
+        if (img.effects && img.effects.length > 0) {
+          styles.push('animation-name: ' + img.effects.join(', '));
+        }
+        return styles.join('; ');
+      }
+
       renderVisualNovel() {
         const activeImages = this.gameState?.activeImages || [];
         const bgImages = activeImages.filter(img => img.layer === 'background');
@@ -1346,15 +1381,15 @@ function getPlayerScript(): string {
           <div class="game-screen" id="game-screen">
             <div class="image-layers">
               \${bgImages.map(img => \`
-                <div class="image-layer background \${img.effect ? 'effect-' + img.effect : ''}"
-                     style="\${img.effectDuration ? '--effect-duration: ' + img.effectDuration + 'ms' : ''}"
+                <div class="image-layer background \${img.effects?.length > 0 ? 'multi-effect' : ''} \${this.getEffectClasses(img)}"
+                     style="\${this.getEffectStyle(img)}"
                      data-instance="\${img.instanceId}">
                   <img src="\${this.getImagePath(img.resourcePath)}" alt="">
                 </div>
               \`).join('')}
               \${charImages.map(img => \`
-                <div class="image-layer character \${img.effect ? 'effect-' + img.effect : ''}"
-                     style="\${img.effectDuration ? '--effect-duration: ' + img.effectDuration + 'ms' : ''}"
+                <div class="image-layer character \${img.effects?.length > 0 ? 'multi-effect' : ''} \${this.getEffectClasses(img)}"
+                     style="\${this.getEffectStyle(img)}"
                      data-instance="\${img.instanceId}">
                   <img src="\${this.getImagePath(img.resourcePath)}" alt=""
                        style="\${img.flipHorizontal ? 'transform: scaleX(-1)' : ''}">

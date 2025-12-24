@@ -13,9 +13,8 @@ export type ImageAlignment = 'left' | 'center' | 'right' | 'custom'
 // 이미지 레이어 (배경이 더 아래에 렌더링됨)
 export type ImageLayer = 'background' | 'character' | string
 
-// 이미지 효과 타입
-export type ImageEffect =
-  | 'none'
+// 이미지 효과 타입 (개별 효과)
+export type ImageEffectType =
   | 'fadeIn'
   | 'shake'
   | 'slideLeft'
@@ -28,6 +27,18 @@ export type ImageEffect =
   | 'flash'
   | 'pulse'
 
+// 하위 호환용 (deprecated)
+export type ImageEffect = ImageEffectType | 'none'
+
+// 효과 그룹 (동시 적용 불가능한 효과들)
+export const IMAGE_EFFECT_GROUPS: Record<string, ImageEffectType[]> = {
+  slide: ['slideLeft', 'slideRight', 'slideUp', 'slideDown'],
+  zoom: ['zoomIn', 'zoomOut'],
+}
+
+// 그룹에 속하지 않는 효과들 (다른 효과와 자유롭게 조합 가능)
+export const COMBINABLE_EFFECTS: ImageEffectType[] = ['fadeIn', 'shake', 'bounce', 'flash', 'pulse']
+
 // 이미지 노드 데이터
 export interface ImageNodeData {
   resourcePath: string      // 리소스 경로 또는 base64
@@ -37,7 +48,8 @@ export interface ImageNodeData {
   x?: number                // custom 정렬시 x 좌표
   y?: number                // custom 정렬시 y 좌표
   flipHorizontal?: boolean  // 좌우 반전
-  effect?: ImageEffect      // 이미지 효과
+  effect?: ImageEffect      // 이미지 효과 (deprecated, 하위 호환용)
+  effects?: ImageEffectType[] // 다중 이미지 효과
   effectDuration?: number   // 효과 지속 시간 (ms)
 }
 
