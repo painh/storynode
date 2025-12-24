@@ -254,6 +254,14 @@ export interface CommentNode {
   }
 }
 
+// 기본 변수 초기값 설정
+export interface InitialVariables {
+  gold: number
+  hp: number
+  affection: Partial<Record<CharacterId, number>>
+  reputation: Partial<Record<FactionId, number>>
+}
+
 // 스토리 챕터
 export interface StoryChapter {
   id: string
@@ -271,6 +279,8 @@ export interface StoryChapter {
   commentNodes?: CommentNode[]
   // 변수 정의 (선언된 변수 목록)
   variables?: VariableDefinition[]
+  // 기본 변수 초기값
+  initialVariables?: InitialVariables
 }
 
 // 스토리 스테이지 (챕터 묶음)

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
-import type { StoryNodeType, VariableType, ArrayItemType } from '../../types/story'
+import type { StoryNodeType, VariableType, ArrayItemType, CharacterId, FactionId, InitialVariables } from '../../types/story'
 import { useTranslation } from '../../i18n'
 import { isTauri, createDirectory } from '../../utils/fileUtils'
 import styles from './Sidebar.module.css'
@@ -70,6 +70,26 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const [resourceFilter, setResourceFilter] = useState('')
 
   const currentStage = getCurrentStage()
+
+  // 현재 챕터 가져오기
+  const currentChapter = currentStage?.chapters.find(c => c.id === currentChapterId)
+
+  // 캐릭터 & 세력 목록
+  const CHARACTER_IDS: { value: CharacterId; label: string }[] = [
+    { value: 'kairen', label: 'Kairen' },
+    { value: 'zed', label: 'Zed' },
+    { value: 'lyra', label: 'Lyra' },
+    { value: 'elise', label: 'Elise' },
+  ]
+
+  const FACTION_IDS: { value: FactionId; label: string }[] = [
+    { value: 'kingdom', label: '왕국' },
+    { value: 'elves', label: '엘프' },
+    { value: 'dwarves', label: '드워프' },
+    { value: 'free_cities', label: '자유도시' },
+    { value: 'mage_tower', label: '마법사 탑' },
+    { value: 'dark_lands', label: '암흑 대륙' },
+  ]
 
   // 리소스 분류 (새로운 구조: 모든 이미지는 'image' 타입)
   const images = (project.resources || []).filter(r => r.type === 'image')
@@ -190,6 +210,34 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
     if (confirm('Delete this variable?')) {
       deleteVariable(variableId)
     }
+  }
+
+  // 기본 변수 초기값 관리
+  const getInitialVariables = (): InitialVariables => {
+    return currentChapter?.initialVariables || {
+      gold: 100,
+      hp: 100,
+      affection: {},
+      reputation: {},
+    }
+  }
+
+  const handleInitialVariableChange = (field: keyof InitialVariables, value: number | Partial<Record<CharacterId, number>> | Partial<Record<FactionId, number>>) => {
+    if (!currentStageId || !currentChapterId) return
+    const current = getInitialVariables()
+    updateChapter(currentStageId, currentChapterId, {
+      initialVariables: { ...current, [field]: value },
+    })
+  }
+
+  const handleAffectionChange = (charId: CharacterId, value: number) => {
+    const current = getInitialVariables()
+    handleInitialVariableChange('affection', { ...current.affection, [charId]: value })
+  }
+
+  const handleReputationChange = (factionId: FactionId, value: number) => {
+    const current = getInitialVariables()
+    handleInitialVariableChange('reputation', { ...current.reputation, [factionId]: value })
   }
 
   const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => {
@@ -320,10 +368,76 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
         </div>
       </div>
 
+      {/* Initial Values 섹션 (기본 변수 초기값) */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionTitle}>Initial Values</span>
+        </div>
+        <div className={styles.variableList}>
+          {/* Gold & HP */}
+          <div className={styles.variableItem}>
+            <div className={styles.variableControls}>
+              <span className={styles.variableTypeSelect} style={{ cursor: 'default' }}>💰 Gold</span>
+              <input
+                type="number"
+                className={styles.variableValueInput}
+                value={getInitialVariables().gold}
+                onChange={(e) => handleInitialVariableChange('gold', Number(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+          <div className={styles.variableItem}>
+            <div className={styles.variableControls}>
+              <span className={styles.variableTypeSelect} style={{ cursor: 'default' }}>❤️ HP</span>
+              <input
+                type="number"
+                className={styles.variableValueInput}
+                value={getInitialVariables().hp}
+                onChange={(e) => handleInitialVariableChange('hp', Number(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+          {/* Affection */}
+          <div className={styles.variableItem}>
+            <div className={styles.variableHeader}>
+              <span className={styles.variableName}>💕 Affection</span>
+            </div>
+            {CHARACTER_IDS.map((char) => (
+              <div key={char.value} className={styles.variableControls} style={{ marginTop: 4 }}>
+                <span className={styles.variableTypeSelect} style={{ cursor: 'default', minWidth: 60 }}>{char.label}</span>
+                <input
+                  type="number"
+                  className={styles.variableValueInput}
+                  value={getInitialVariables().affection[char.value] ?? 0}
+                  onChange={(e) => handleAffectionChange(char.value, Number(e.target.value) || 0)}
+                />
+              </div>
+            ))}
+          </div>
+          {/* Reputation */}
+          <div className={styles.variableItem}>
+            <div className={styles.variableHeader}>
+              <span className={styles.variableName}>🏛️ Reputation</span>
+            </div>
+            {FACTION_IDS.map((faction) => (
+              <div key={faction.value} className={styles.variableControls} style={{ marginTop: 4 }}>
+                <span className={styles.variableTypeSelect} style={{ cursor: 'default', minWidth: 60 }}>{faction.label}</span>
+                <input
+                  type="number"
+                  className={styles.variableValueInput}
+                  value={getInitialVariables().reputation[faction.value] ?? 0}
+                  onChange={(e) => handleReputationChange(faction.value, Number(e.target.value) || 0)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Variables 섹션 */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <span className={styles.sectionTitle}>Variables</span>
+          <span className={styles.sectionTitle}>Custom Variables</span>
           <button className={styles.addButton} onClick={handleAddVariable} title="Add Variable">+</button>
         </div>
         <div className={styles.variableList}>

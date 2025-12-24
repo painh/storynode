@@ -78,7 +78,30 @@ export class GameEngine {
       currentNodeId: startNodeId,
     }
 
-    // 챕터에 선언된 변수들의 초기값 적용
+    // 챕터에 설정된 기본 변수 초기값 적용
+    if (chapter.initialVariables) {
+      const init = chapter.initialVariables
+      this.state.variables.gold = init.gold
+      this.state.variables.hp = init.hp
+      // affection 적용
+      if (init.affection) {
+        for (const [charId, value] of Object.entries(init.affection)) {
+          if (value !== undefined) {
+            this.state.variables.affection[charId as keyof typeof this.state.variables.affection] = value
+          }
+        }
+      }
+      // reputation 적용
+      if (init.reputation) {
+        for (const [factionId, value] of Object.entries(init.reputation)) {
+          if (value !== undefined) {
+            this.state.variables.reputation[factionId as keyof typeof this.state.variables.reputation] = value
+          }
+        }
+      }
+    }
+
+    // 챕터에 선언된 커스텀 변수들의 초기값 적용
     if (chapter.variables) {
       for (const varDef of chapter.variables) {
         this.state.variables.customVariables[varDef.id] = varDef.defaultValue
