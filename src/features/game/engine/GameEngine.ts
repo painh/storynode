@@ -119,6 +119,14 @@ export class GameEngine {
       this.applyEffects(node.onEnterEffects)
     }
 
+    // start 노드면 자동으로 다음 노드로 진행
+    if (node.type === 'start') {
+      if (node.nextNodeId) {
+        this.goToNode(node.nextNodeId)
+        return
+      }
+    }
+
     // variable 노드면 변수 연산 실행 후 자동 진행
     if (node.type === 'variable') {
       this.executeVariableOperations(node)

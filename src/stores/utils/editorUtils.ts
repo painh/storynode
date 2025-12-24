@@ -18,6 +18,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
   const conditionId = generateId()
   const endBranch1Id = generateId()
   const endBranch2Id = generateId()
+  const chapterEndId = generateId()
 
   const nodes: StoryNode[] = [
     // Start 노드
@@ -123,6 +124,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       position: { x: 1850, y: 100 },
       speaker: '시스템',
       text: '조건을 만족했습니다!',
+      nextNodeId: chapterEndId,
     },
     // 분기 결과 2 (기본)
     {
@@ -131,6 +133,13 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       position: { x: 1850, y: 350 },
       speaker: '시스템',
       text: '기본 분기입니다.',
+      nextNodeId: chapterEndId,
+    },
+    // 챕터 종료
+    {
+      id: chapterEndId,
+      type: 'chapterEnd',
+      position: { x: 2100, y: 225 },
     },
   ]
 
