@@ -1,0 +1,80 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selectorGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.select {
+  min-width: 120px;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px 0 0 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.select:hover {
+  border-color: var(--border-light);
+}
+
+.select:focus {
+  border-color: var(--selection-border);
+  outline: none;
+}
+
+.addButton,
+.deleteButton {
+  width: 26px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-left: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.addButton {
+  color: #4CAF50;
+}
+
+.addButton:hover {
+  background: var(--bg-hover);
+  color: #66BB6A;
+}
+
+.deleteButton {
+  border-radius: 0 4px 4px 0;
+  color: #f44336;
+}
+
+.deleteButton:hover:not(.disabled) {
+  background: var(--bg-hover);
+  color: #ef5350;
+}
+
+.deleteButton.disabled,
+.deleteButton:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.deleteButton.disabled:hover,
+.deleteButton:disabled:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}

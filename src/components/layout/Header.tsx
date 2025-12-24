@@ -6,7 +6,6 @@ import { useGameStore } from '../../stores/gameStore'
 import {
   downloadJson,
   isTauri,
-  exportForGame,
   saveProjectToFolder,
   loadProjectFromFolder,
   isFileSystemAccessSupported,
@@ -32,7 +31,20 @@ import styles from './Header.module.css'
 let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
 
 export function Header() {
-  const { project, currentStageId, currentChapterId, setCurrentStage, setCurrentChapter, getCurrentStage, setProject, markClean } = useEditorStore()
+  const {
+    project,
+    currentStageId,
+    currentChapterId,
+    setCurrentStage,
+    setCurrentChapter,
+    getCurrentStage,
+    setProject,
+    markClean,
+    createStage,
+    deleteStage,
+    createChapter,
+    deleteChapter,
+  } = useEditorStore()
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
   const { openGame, status: gameStatus } = useGameStore()
@@ -399,6 +411,27 @@ export function Header() {
     closeAllMenus()
   }
 
+  // Stage/Chapter Handlers
+  const handleStageAdd = () => {
+    createStage({ title: `Stage ${project.stages.length + 1}` })
+  }
+
+  const handleStageDelete = (stageId: string) => {
+    deleteStage(stageId)
+  }
+
+  const handleChapterAdd = () => {
+    if (currentStageId) {
+      createChapter(currentStageId, { title: `Chapter ${(currentStage?.chapters.length ?? 0) + 1}` })
+    }
+  }
+
+  const handleChapterDelete = (chapterId: string) => {
+    if (currentStageId) {
+      deleteChapter(currentStageId, chapterId)
+    }
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.left}>
@@ -489,6 +522,10 @@ export function Header() {
           currentStageChapters={currentStage?.chapters}
           onStageChange={setCurrentStage}
           onChapterChange={setCurrentChapter}
+          onStageAdd={handleStageAdd}
+          onStageDelete={handleStageDelete}
+          onChapterAdd={handleChapterAdd}
+          onChapterDelete={handleChapterDelete}
         />
         <PlayButton
           disabled={gameStatus !== 'idle'}

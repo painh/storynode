@@ -61,6 +61,8 @@ export interface Translations {
     keyboardShortcuts: string
     reload: string
     toggleDevTools: string
+    exportSelectFolder: string
+    exportSuccess: string
   }
 
   // 설정
@@ -203,6 +205,8 @@ export const translations: Record<Language, Translations> = {
       keyboardShortcuts: '키보드 단축키',
       reload: '새로고침',
       toggleDevTools: '개발자 도구 토글',
+      exportSelectFolder: '게임 내보내기 폴더 선택',
+      exportSuccess: '익스포트 완료!\n\n게임 실행 방법:\n1. 익스포트 폴더에서 터미널 열기\n2. npx serve 실행\n3. 브라우저에서 http://localhost:3000 접속',
     },
     settings: {
       language: '언어',
@@ -333,6 +337,8 @@ export const translations: Record<Language, Translations> = {
       keyboardShortcuts: 'Keyboard Shortcuts',
       reload: 'Reload',
       toggleDevTools: 'Toggle DevTools',
+      exportSelectFolder: 'Select folder to export game',
+      exportSuccess: 'Export completed!\n\nTo run the game:\n1. Open terminal in the export folder\n2. Run: npx serve\n3. Open http://localhost:3000 in browser',
     },
     settings: {
       language: 'Language',
