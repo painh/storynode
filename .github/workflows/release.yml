@@ -52,9 +52,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'StoryNode Editor v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
+          releaseName: 'StoryNode Editor ${{ github.ref_name }}'
+          releaseBody: |
+            ## StoryNode Editor ${{ github.ref_name }}
+
+            노드 기반 비주얼 노벨 / 인터랙티브 스토리 에디터
+
+            ### 다운로드
+
+            | 플랫폼 | 파일 |
+            |--------|------|
+            | **Windows (설치)** | `.exe` 또는 `.msi` |
+            | **Windows (포터블)** | `portable.zip` - 압축 풀고 바로 실행 |
+            | **macOS (Apple Silicon)** | `aarch64.dmg` |
+            | **macOS (Intel)** | `x64.dmg` |
+            | **Linux** | `.deb` 또는 `.AppImage` |
+
+            ### 온라인 버전
+            설치 없이 브라우저에서 바로 사용: **[https://painh.github.io/storynode/](https://painh.github.io/storynode/)**
+
+            ---
+            [전체 변경사항 보기](https://github.com/painh/storynode/commits/${{ github.ref_name }})
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
 
@@ -76,6 +95,5 @@ jobs:
         with:
           files: src-tauri/target/release/StoryNode-Editor-portable-x64.zip
           tag_name: ${{ github.ref_name }}
-          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
