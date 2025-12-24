@@ -1,4 +1,5 @@
 import type { StoryProject, ProjectResource, StoryNode } from '../../types/story'
+import { autoLayoutNodes } from '../../utils/autoLayout'
 
 // ID 생성 함수
 export const generateId = () => `node_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
@@ -143,7 +144,14 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
     },
   ]
 
-  return { nodes, startNodeId: startId }
+  // 자동 정렬 적용
+  const layoutResult = autoLayoutNodes(nodes, startId)
+  const layoutedNodes = nodes.map(node => ({
+    ...node,
+    position: layoutResult[node.id] || node.position,
+  }))
+
+  return { nodes: layoutedNodes, startNodeId: startId }
 }
 
 // Base path 가져오기 (GitHub Pages 등에서 사용)
