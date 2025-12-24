@@ -579,22 +579,6 @@ export async function exportGameBuild(
 }
 
 /**
- * 게임 빌드를 단일 HTML로 다운로드 (웹 환경 폴백)
- * 모든 데이터를 HTML에 임베딩
- */
-export function downloadGameBuildAsHtml(htmlContent: string, projectName: string): void {
-  const blob = new Blob([htmlContent], { type: 'text/html' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${projectName.toLowerCase().replace(/\s+/g, '_')}_game.html`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-/**
  * 게임 빌드를 ZIP으로 다운로드
  * 폴더 구조 유지 + 이미지 리소스 포함
  */

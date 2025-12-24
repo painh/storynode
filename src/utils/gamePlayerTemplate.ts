@@ -1,8 +1,6 @@
 // 게임 플레이어 HTML 템플릿 생성
 // 프로젝트 폴더 구조를 그대로 사용하는 standalone HTML 플레이어
 
-import type { StoryProject } from '../types/story'
-
 /**
  * 게임 플레이어 HTML 생성 (폴더 기반)
  * fetch로 project.json, stage.json, chapter.json을 로드
@@ -27,41 +25,6 @@ ${getStyles()}
     </div>
   </div>
   <script>
-${getGameEngineScript()}
-${getPlayerScript()}
-  </script>
-</body>
-</html>`
-}
-
-/**
- * 단일 HTML로 익스포트 (웹 환경용)
- * 모든 데이터를 HTML에 임베딩
- */
-export function generateEmbeddedGamePlayerHtml(project: StoryProject): string {
-  const projectData = JSON.stringify(project)
-
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${project.name} - Story Player</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Noto+Serif+KR:wght@400;700&family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-${getStyles()}
-  </style>
-</head>
-<body>
-  <div id="app">
-    <div id="loading">
-      <div class="spinner"></div>
-      <p>Loading...</p>
-    </div>
-  </div>
-  <script>
-    // 임베딩된 프로젝트 데이터
-    window.EMBEDDED_PROJECT = ${projectData};
 ${getGameEngineScript()}
 ${getPlayerScript()}
   </script>
