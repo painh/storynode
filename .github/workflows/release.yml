@@ -47,6 +47,7 @@ jobs:
         run: npm install
 
       - uses: tauri-apps/tauri-action@v0
+        id: tauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -56,3 +57,21 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      # Windows 포터블 zip 생성
+      - name: Create Windows Portable ZIP
+        if: matrix.platform == 'windows-latest'
+        run: |
+          cd src-tauri/target/release
+          Compress-Archive -Path "StoryNode Editor.exe" -DestinationPath "StoryNode-Editor-portable-x64.zip"
+        shell: pwsh
+
+      - name: Upload Windows Portable to Release
+        if: matrix.platform == 'windows-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/target/release/StoryNode-Editor-portable-x64.zip
+          tag_name: ${{ github.ref_name }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
