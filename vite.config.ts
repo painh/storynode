@@ -8,6 +8,9 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react()],
 
+  // GitHub Pages 배포 시 base path 설정
+  base: process.env.GITHUB_ACTIONS ? '/storynode/' : '/',
+
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent Vite from obscuring rust errors
