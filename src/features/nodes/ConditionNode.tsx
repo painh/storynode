@@ -31,6 +31,7 @@ function formatCondition(branch: ConditionBranch): string {
 }
 
 export const ConditionNode = memo(function ConditionNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -43,6 +44,7 @@ export const ConditionNode = memo(function ConditionNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="condition"
       selected={selected}
       hasInputExec={true}

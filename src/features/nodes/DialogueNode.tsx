@@ -39,6 +39,7 @@ export const DialogueNode = memo(function DialogueNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="dialogue"
       selected={selected}
       hasInputExec={true}

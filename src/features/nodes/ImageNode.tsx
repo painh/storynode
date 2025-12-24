@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n'
 import styles from './ImageNode.module.css'
 
 export const ImageNode = memo(function ImageNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -47,6 +48,7 @@ export const ImageNode = memo(function ImageNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="image"
       selected={selected}
       hasInputExec={true}

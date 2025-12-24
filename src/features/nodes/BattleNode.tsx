@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n'
 import styles from './BattleNode.module.css'
 
 export const BattleNode = memo(function BattleNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -16,6 +17,7 @@ export const BattleNode = memo(function BattleNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="battle"
       selected={selected}
       hasInputExec={true}

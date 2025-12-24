@@ -32,6 +32,7 @@ function formatOperation(op: VariableOperation, t: ReturnType<typeof useTranslat
 }
 
 export const VariableNode = memo(function VariableNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -44,6 +45,7 @@ export const VariableNode = memo(function VariableNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="variable"
       selected={selected}
       hasInputExec={true}

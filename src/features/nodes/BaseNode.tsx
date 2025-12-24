@@ -1,8 +1,9 @@
 import { memo, type ReactNode } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeToolbar } from '@xyflow/react'
 import type { StoryNodeType } from '../../types/story'
 import { NODE_COLORS, NODE_ICONS } from '../../types/editor'
 import { useTranslation } from '../../i18n'
+import { useEditorStore } from '../../stores/editorStore'
 import {
   type DataHandleDefinition,
   getInputHandles,
@@ -12,6 +13,7 @@ import { DataHandleRow } from './DataHandle'
 import styles from './BaseNode.module.css'
 
 interface BaseNodeProps {
+  nodeId: string
   nodeType: StoryNodeType
   selected: boolean
   children: ReactNode
@@ -20,9 +22,11 @@ interface BaseNodeProps {
   isPlaying?: boolean
   showDataHandles?: boolean
   customDataHandles?: DataHandleDefinition[]
+  showDeleteButton?: boolean
 }
 
 export const BaseNode = memo(function BaseNode({
+  nodeId,
   nodeType,
   selected,
   children,
@@ -31,8 +35,10 @@ export const BaseNode = memo(function BaseNode({
   isPlaying = false,
   showDataHandles = true,
   customDataHandles,
+  showDeleteButton = true,
 }: BaseNodeProps) {
   const { nodes } = useTranslation()
+  const { deleteNode } = useEditorStore()
   const headerColor = NODE_COLORS[nodeType]
   const icon = NODE_ICONS[nodeType]
   const label = nodes[nodeType]
@@ -49,11 +55,30 @@ export const BaseNode = memo(function BaseNode({
   const allHandles = customDataHandles || [...new Map([...inputHandles, ...outputHandles].map(h => [h.id, h])).values()]
   const hasDataHandles = showDataHandles && allHandles.length > 0
 
+  const handleDelete = () => {
+    if (nodeId) {
+      deleteNode(nodeId)
+    }
+  }
+
   return (
     <div
       className={`${styles.node} ${selected ? styles.selected : ''} ${isPlaying ? styles.playing : ''}`}
       style={{ '--header-color': headerColor } as React.CSSProperties}
     >
+      {/* Node Toolbar with Delete Button */}
+      {showDeleteButton && selected && (
+        <NodeToolbar isVisible={selected} position={Position.Top}>
+          <button
+            className={styles.deleteBtn}
+            onClick={handleDelete}
+            title="노드 삭제 (Delete)"
+          >
+            🗑️
+          </button>
+        </NodeToolbar>
+      )}
+
       {/* Input Execution Pin */}
       {hasInputExec && (
         <Handle

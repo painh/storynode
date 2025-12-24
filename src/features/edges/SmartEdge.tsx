@@ -1,4 +1,5 @@
-import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/react'
+import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, type EdgeProps, useReactFlow } from '@xyflow/react'
+import styles from './SmartEdge.module.css'
 
 /**
  * 스마트 엣지: 같은 높이면 직선, 다르면 곡선
@@ -17,6 +18,8 @@ export function SmartEdge({
   markerEnd,
   selected,
 }: EdgeProps) {
+  const { setEdges } = useReactFlow()
+
   // Y 좌표 차이가 작으면 직선 사용
   const yDiff = Math.abs(sourceY - targetY)
   const isHorizontal = yDiff < 10
@@ -51,12 +54,38 @@ export function SmartEdge({
       }
     : style
 
+  // 엣지 중앙 좌표 계산
+  const centerX = (sourceX + targetX) / 2
+  const centerY = (sourceY + targetY) / 2
+
+  const handleDelete = () => {
+    setEdges((edges) => edges.filter((edge) => edge.id !== id))
+  }
+
   return (
-    <BaseEdge
-      id={id}
-      path={edgePath}
-      style={edgeStyle}
-      markerEnd={markerEnd}
-    />
+    <>
+      <BaseEdge
+        id={id}
+        path={edgePath}
+        style={edgeStyle}
+        markerEnd={markerEnd}
+      />
+      {selected && (
+        <EdgeLabelRenderer>
+          <button
+            className={styles.deleteBtn}
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${centerX}px, ${centerY}px)`,
+              pointerEvents: 'all',
+            }}
+            onClick={handleDelete}
+            title="연결 삭제"
+          >
+            ✕
+          </button>
+        </EdgeLabelRenderer>
+      )}
+    </>
   )
 }

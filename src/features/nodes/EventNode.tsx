@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n'
 import styles from './EventNode.module.css'
 
 export const EventNode = memo(function EventNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -16,6 +17,7 @@ export const EventNode = memo(function EventNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="event"
       selected={selected}
       hasInputExec={true}

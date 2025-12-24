@@ -33,6 +33,7 @@ export const ChoiceNode = memo(function ChoiceNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="choice"
       selected={selected}
       hasInputExec={true}

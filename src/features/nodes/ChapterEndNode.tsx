@@ -5,6 +5,7 @@ import type { EditorNodeData } from '../../types/editor'
 import styles from './ChapterEndNode.module.css'
 
 export const ChapterEndNode = memo(function ChapterEndNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -14,6 +15,7 @@ export const ChapterEndNode = memo(function ChapterEndNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="chapter_end"
       selected={selected}
       hasInputExec={true}

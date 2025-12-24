@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n'
 import styles from './JavaScriptNode.module.css'
 
 export const JavaScriptNode = memo(function JavaScriptNode({
+  id,
   data,
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
@@ -20,6 +21,7 @@ export const JavaScriptNode = memo(function JavaScriptNode({
 
   return (
     <BaseNode
+      nodeId={id}
       nodeType="javascript"
       selected={selected}
       hasInputExec={true}

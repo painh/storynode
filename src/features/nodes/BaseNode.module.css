@@ -121,3 +121,24 @@
 .dataHandles :global(.react-flow__handle-right) {
   right: -17px;
 }
+
+/* Delete Button */
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #c62828;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.deleteBtn:hover {
+  background: #e53935;
+  transform: scale(1.1);
+}

@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react'
 import type { NodeProps, Node } from '@xyflow/react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeToolbar } from '@xyflow/react'
 import { useSearchStore } from '../../stores/searchStore'
+import { useEditorStore } from '../../stores/editorStore'
 import { highlightText } from '../../utils/highlight'
 import type { EditorNodeData } from '../../types/editor'
 import styles from './CustomNode.module.css'
@@ -14,6 +15,13 @@ export const CustomNode = memo(function CustomNode({
   const { storyNode } = data
   const customData = storyNode?.customData
   const { highlightedNodeId, highlightQuery } = useSearchStore()
+  const { deleteNode } = useEditorStore()
+
+  const handleDelete = () => {
+    if (id) {
+      deleteNode(id)
+    }
+  }
 
   const shouldHighlight = highlightedNodeId === id && highlightQuery
 
@@ -47,6 +55,19 @@ export const CustomNode = memo(function CustomNode({
       className={`${styles.node} ${selected ? styles.selected : ''} ${data.isPlaying ? styles.playing : ''}`}
       style={{ '--header-color': nodeColor } as React.CSSProperties}
     >
+      {/* Delete Button */}
+      {selected && (
+        <NodeToolbar isVisible={selected} position={Position.Top}>
+          <button
+            className={styles.deleteBtn}
+            onClick={handleDelete}
+            title="노드 삭제 (Delete)"
+          >
+            🗑️
+          </button>
+        </NodeToolbar>
+      )}
+
       {/* Input Execution Pin */}
       <Handle
         type="target"
