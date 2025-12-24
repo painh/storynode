@@ -138,7 +138,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
     // 챕터 종료
     {
       id: chapterEndId,
-      type: 'chapterEnd',
+      type: 'chapter_end',
       position: { x: 2100, y: 225 },
     },
   ]
