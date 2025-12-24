@@ -31,7 +31,11 @@ function fuzzyMatch(text: string, pattern: string): boolean {
   return patternIdx === lowerPattern.length
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  onOpenTemplateEditor?: () => void
+}
+
+export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const {
     project,
     currentStageId,
@@ -46,6 +50,8 @@ export function Sidebar() {
     deleteChapter,
     setCurrentChapter,
     getCurrentStage,
+    getTemplates,
+    createNodeFromTemplate,
   } = useEditorStore()
 
   const { settings } = useSettingsStore()
@@ -63,9 +69,21 @@ export function Sidebar() {
   // 리소스 분류 (새로운 구조: 모든 이미지는 'image' 타입)
   const images = (project.resources || []).filter(r => r.type === 'image')
 
+  const templates = getTemplates()
+
   const handleDragStart = (e: React.DragEvent, nodeType: AllNodeType) => {
     e.dataTransfer.setData('application/storynode-type', nodeType)
     e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleTemplateDragStart = (e: React.DragEvent, templateId: string) => {
+    e.dataTransfer.setData('application/storynode-type', 'custom')
+    e.dataTransfer.setData('application/storynode-template-id', templateId)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleTemplateClick = (templateId: string) => {
+    createNodeFromTemplate(templateId)
   }
 
   // 리소스 이미지 드래그 시작
@@ -264,6 +282,56 @@ export function Sidebar() {
     </>
   )
 
+  // 템플릿 카테고리 렌더링
+  const renderTemplateCategory = () => {
+    const filteredTemplates = templates.filter(t =>
+      fuzzyMatch(t.name, nodeFilter)
+    )
+
+    return (
+      <div className={styles.nodeCategory}>
+        <div className={styles.categoryTitleRow}>
+          <span className={styles.categoryTitle}>Templates</span>
+          <button
+            className={styles.editTemplatesBtn}
+            onClick={onOpenTemplateEditor}
+            title="Edit Templates"
+          >
+            ✏️
+          </button>
+        </div>
+        <div className={styles.nodeList}>
+          {filteredTemplates.map((template) => (
+            <div
+              key={template.id}
+              className={styles.nodeItem}
+              style={{ '--node-color': template.color } as React.CSSProperties}
+              draggable
+              onDragStart={(e) => handleTemplateDragStart(e, template.id)}
+              onClick={() => handleTemplateClick(template.id)}
+            >
+              <span className={styles.nodeIcon}>{template.icon || '🧩'}</span>
+              <span className={styles.nodeLabel}>{template.name}</span>
+            </div>
+          ))}
+          {filteredTemplates.length === 0 && templates.length === 0 && (
+            <div className={styles.emptyTemplates}>
+              <button
+                className={styles.createTemplateBtn}
+                onClick={onOpenTemplateEditor}
+              >
+                + Create Template
+              </button>
+            </div>
+          )}
+          {filteredTemplates.length === 0 && templates.length > 0 && (
+            <div className={styles.noMatches}>No matches</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   // Nodes 탭 컨텐츠
   const renderNodesTab = () => (
     <div className={styles.section}>
@@ -277,6 +345,7 @@ export function Sidebar() {
       {renderNodeCategory(sidebar.flow, NODE_CATEGORIES.flow)}
       {renderNodeCategory(sidebar.content, NODE_CATEGORIES.content)}
       {renderNodeCategory(sidebar.logic, NODE_CATEGORIES.logic)}
+      {renderTemplateCategory()}
       {renderNodeCategory(sidebar.editor || 'Editor', NODE_CATEGORIES.editor)}
     </div>
   )

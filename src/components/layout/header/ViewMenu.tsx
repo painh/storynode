@@ -9,6 +9,7 @@ interface ViewMenuProps {
     toggleDevTools: string
   }
   onAutoLayout: () => void
+  onOpenTemplateEditor: () => void
   onClose: () => void
 }
 
@@ -16,6 +17,7 @@ export function ViewMenu({
   isOpen,
   menu,
   onAutoLayout,
+  onOpenTemplateEditor,
   onClose,
 }: ViewMenuProps) {
   if (!isOpen) return null
@@ -38,6 +40,10 @@ export function ViewMenu({
       <button onClick={onAutoLayout}>
         <span>{menu.autoLayout}</span>
         <span className={styles.shortcut}>⌘L</span>
+      </button>
+      <div className={styles.divider} />
+      <button onClick={onOpenTemplateEditor}>
+        <span>🧩 Custom Node Templates</span>
       </button>
       {import.meta.env.DEV && (
         <>

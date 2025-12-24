@@ -1,4 +1,4 @@
-import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode } from '../../types/story'
+import type { StoryProject, StoryStage, StoryChapter, StoryNode, StoryNodeType, GameSettings, CustomTheme, ProjectResource, ResourceType, CommentNode, CustomNodeTemplate } from '../../types/story'
 
 export interface EditorState {
   // 프로젝트 데이터
@@ -68,6 +68,16 @@ export interface EditorState {
   getCommentById: (commentId: string) => CommentNode | undefined
   setSelectedComment: (commentId: string | null) => void
   wrapNodesWithComment: (flowNodes?: Array<{ id: string; position: { x: number; y: number }; measured?: { width?: number; height?: number } }>) => string | null
+
+  // Custom Node Templates
+  createTemplate: (template?: Partial<CustomNodeTemplate>) => CustomNodeTemplate
+  updateTemplate: (templateId: string, updates: Partial<CustomNodeTemplate>) => void
+  deleteTemplate: (templateId: string) => void
+  getTemplateById: (templateId: string) => CustomNodeTemplate | undefined
+  getTemplates: () => CustomNodeTemplate[]
+  createNodeFromTemplate: (templateId: string, position?: { x: number; y: number }) => StoryNode | null
+  syncNodeWithTemplate: (nodeId: string) => void
+  detachNodeFromTemplate: (nodeId: string) => void
 }
 
 // Immer의 set 함수 타입

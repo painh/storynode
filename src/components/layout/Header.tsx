@@ -30,7 +30,11 @@ import styles from './Header.module.css'
 // Tauri dialog import (조건부)
 let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
 
-export function Header() {
+interface HeaderProps {
+  onOpenTemplateEditor?: () => void
+}
+
+export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const {
     project,
     currentStageId,
@@ -504,6 +508,7 @@ export function Header() {
               isOpen={showViewMenu}
               menu={menu}
               onAutoLayout={handleAutoLayout}
+              onOpenTemplateEditor={() => { onOpenTemplateEditor?.(); closeAllMenus() }}
               onClose={closeAllMenus}
             />
           </div>

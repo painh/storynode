@@ -73,6 +73,20 @@ export interface CustomNodeData {
   color?: string                   // 노드 색상
   fields: CustomFieldDefinition[]  // 필드 정의
   values: Record<string, string | number | boolean>  // 필드 값들
+  templateId?: string              // 템플릿 ID (동기화용)
+}
+
+// 커스텀 노드 템플릿 (재사용 가능)
+export interface CustomNodeTemplate {
+  id: string
+  name: string                     // 템플릿 표시 이름
+  description?: string             // 템플릿 설명
+  color: string                    // 노드 헤더 색상
+  icon?: string                    // 아이콘 (이모지)
+  fields: CustomFieldDefinition[]  // 필드 스키마
+  defaultValues: Record<string, string | number | boolean>  // 기본 필드 값
+  createdAt: number                // 생성 시간
+  updatedAt: number                // 수정 시간
 }
 
 // 캐릭터 ID 타입
@@ -298,4 +312,6 @@ export interface StoryProject {
   gameSettings?: GameSettings
   // 프로젝트 리소스 (캐릭터, 배경 등)
   resources?: ProjectResource[]
+  // 커스텀 노드 템플릿 (재사용 가능한 노드 정의)
+  customNodeTemplates?: CustomNodeTemplate[]
 }

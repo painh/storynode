@@ -363,3 +363,63 @@
   border-color: var(--selection-border);
   color: var(--text-primary);
 }
+
+/* Template Category */
+.categoryTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.categoryTitleRow .categoryTitle {
+  margin-bottom: 0;
+}
+
+.editTemplatesBtn {
+  padding: 2px 6px;
+  background: transparent;
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.editTemplatesBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.emptyTemplates {
+  padding: 8px 0;
+  text-align: center;
+}
+
+.createTemplateBtn {
+  padding: 6px 12px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border-default);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.createTemplateBtn:hover {
+  background: var(--bg-hover);
+  border-color: var(--selection-border);
+  border-style: solid;
+  color: var(--text-primary);
+}
+
+.noMatches {
+  padding: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}

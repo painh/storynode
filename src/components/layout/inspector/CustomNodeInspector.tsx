@@ -1,4 +1,5 @@
 import type { StoryNode, CustomNodeData, CustomFieldDefinition, CustomFieldType } from '../../../types/story'
+import { useEditorStore } from '../../../stores/editorStore'
 import { ColorPickerWithPresets } from './ColorPickerWithPresets'
 import styles from '../Inspector.module.css'
 
@@ -8,6 +9,8 @@ interface CustomNodeInspectorProps {
 }
 
 export function CustomNodeInspector({ node, onUpdate }: CustomNodeInspectorProps) {
+  const { getTemplateById, syncNodeWithTemplate, detachNodeFromTemplate } = useEditorStore()
+
   const getCustomData = (): CustomNodeData => node.customData || {
     title: 'Custom Node',
     description: '',
@@ -15,6 +18,10 @@ export function CustomNodeInspector({ node, onUpdate }: CustomNodeInspectorProps
     fields: [],
     values: {},
   }
+
+  const customData = getCustomData()
+  const templateId = customData.templateId
+  const template = templateId ? getTemplateById(templateId) : null
 
   const handleCustomDataChange = (field: keyof CustomNodeData, value: unknown) => {
     onUpdate({
@@ -72,10 +79,46 @@ export function CustomNodeInspector({ node, onUpdate }: CustomNodeInspectorProps
     })
   }
 
-  const customData = getCustomData()
+  const handleSyncWithTemplate = () => {
+    syncNodeWithTemplate(node.id)
+  }
+
+  const handleDetachFromTemplate = () => {
+    detachNodeFromTemplate(node.id)
+  }
 
   return (
     <>
+      {/* 템플릿 연결 정보 */}
+      {templateId && (
+        <div className={styles.field}>
+          <div className={styles.templateInfo}>
+            <div className={styles.templateInfoHeader}>
+              <span className={styles.templateInfoIcon}>{template?.icon || '🧩'}</span>
+              <span className={styles.templateInfoName}>
+                {template ? template.name : 'Unknown Template'}
+              </span>
+            </div>
+            <div className={styles.templateInfoActions}>
+              <button
+                className={styles.templateSyncBtn}
+                onClick={handleSyncWithTemplate}
+                title="Sync fields with template"
+              >
+                🔄 Sync
+              </button>
+              <button
+                className={styles.templateDetachBtn}
+                onClick={handleDetachFromTemplate}
+                title="Detach from template"
+              >
+                🔗 Detach
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 노드 제목 */}
       <div className={styles.field}>
         <label className={styles.label}>Title</label>

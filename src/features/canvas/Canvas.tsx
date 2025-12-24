@@ -49,6 +49,7 @@ function CanvasInner() {
     getCommentNodes,
     createCommentNode,
     updateCommentPosition,
+    createNodeFromTemplate,
   } = useEditorStore()
 
   const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes } = useCanvasStore()
@@ -171,6 +172,16 @@ function CanvasInner() {
         return
       }
 
+      // 템플릿에서 노드 생성
+      const templateId = e.dataTransfer.getData('application/storynode-template-id')
+      if (nodeType === 'custom' && templateId) {
+        const newNode = createNodeFromTemplate(templateId, position)
+        if (newNode) {
+          updateNode(newNode.id, { position })
+        }
+        return
+      }
+
       const newNode = createNode(nodeType as StoryNodeType, position)
       if (newNode) {
         updateNode(newNode.id, { position })
@@ -190,7 +201,7 @@ function CanvasInner() {
         }
       }
     },
-    [createNode, currentChapterId, updateNode, screenToFlowPosition, createCommentNode]
+    [createNode, currentChapterId, updateNode, screenToFlowPosition, createCommentNode, createNodeFromTemplate]
   )
 
   return (

@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource } from '../types/story'
+import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource, CustomNodeTemplate } from '../types/story'
 
 export interface FileInfo {
   name: string
@@ -214,6 +214,7 @@ interface ProjectMeta {
   version: string
   stages: string[] // stage IDs
   gameSettings?: GameSettings
+  customNodeTemplates?: CustomNodeTemplate[]
   // resources는 저장하지 않음 - 폴더에서 직접 로드
 }
 
@@ -254,6 +255,7 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
     version: project.version,
     stages: project.stages.map(s => s.id),
     gameSettings: project.gameSettings,
+    customNodeTemplates: project.customNodeTemplates,
   }
   await writeStoryFile(`${projectDir}/project.json`, JSON.stringify(projectMeta, null, 2))
 
@@ -289,6 +291,7 @@ async function saveProjectToFolderWeb(dirHandle: FileSystemDirectoryHandle, proj
     version: project.version,
     stages: project.stages.map(s => s.id),
     gameSettings: project.gameSettings,
+    customNodeTemplates: project.customNodeTemplates,
   }
   await writeWebFile(dirHandle, 'project.json', JSON.stringify(projectMeta, null, 2))
 
@@ -401,6 +404,7 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
     version: projectMeta.version,
     stages,
     gameSettings: projectMeta.gameSettings,
+    customNodeTemplates: projectMeta.customNodeTemplates,
     resources,
   }
 }
@@ -480,6 +484,7 @@ async function loadProjectFromFolderWeb(dirHandle: FileSystemDirectoryHandle): P
     version: projectMeta.version,
     stages,
     gameSettings: projectMeta.gameSettings,
+    customNodeTemplates: projectMeta.customNodeTemplates,
     resources,
   }
 }

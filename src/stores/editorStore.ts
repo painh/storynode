@@ -10,6 +10,7 @@ import { createSelectionActions } from './editor/selectionActions'
 import { createSettingsActions } from './editor/settingsActions'
 import { createResourceActions } from './editor/resourceActions'
 import { createCommentActions } from './editor/commentActions'
+import { createTemplateActions } from './editor/templateActions'
 
 export const useEditorStore = create<EditorState>()(
   temporal(
@@ -61,6 +62,9 @@ export const useEditorStore = create<EditorState>()(
 
       // Comment actions
       ...createCommentActions(set, get),
+
+      // Template actions
+      ...createTemplateActions(set, get),
     })),
     {
       limit: 50,

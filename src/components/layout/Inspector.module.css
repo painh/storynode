@@ -413,3 +413,54 @@
   height: 12px;
   accent-color: var(--selection-border);
 }
+
+/* Template Info */
+.templateInfo {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--selection-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.templateInfoHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.templateInfoIcon {
+  font-size: 16px;
+}
+
+.templateInfoName {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.templateInfoActions {
+  display: flex;
+  gap: 8px;
+}
+
+.templateSyncBtn,
+.templateDetachBtn {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+}
+
+.templateSyncBtn:hover {
+  background: var(--selection-border);
+  color: var(--bg-primary);
+}
+
+.templateDetachBtn:hover {
+  background: #c62828;
+  color: white;
+}

@@ -5,6 +5,7 @@ import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { SearchModal } from './components/common/SearchModal'
 import { GameModal } from './features/game/components'
+import { TemplateEditor } from './features/templateEditor/TemplateEditor'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useAutoSave } from './hooks/useAutoSave'
 import { useUnsavedChangesWarning } from './hooks/useUnsavedChangesWarning'
@@ -15,8 +16,11 @@ import { useGameStore } from './stores/gameStore'
 import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
 import styles from './App.module.css'
 
+type ScreenType = 'editor' | 'templateEditor'
+
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('editor')
   const { loadSettings, settings, isLoaded } = useSettingsStore()
   const { setProject } = useEditorStore()
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
@@ -69,11 +73,19 @@ function App() {
     autoOpenLastProject()
   }, [isLoaded, isInitialized, settings, setProject])
 
+  if (currentScreen === 'templateEditor') {
+    return (
+      <div className={styles.app}>
+        <TemplateEditor onClose={() => setCurrentScreen('editor')} />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.app}>
-      <Header />
+      <Header onOpenTemplateEditor={() => setCurrentScreen('templateEditor')} />
       <div className={styles.workspace}>
-        <Sidebar />
+        <Sidebar onOpenTemplateEditor={() => setCurrentScreen('templateEditor')} />
         <Canvas />
         <Inspector />
       </div>
