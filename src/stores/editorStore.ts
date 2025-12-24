@@ -26,22 +26,45 @@ export const useEditorStore = create<EditorState>()(
       setDirty: (dirty) => set({ isDirty: dirty }),
       markClean: () => set({ isDirty: false }),
 
-      setProject: (project) => set({
-        project: {
-          ...project,
-          resources: project.resources || [...defaultTemplateResources],
-          gameSettings: project.gameSettings || {
-            defaultGameMode: 'visualNovel',
-            defaultThemeId: 'dark',
-            customThemes: [],
+      setProject: (project) => {
+        // 마이그레이션: 챕터 레벨 variables를 프로젝트 레벨로 이동
+        let migratedVariables = project.variables || []
+        const existingIds = new Set(migratedVariables.map(v => v.id))
+
+        for (const stage of project.stages) {
+          for (const chapter of stage.chapters) {
+            // 챕터에 variables가 있으면 프로젝트 레벨로 병합
+            if ((chapter as { variables?: typeof migratedVariables }).variables) {
+              for (const v of (chapter as { variables?: typeof migratedVariables }).variables!) {
+                if (!existingIds.has(v.id)) {
+                  migratedVariables.push(v)
+                  existingIds.add(v.id)
+                }
+              }
+              // 챕터에서 variables 제거
+              delete (chapter as { variables?: typeof migratedVariables }).variables
+            }
+          }
+        }
+
+        set({
+          project: {
+            ...project,
+            variables: migratedVariables,
+            resources: project.resources || [...defaultTemplateResources],
+            gameSettings: project.gameSettings || {
+              defaultGameMode: 'visualNovel',
+              defaultThemeId: 'dark',
+              customThemes: [],
+            },
           },
-        },
-        currentStageId: project.stages[0]?.id || null,
-        currentChapterId: project.stages[0]?.chapters[0]?.id || null,
-        selectedNodeIds: [],
-        selectedCommentId: null,
-        isDirty: false,
-      }),
+          currentStageId: project.stages[0]?.id || null,
+          currentChapterId: project.stages[0]?.chapters[0]?.id || null,
+          selectedNodeIds: [],
+          selectedCommentId: null,
+          isDirty: false,
+        })
+      },
 
       // Stage actions
       ...createStageActions(set, get),

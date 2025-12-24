@@ -271,8 +271,6 @@ export interface StoryChapter {
   }
   // 에디터용 코멘트 노드
   commentNodes?: CommentNode[]
-  // 변수 정의 (선언된 변수 목록) - 모든 변수는 여기서 선언
-  variables?: VariableDefinition[]
 }
 
 // 스토리 스테이지 (챕터 묶음)
@@ -345,6 +343,8 @@ export interface StoryProject {
   name: string
   version: string
   stages: StoryStage[]
+  // 전역 변수 정의 (프로젝트 전체에서 사용)
+  variables?: VariableDefinition[]
   // 게임 설정 (익스포트 시 포함)
   gameSettings?: GameSettings
   // 프로젝트 리소스 (캐릭터, 배경 등)

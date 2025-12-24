@@ -361,11 +361,11 @@ export const createDefaultProject = (): StoryProject => {
             description: 'First chapter',
             nodes,
             startNodeId,
-            variables: [...defaultVariables],
           }
         ]
       }
     ],
+    variables: [...defaultVariables],
     gameSettings: {
       defaultGameMode: 'visualNovel',
       defaultThemeId: 'dark',

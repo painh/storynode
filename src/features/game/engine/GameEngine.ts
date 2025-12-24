@@ -78,9 +78,9 @@ export class GameEngine {
       currentNodeId: startNodeId,
     }
 
-    // 챕터에 선언된 변수들의 초기값 적용
-    if (chapter.variables) {
-      for (const varDef of chapter.variables) {
+    // 프로젝트에 선언된 전역 변수들의 초기값 적용
+    if (this.project.variables) {
+      for (const varDef of this.project.variables) {
         this.state.variables.variables[varDef.id] = varDef.defaultValue
       }
     }
