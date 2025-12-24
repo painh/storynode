@@ -1,4 +1,4 @@
-import type { StoryNode, VariableOperation, VariableAction, VariableTarget, CharacterId, FactionId } from '../../../types/story'
+import type { StoryNode, VariableOperation, VariableAction, ArrayAction, VariableTarget, CharacterId, FactionId } from '../../../types/story'
 import { useEditorStore } from '../../../stores/editorStore'
 import { HelpTooltip } from './HelpTooltip'
 import styles from '../Inspector.module.css'
@@ -22,6 +22,15 @@ const VARIABLE_ACTIONS: { value: VariableAction; label: string }[] = [
   { value: 'add', label: '더하기 (+)' },
   { value: 'subtract', label: '빼기 (-)' },
   { value: 'multiply', label: '곱하기 (×)' },
+]
+
+const ARRAY_ACTIONS: { value: ArrayAction; label: string }[] = [
+  { value: 'push', label: '추가 (push)' },
+  { value: 'pop', label: '마지막 제거 (pop)' },
+  { value: 'removeAt', label: '인덱스 제거' },
+  { value: 'setAt', label: '인덱스 설정' },
+  { value: 'clear', label: '전체 삭제 (clear)' },
+  { value: 'set', label: '배열 교체 (set)' },
 ]
 
 const CHARACTER_IDS: { value: CharacterId; label: string }[] = [
@@ -53,12 +62,15 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
   const handleAddOperation = () => {
     // 선언된 변수가 있으면 variable 타입으로 시작, 없으면 flag로 시작
     const hasVariables = variables.length > 0
+    const firstVar = variables[0]
+    const isArray = firstVar?.type === 'array'
+
     const newOp: VariableOperation = hasVariables
       ? {
           target: 'variable',
-          action: 'set',
-          variableId: variables[0]?.id,
-          value: variables[0]?.defaultValue ?? 0,
+          action: isArray ? 'push' : 'set',
+          variableId: firstVar?.id,
+          value: isArray ? '' : (Array.isArray(firstVar?.defaultValue) ? 0 : (firstVar?.defaultValue ?? 0)),
         }
       : {
           target: 'flag',
@@ -88,11 +100,12 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
     switch (target) {
       case 'variable':
         const firstVar = variables[0]
+        const isArray = firstVar?.type === 'array'
         newOp = {
           target,
-          action: 'set',
+          action: isArray ? 'push' : 'set',
           variableId: firstVar?.id,
-          value: firstVar?.defaultValue ?? 0,
+          value: isArray ? '' : (Array.isArray(firstVar?.defaultValue) ? 0 : (firstVar?.defaultValue ?? 0)),
         }
         break
       case 'flag':
@@ -130,6 +143,94 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
           )
         }
 
+        // 배열 타입 처리
+        if (varType === 'array') {
+          const arrayItemType = selectedVar?.arrayItemType || 'string'
+          const needsValue = ['push', 'setAt'].includes(op.action)
+          const needsIndex = ['removeAt', 'setAt'].includes(op.action)
+
+          return (
+            <>
+              <div className={styles.field}>
+                <label className={styles.label}>변수</label>
+                <select
+                  className={styles.select}
+                  value={op.variableId || ''}
+                  onChange={(e) => {
+                    const newVar = variables.find(v => v.id === e.target.value)
+                    const isArr = newVar?.type === 'array'
+                    handleOperationChange(index, {
+                      variableId: e.target.value,
+                      action: isArr ? 'push' : 'set',
+                      value: isArr ? '' : (Array.isArray(newVar?.defaultValue) ? 0 : (newVar?.defaultValue ?? 0)),
+                    })
+                  }}
+                >
+                  {variables.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} ({v.type}{v.type === 'array' ? `<${v.arrayItemType}>` : ''})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>배열 연산</label>
+                <select
+                  className={styles.select}
+                  value={op.action}
+                  onChange={(e) => handleOperationChange(index, { action: e.target.value as ArrayAction })}
+                >
+                  {ARRAY_ACTIONS.map(aa => (
+                    <option key={aa.value} value={aa.value}>{aa.label}</option>
+                  ))}
+                </select>
+              </div>
+              {needsIndex && (
+                <div className={styles.field}>
+                  <label className={styles.label}>인덱스</label>
+                  <input
+                    type="number"
+                    className={styles.input}
+                    value={op.index ?? 0}
+                    min={0}
+                    onChange={(e) => handleOperationChange(index, { index: Number(e.target.value) })}
+                  />
+                </div>
+              )}
+              {needsValue && (
+                <div className={styles.field}>
+                  <label className={styles.label}>값</label>
+                  {arrayItemType === 'boolean' ? (
+                    <select
+                      className={styles.select}
+                      value={String(op.value)}
+                      onChange={(e) => handleOperationChange(index, { value: e.target.value === 'true' })}
+                    >
+                      <option value="true">true</option>
+                      <option value="false">false</option>
+                    </select>
+                  ) : arrayItemType === 'number' ? (
+                    <input
+                      type="number"
+                      className={styles.input}
+                      value={typeof op.value === 'number' ? op.value : 0}
+                      onChange={(e) => handleOperationChange(index, { value: Number(e.target.value) })}
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={String(op.value)}
+                      onChange={(e) => handleOperationChange(index, { value: e.target.value })}
+                      placeholder="값 입력"
+                    />
+                  )}
+                </div>
+              )}
+            </>
+          )
+        }
+
         return (
           <>
             <div className={styles.field}>
@@ -139,15 +240,17 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
                 value={op.variableId || ''}
                 onChange={(e) => {
                   const newVar = variables.find(v => v.id === e.target.value)
+                  const isArr = newVar?.type === 'array'
                   handleOperationChange(index, {
                     variableId: e.target.value,
-                    value: newVar?.defaultValue ?? 0,
+                    action: isArr ? 'push' : 'set',
+                    value: isArr ? '' : (Array.isArray(newVar?.defaultValue) ? 0 : (newVar?.defaultValue ?? 0)),
                   })
                 }}
               >
                 {variables.map(v => (
                   <option key={v.id} value={v.id}>
-                    {v.name} ({v.type})
+                    {v.name} ({v.type}{v.type === 'array' ? `<${v.arrayItemType}>` : ''})
                   </option>
                 ))}
               </select>

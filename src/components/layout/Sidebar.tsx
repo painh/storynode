@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
-import type { StoryNodeType, VariableType } from '../../types/story'
+import type { StoryNodeType, VariableType, ArrayItemType } from '../../types/story'
 import { useTranslation } from '../../i18n'
 import { isTauri, createDirectory } from '../../utils/fileUtils'
 import styles from './Sidebar.module.css'
@@ -169,6 +169,10 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
 
   const handleVariableTypeChange = (variableId: string, type: VariableType) => {
     updateVariable(variableId, { type })
+  }
+
+  const handleArrayItemTypeChange = (variableId: string, arrayItemType: ArrayItemType) => {
+    updateVariable(variableId, { arrayItemType, defaultValue: [] })
   }
 
   const handleVariableDefaultValueChange = (variableId: string, type: VariableType, value: string) => {
@@ -373,8 +377,20 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
                       <option value="boolean">Boolean</option>
                       <option value="number">Number</option>
                       <option value="string">String</option>
+                      <option value="array">Array</option>
                     </select>
-                    {variable.type === 'boolean' ? (
+                    {variable.type === 'array' ? (
+                      <select
+                        className={styles.variableValueInput}
+                        value={variable.arrayItemType || 'string'}
+                        onChange={(e) => handleArrayItemTypeChange(variable.id, e.target.value as ArrayItemType)}
+                        title="Array item type"
+                      >
+                        <option value="boolean">Boolean[]</option>
+                        <option value="number">Number[]</option>
+                        <option value="string">String[]</option>
+                      </select>
+                    ) : variable.type === 'boolean' ? (
                       <select
                         className={styles.variableValueInput}
                         value={String(variable.defaultValue)}
@@ -393,6 +409,11 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
                       />
                     )}
                   </div>
+                  {variable.type === 'array' && (
+                    <div className={styles.arrayInfo}>
+                      초기값: [] (빈 배열)
+                    </div>
+                  )}
                 </>
               )}
             </div>

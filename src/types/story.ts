@@ -164,27 +164,31 @@ export interface StoryBattleReward {
 
 // Variable 노드용 타입
 export type VariableAction = 'set' | 'add' | 'subtract' | 'multiply'
+export type ArrayAction = 'push' | 'pop' | 'removeAt' | 'setAt' | 'clear' | 'set'
 export type VariableTarget = 'flag' | 'gold' | 'hp' | 'affection' | 'reputation' | 'variable'
 
 // 변수 정의 (선언)
-export type VariableType = 'boolean' | 'number' | 'string'
+export type VariableType = 'boolean' | 'number' | 'string' | 'array'
+export type ArrayItemType = 'boolean' | 'number' | 'string'
 
 export interface VariableDefinition {
   id: string
   name: string
   type: VariableType
-  defaultValue: boolean | number | string
+  defaultValue: boolean | number | string | Array<boolean | number | string>
+  arrayItemType?: ArrayItemType  // array 타입일 때 아이템 타입
   description?: string  // 변수 설명 (선택)
 }
 
 export interface VariableOperation {
   target: VariableTarget
-  action: VariableAction
+  action: VariableAction | ArrayAction
   key?: string              // flag용
   variableId?: string       // variable용 (선언된 변수 참조)
   characterId?: CharacterId // affection용
   factionId?: FactionId     // reputation용
   value: number | string | boolean
+  index?: number            // array setAt/removeAt용
 }
 
 // Condition 노드용 - 다중 출력

@@ -508,3 +508,10 @@
 .variableValueInput::placeholder {
   color: var(--text-muted);
 }
+
+.arrayInfo {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}

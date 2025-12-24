@@ -10,11 +10,25 @@ export const createVariableActions = (set: ImmerSet, get: () => EditorState) => 
 
     if (!chapter) return null
 
+    const type = variable?.type || 'number'
+    let defaultValue: boolean | number | string | Array<boolean | number | string> = 0
+    if (variable?.defaultValue !== undefined) {
+      defaultValue = variable.defaultValue
+    } else {
+      switch (type) {
+        case 'boolean': defaultValue = false; break
+        case 'string': defaultValue = ''; break
+        case 'array': defaultValue = []; break
+        default: defaultValue = 0
+      }
+    }
+
     const newVariable: VariableDefinition = {
       id: generateId(),
       name: variable?.name || 'newVariable',
-      type: variable?.type || 'number',
-      defaultValue: variable?.defaultValue ?? (variable?.type === 'boolean' ? false : variable?.type === 'string' ? '' : 0),
+      type,
+      defaultValue,
+      arrayItemType: variable?.arrayItemType || (type === 'array' ? 'string' : undefined),
       description: variable?.description,
     }
 
@@ -51,6 +65,10 @@ export const createVariableActions = (set: ImmerSet, get: () => EditorState) => 
               break
             case 'string':
               updates.defaultValue = String(variable.defaultValue)
+              break
+            case 'array':
+              updates.defaultValue = []
+              updates.arrayItemType = 'string'
               break
           }
         }

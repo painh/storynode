@@ -7,15 +7,30 @@ import { useTranslation } from '../../i18n'
 import styles from './VariableNode.module.css'
 
 function formatOperation(op: VariableOperation, t: ReturnType<typeof useTranslation>): string {
-  const actionLabels = {
+  const actionLabels: Record<string, string> = {
     set: t.inspector.set,
     add: t.inspector.add,
     subtract: t.inspector.subtract,
     multiply: t.inspector.multiply,
+    push: 'push',
+    pop: 'pop',
+    removeAt: 'removeAt',
+    setAt: 'setAt',
+    clear: 'clear',
   }
-  const action = actionLabels[op.action]
+  const action = actionLabels[op.action] || op.action
 
   switch (op.target) {
+    case 'variable':
+      // 배열 연산
+      if (['push', 'pop', 'removeAt', 'setAt', 'clear'].includes(op.action)) {
+        if (op.action === 'push') return `[].push(${op.value})`
+        if (op.action === 'pop') return `[].pop()`
+        if (op.action === 'removeAt') return `[].removeAt(${op.index})`
+        if (op.action === 'setAt') return `[${op.index}] = ${op.value}`
+        if (op.action === 'clear') return `[] = []`
+      }
+      return `${action} = ${op.value}`
     case 'flag':
       return `${action} ${op.key} = ${op.value}`
     case 'gold':

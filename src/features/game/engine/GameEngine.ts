@@ -507,7 +507,11 @@ export class GameEngine {
       case 'variable':
         if (op.variableId) {
           const currentValue = vars.customVariables[op.variableId]
-          if (op.action === 'set') {
+
+          // 배열 연산 처리
+          if (Array.isArray(currentValue)) {
+            this.executeArrayOperation(op.variableId, op.action, op.value, op.index)
+          } else if (op.action === 'set') {
             vars.customVariables[op.variableId] = op.value
           } else if (typeof currentValue === 'number') {
             vars.customVariables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
@@ -571,6 +575,46 @@ export class GameEngine {
         return current * value
       default:
         return current
+    }
+  }
+
+  // 배열 연산 실행
+  private executeArrayOperation(
+    variableId: string,
+    action: string,
+    value: boolean | number | string,
+    index?: number
+  ): void {
+    const vars = this.state.variables
+    const arr = vars.customVariables[variableId]
+    if (!Array.isArray(arr)) return
+
+    switch (action) {
+      case 'push':
+        arr.push(value)
+        break
+      case 'pop':
+        arr.pop()
+        break
+      case 'removeAt':
+        if (index !== undefined && index >= 0 && index < arr.length) {
+          arr.splice(index, 1)
+        }
+        break
+      case 'setAt':
+        if (index !== undefined && index >= 0 && index < arr.length) {
+          arr[index] = value
+        }
+        break
+      case 'clear':
+        vars.customVariables[variableId] = []
+        break
+      case 'set':
+        // 전체 배열 교체 (value가 배열이어야 함)
+        if (Array.isArray(value)) {
+          vars.customVariables[variableId] = value
+        }
+        break
     }
   }
 

@@ -36,7 +36,7 @@ export interface GameVariables {
   reputation: Record<FactionId, number>
   choicesMade: string[] // 선택한 choice ID 기록
   // 사용자 정의 변수 (챕터에서 선언한 변수)
-  customVariables: Record<string, boolean | number | string>
+  customVariables: Record<string, boolean | number | string | Array<boolean | number | string>>
 }
 
 // 게임 히스토리 엔트리
