@@ -216,7 +216,7 @@ function CanvasInner() {
       selectionMode={SelectionMode.Partial}
       minZoom={0.1}
       maxZoom={2}
-      deleteKeyCode={['Backspace', 'Delete']}
+      deleteKeyCode={null}
       defaultEdgeOptions={{
         type: 'smart',
         style: { stroke: '#fff', strokeWidth: 2 },

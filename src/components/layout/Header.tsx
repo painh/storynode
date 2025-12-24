@@ -12,7 +12,10 @@ import {
   isFileSystemAccessSupported,
   pickWebDirectory,
   getWebDirectoryHandle,
+  exportGameBuild,
+  downloadGameBuildAsHtml,
 } from '../../utils/fileUtils'
+import { generateGamePlayerHtml, generateEmbeddedGamePlayerHtml } from '../../utils/gamePlayerTemplate'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
 import { useMenuState } from './header/useMenuState'
@@ -271,10 +274,42 @@ export function Header() {
     closeAllMenus()
   }
 
-  const handleExportForGame = () => {
-    const json = exportForGame(project)
-    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.json`)
+  const handleExportForGame = async () => {
     closeAllMenus()
+
+    // Tauri 환경: 폴더 선택 후 프로젝트 복사 + index.html 생성
+    if (isTauri() && openDialog) {
+      const lastPath = settings.lastProjectPath
+      if (!lastPath) {
+        alert('Please save the project first before exporting.')
+        return
+      }
+
+      try {
+        const selected = await openDialog({
+          directory: true,
+          multiple: false,
+          title: menu.exportSelectFolder || 'Select folder to export game',
+        })
+
+        if (selected && typeof selected === 'string') {
+          const htmlTemplate = generateGamePlayerHtml()
+          await exportGameBuild(lastPath, selected, htmlTemplate)
+          alert(menu.exportSuccess || 'Export completed!\n\nTo run the game:\n1. Open terminal in the export folder\n2. Run: npx serve\n3. Open http://localhost:3000 in browser')
+        }
+      } catch (error) {
+        alert('Failed to export: ' + (error as Error).message)
+      }
+      return
+    }
+
+    // 웹 환경: 단일 HTML로 다운로드 (모든 데이터 임베딩)
+    try {
+      const htmlContent = generateEmbeddedGamePlayerHtml(project)
+      downloadGameBuildAsHtml(htmlContent, project.name)
+    } catch (error) {
+      alert('Failed to export: ' + (error as Error).message)
+    }
   }
 
   const handleImportJson = () => {

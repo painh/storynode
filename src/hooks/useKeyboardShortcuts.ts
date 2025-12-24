@@ -47,13 +47,17 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
   // Delete: 선택된 노드 삭제 (한 번에 삭제하여 Undo 시 한 번에 복원)
   const deleteSelectedNodes = useCallback(() => {
-    const { selectedNodeIds, deleteNodes, deleteCommentNode, getCommentNodes } = useEditorStore.getState()
+    const { selectedNodeIds, deleteNodes, deleteCommentNode, getCommentNodes, getCurrentChapter } = useEditorStore.getState()
     if (selectedNodeIds.length > 0) {
       // Comment 노드와 일반 노드 분리
       const commentNodes = getCommentNodes()
       const commentIds = commentNodes.map(c => c.id)
 
-      const storyNodeIds = selectedNodeIds.filter(id => !commentIds.includes(id))
+      // Start node는 삭제 불가
+      const chapter = getCurrentChapter()
+      const startNodeId = chapter?.startNodeId
+
+      const storyNodeIds = selectedNodeIds.filter(id => !commentIds.includes(id) && id !== startNodeId)
       const selectedCommentIds = selectedNodeIds.filter(id => commentIds.includes(id))
 
       // 일반 노드 삭제
