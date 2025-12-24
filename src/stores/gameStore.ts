@@ -213,3 +213,9 @@ export const useCurrentNode = () => useGameStore((state) => state.currentNode)
 export const useDebugInfo = () => useGameStore((state) => state.debug)
 export const useGameTheme = () => useGameStore((state) => state.currentThemeId)
 export const useGameMode = () => useGameStore((state) => state.gameMode)
+
+// 프로젝트 정보 (게임에서 Project.xxx로 접근 가능)
+export const useProjectInfo = () => {
+  const engine = useGameStore((state) => state.engine)
+  return engine?.getProjectInfo() || { name: '', version: '', gameMode: 'visualNovel', theme: 'dark' }
+}

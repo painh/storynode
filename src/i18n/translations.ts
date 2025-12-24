@@ -63,6 +63,7 @@ export interface Translations {
     toggleDevTools: string
     exportSelectFolder: string
     exportSuccess: string
+    projectSettings: string
   }
 
   // 설정
@@ -79,6 +80,22 @@ export interface Translations {
     autoSaveIntervalMinutes: string
     gameSettings: string
     saveBeforeGameRun: string
+  }
+
+  // 프로젝트 설정
+  projectSettings: {
+    title: string
+    projectInfo: string
+    projectName: string
+    projectVersion: string
+    gameSettings: string
+    gameMode: string
+    gameModeVisualNovel: string
+    gameModeTextAdventure: string
+    defaultTheme: string
+    themeDark: string
+    themeLight: string
+    themeSepia: string
   }
 
   // Inspector
@@ -228,6 +245,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: '개발자 도구 토글',
       exportSelectFolder: '게임 내보내기 폴더 선택',
       exportSuccess: '익스포트 완료!\n\n게임 실행 방법:\n1. 익스포트 폴더에서 터미널 열기\n2. npx serve 실행\n3. 브라우저에서 http://localhost:3000 접속',
+      projectSettings: '프로젝트 설정',
     },
     settings: {
       language: '언어',
@@ -242,6 +260,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: '분',
       gameSettings: '게임 실행',
       saveBeforeGameRun: '게임 실행 전 자동 저장',
+    },
+    projectSettings: {
+      title: '프로젝트 설정',
+      projectInfo: '프로젝트 정보',
+      projectName: '프로젝트 이름',
+      projectVersion: '버전',
+      gameSettings: '게임 설정',
+      gameMode: '게임 모드',
+      gameModeVisualNovel: '비주얼 노벨',
+      gameModeTextAdventure: '텍스트 어드벤처',
+      defaultTheme: '기본 테마',
+      themeDark: '다크',
+      themeLight: '라이트',
+      themeSepia: '세피아',
     },
     inspector: {
       nodeId: '노드 ID',
@@ -377,6 +409,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: 'Toggle DevTools',
       exportSelectFolder: 'Select folder to export game',
       exportSuccess: 'Export completed!\n\nTo run the game:\n1. Open terminal in the export folder\n2. Run: npx serve\n3. Open http://localhost:3000 in browser',
+      projectSettings: 'Project Settings',
     },
     settings: {
       language: 'Language',
@@ -391,6 +424,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: 'min',
       gameSettings: 'Game Run',
       saveBeforeGameRun: 'Save before game run',
+    },
+    projectSettings: {
+      title: 'Project Settings',
+      projectInfo: 'Project Info',
+      projectName: 'Project Name',
+      projectVersion: 'Version',
+      gameSettings: 'Game Settings',
+      gameMode: 'Game Mode',
+      gameModeVisualNovel: 'Visual Novel',
+      gameModeTextAdventure: 'Text Adventure',
+      defaultTheme: 'Default Theme',
+      themeDark: 'Dark',
+      themeLight: 'Light',
+      themeSepia: 'Sepia',
     },
     inspector: {
       nodeId: 'Node ID',
@@ -528,6 +575,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: '切换开发者工具',
       exportSelectFolder: '选择游戏导出文件夹',
       exportSuccess: '导出完成！\n\n运行游戏方法：\n1. 在导出文件夹中打开终端\n2. 运行 npx serve\n3. 在浏览器中打开 http://localhost:3000',
+      projectSettings: '项目设置',
     },
     settings: {
       language: '语言',
@@ -542,6 +590,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: '分钟',
       gameSettings: '游戏运行',
       saveBeforeGameRun: '运行游戏前保存',
+    },
+    projectSettings: {
+      title: '项目设置',
+      projectInfo: '项目信息',
+      projectName: '项目名称',
+      projectVersion: '版本',
+      gameSettings: '游戏设置',
+      gameMode: '游戏模式',
+      gameModeVisualNovel: '视觉小说',
+      gameModeTextAdventure: '文字冒险',
+      defaultTheme: '默认主题',
+      themeDark: '深色',
+      themeLight: '浅色',
+      themeSepia: '复古',
     },
     inspector: {
       nodeId: '节点ID',
@@ -679,6 +741,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: '切換開發人員工具',
       exportSelectFolder: '選擇遊戲匯出資料夾',
       exportSuccess: '匯出完成！\n\n執行遊戲方法：\n1. 在匯出資料夾中開啟終端機\n2. 執行 npx serve\n3. 在瀏覽器中開啟 http://localhost:3000',
+      projectSettings: '專案設定',
     },
     settings: {
       language: '語言',
@@ -693,6 +756,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: '分鐘',
       gameSettings: '遊戲執行',
       saveBeforeGameRun: '執行遊戲前儲存',
+    },
+    projectSettings: {
+      title: '專案設定',
+      projectInfo: '專案資訊',
+      projectName: '專案名稱',
+      projectVersion: '版本',
+      gameSettings: '遊戲設定',
+      gameMode: '遊戲模式',
+      gameModeVisualNovel: '視覺小說',
+      gameModeTextAdventure: '文字冒險',
+      defaultTheme: '預設主題',
+      themeDark: '深色',
+      themeLight: '淺色',
+      themeSepia: '復古',
     },
     inspector: {
       nodeId: '節點ID',
@@ -830,6 +907,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: 'Alternar Herramientas de Desarrollo',
       exportSelectFolder: 'Seleccionar carpeta para exportar el juego',
       exportSuccess: '¡Exportación completada!\n\nPara ejecutar el juego:\n1. Abrir terminal en la carpeta de exportación\n2. Ejecutar: npx serve\n3. Abrir http://localhost:3000 en el navegador',
+      projectSettings: 'Configuración del Proyecto',
     },
     settings: {
       language: 'Idioma',
@@ -844,6 +922,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: 'min',
       gameSettings: 'Ejecutar Juego',
       saveBeforeGameRun: 'Guardar antes de ejecutar el juego',
+    },
+    projectSettings: {
+      title: 'Configuración del Proyecto',
+      projectInfo: 'Información del Proyecto',
+      projectName: 'Nombre del Proyecto',
+      projectVersion: 'Versión',
+      gameSettings: 'Configuración del Juego',
+      gameMode: 'Modo de Juego',
+      gameModeVisualNovel: 'Novela Visual',
+      gameModeTextAdventure: 'Aventura de Texto',
+      defaultTheme: 'Tema Predeterminado',
+      themeDark: 'Oscuro',
+      themeLight: 'Claro',
+      themeSepia: 'Sepia',
     },
     inspector: {
       nodeId: 'ID del Nodo',
@@ -981,6 +1073,7 @@ export const translations: Record<Language, Translations> = {
       toggleDevTools: '開発者ツールを切り替え',
       exportSelectFolder: 'ゲームエクスポート先を選択',
       exportSuccess: 'エクスポート完了！\n\nゲームの実行方法：\n1. エクスポートフォルダでターミナルを開く\n2. npx serve を実行\n3. ブラウザで http://localhost:3000 を開く',
+      projectSettings: 'プロジェクト設定',
     },
     settings: {
       language: '言語',
@@ -995,6 +1088,20 @@ export const translations: Record<Language, Translations> = {
       autoSaveIntervalMinutes: '分',
       gameSettings: 'ゲーム実行',
       saveBeforeGameRun: 'ゲーム実行前に保存',
+    },
+    projectSettings: {
+      title: 'プロジェクト設定',
+      projectInfo: 'プロジェクト情報',
+      projectName: 'プロジェクト名',
+      projectVersion: 'バージョン',
+      gameSettings: 'ゲーム設定',
+      gameMode: 'ゲームモード',
+      gameModeVisualNovel: 'ビジュアルノベル',
+      gameModeTextAdventure: 'テキストアドベンチャー',
+      defaultTheme: 'デフォルトテーマ',
+      themeDark: 'ダーク',
+      themeLight: 'ライト',
+      themeSepia: 'セピア',
     },
     inspector: {
       nodeId: 'ノードID',

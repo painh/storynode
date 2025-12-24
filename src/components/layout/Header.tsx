@@ -17,6 +17,7 @@ import {
 import { generateGamePlayerHtml, generateEmbeddedGamePlayerHtml } from '../../utils/gamePlayerTemplate'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
+import { ProjectSettingsModal } from '../common/ProjectSettingsModal'
 import { useMenuState } from './header/useMenuState'
 import { FileMenu } from './header/FileMenu'
 import { EditMenu } from './header/EditMenu'
@@ -73,6 +74,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   } = useMenuState()
 
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [showProjectSettingsModal, setShowProjectSettingsModal] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -476,6 +478,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
               onExportJson={handleExportJson}
               onExportForGame={handleExportForGame}
               onOpenSettings={() => { setShowSettingsModal(true); closeAllMenus() }}
+              onOpenProjectSettings={() => { setShowProjectSettingsModal(true); closeAllMenus() }}
             />
           </div>
 
@@ -565,6 +568,12 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
+      />
+
+      {/* Project Settings Modal */}
+      <ProjectSettingsModal
+        isOpen={showProjectSettingsModal}
+        onClose={() => setShowProjectSettingsModal(false)}
       />
 
       {/* Help Modal */}

@@ -24,6 +24,7 @@ interface FileMenuProps {
     exportJson: string
     exportForGame: string
     settings: string
+    projectSettings: string
   }
   onNew: () => void
   onOpenFolder: () => void
@@ -35,6 +36,7 @@ interface FileMenuProps {
   onExportJson: () => void
   onExportForGame: () => void
   onOpenSettings: () => void
+  onOpenProjectSettings: () => void
 }
 
 export function FileMenu({
@@ -55,6 +57,7 @@ export function FileMenu({
   onExportJson,
   onExportForGame,
   onOpenSettings,
+  onOpenProjectSettings,
 }: FileMenuProps) {
   if (!isOpen) return null
 
@@ -119,6 +122,9 @@ export function FileMenu({
       <div className={styles.divider} />
       <button onClick={onExportForGame}>{menu.exportForGame}</button>
       <div className={styles.divider} />
+      <button onClick={onOpenProjectSettings}>
+        {menu.projectSettings}...
+      </button>
       <button onClick={onOpenSettings}>
         {menu.settings}...
       </button>

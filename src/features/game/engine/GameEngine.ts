@@ -113,6 +113,16 @@ export class GameEngine {
     return chapter?.nodes.find((n) => n.id === this.state.currentNodeId) || null
   }
 
+  // 프로젝트 정보 가져오기 (게임에서 Project.xxx로 접근 가능)
+  getProjectInfo(): { name: string; version: string; gameMode: string; theme: string } {
+    return {
+      name: this.project.name,
+      version: this.project.version,
+      gameMode: this.project.gameSettings?.defaultGameMode || 'visualNovel',
+      theme: this.project.gameSettings?.defaultThemeId || 'dark',
+    }
+  }
+
   // ID로 노드 찾기
   private getNodeById(nodeId: string): StoryNode | null {
     const chapter = this.getCurrentChapter()
