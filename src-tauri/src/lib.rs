@@ -271,13 +271,31 @@ pub fn run() {
             match &event {
                 RunEvent::WindowEvent { label, event: WindowEvent::CloseRequested { api, .. }, .. } => {
                     println!("[Tauri] CloseRequested event received for window: {}", label);
+
+                    // dev 모드에서는 바로 닫기 (디버깅 편의)
+                    if DEV_MODE.load(Ordering::Relaxed) {
+                        println!("[Tauri] Dev mode - closing window immediately");
+                        if let Some(window) = app_handle.get_webview_window(label) {
+                            let _ = window.destroy();
+                        }
+                        return;
+                    }
+
                     // 창 닫기 요청 시 기본 동작 방지하고 프론트엔드에 알림
                     api.prevent_close();
 
-                    // 프론트엔드에 이벤트 발송
+                    // 프론트엔드에 이벤트 발송 후 타임아웃으로 강제 닫기
                     if let Some(window) = app_handle.get_webview_window(label) {
                         println!("[Tauri] Emitting close-requested event to frontend");
                         let _ = window.emit("tauri://close-requested", ());
+
+                        // 3초 후에도 닫히지 않으면 강제 종료 (프론트엔드 에러 시 대비)
+                        let window_clone = window.clone();
+                        std::thread::spawn(move || {
+                            std::thread::sleep(std::time::Duration::from_secs(3));
+                            println!("[Tauri] Force closing window after timeout");
+                            let _ = window_clone.destroy();
+                        });
                     }
                 }
                 RunEvent::ExitRequested { .. } => {
