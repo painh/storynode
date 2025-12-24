@@ -1,7 +1,11 @@
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+
+// --dev 옵션으로 실행되었는지 저장
+static DEV_MODE: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileInfo {
@@ -206,21 +210,31 @@ fn get_config_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to get config dir: {}", e))
 }
 
-// Toggle DevTools (debug only)
+// Toggle DevTools (릴리즈에서도 작동)
 #[tauri::command]
 fn toggle_devtools(webview_window: tauri::WebviewWindow) {
-    #[cfg(debug_assertions)]
-    {
-        if webview_window.is_devtools_open() {
-            webview_window.close_devtools();
-        } else {
-            webview_window.open_devtools();
-        }
+    if webview_window.is_devtools_open() {
+        webview_window.close_devtools();
+    } else {
+        webview_window.open_devtools();
     }
+}
+
+// --dev 옵션 체크
+#[tauri::command]
+fn check_dev_mode() -> bool {
+    DEV_MODE.load(Ordering::Relaxed)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // 커맨드라인 인자에서 --dev 옵션 확인
+    let args: Vec<String> = std::env::args().collect();
+    if args.iter().any(|arg| arg == "--dev" || arg == "-d") {
+        DEV_MODE.store(true, Ordering::Relaxed);
+        println!("[Tauri] Dev mode enabled via command line argument");
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
@@ -235,7 +249,8 @@ pub fn run() {
             copy_directory,
             write_text_file,
             get_config_dir,
-            toggle_devtools
+            toggle_devtools,
+            check_dev_mode
         ])
         .setup(|app| {
             #[cfg(debug_assertions)]
