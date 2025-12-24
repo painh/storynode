@@ -7,7 +7,8 @@ interface RecentProject {
 
 interface FileMenuProps {
   isOpen: boolean
-  isDesktop: boolean
+  canFolderOperations: boolean
+  showRecentProjects: boolean
   recentProjects: RecentProject[]
   showRecentSubmenu: boolean
   setShowRecentSubmenu: (show: boolean) => void
@@ -38,7 +39,8 @@ interface FileMenuProps {
 
 export function FileMenu({
   isOpen,
-  isDesktop,
+  canFolderOperations,
+  showRecentProjects,
   recentProjects,
   showRecentSubmenu,
   setShowRecentSubmenu,
@@ -63,42 +65,44 @@ export function FileMenu({
         <span className={styles.shortcut}>⌘N</span>
       </button>
       <div className={styles.divider} />
-      {isDesktop ? (
+      {canFolderOperations ? (
         <>
           <button onClick={onOpenFolder}>
             <span>{menu.openFolder}</span>
             <span className={styles.shortcut}>⌘O</span>
           </button>
-          <div
-            className={styles.submenu}
-            onMouseEnter={() => setShowRecentSubmenu(true)}
-            onMouseLeave={() => setShowRecentSubmenu(false)}
-          >
-            <button className={styles.submenuTrigger}>
-              {menu.openRecent}
-            </button>
-            {showRecentSubmenu && (
-              <div className={styles.submenuContent}>
-                {recentProjects.length > 0 ? (
-                  <>
-                    {recentProjects.map((recent) => (
-                      <button
-                        key={recent.path}
-                        onClick={() => onOpenRecent(recent.path)}
-                      >
-                        <span className={styles.recentName}>{recent.name}</span>
-                        <span className={styles.recentPath}>{recent.path}</span>
-                      </button>
-                    ))}
-                    <div className={styles.divider} />
-                    <button onClick={onClearRecent}>{menu.clearRecent}</button>
-                  </>
-                ) : (
-                  <div className={styles.emptyRecent}>{menu.noRecentProjects}</div>
-                )}
-              </div>
-            )}
-          </div>
+          {showRecentProjects && (
+            <div
+              className={styles.submenu}
+              onMouseEnter={() => setShowRecentSubmenu(true)}
+              onMouseLeave={() => setShowRecentSubmenu(false)}
+            >
+              <button className={styles.submenuTrigger}>
+                {menu.openRecent}
+              </button>
+              {showRecentSubmenu && (
+                <div className={styles.submenuContent}>
+                  {recentProjects.length > 0 ? (
+                    <>
+                      {recentProjects.map((recent) => (
+                        <button
+                          key={recent.path}
+                          onClick={() => onOpenRecent(recent.path)}
+                        >
+                          <span className={styles.recentName}>{recent.name}</span>
+                          <span className={styles.recentPath}>{recent.path}</span>
+                        </button>
+                      ))}
+                      <div className={styles.divider} />
+                      <button onClick={onClearRecent}>{menu.clearRecent}</button>
+                    </>
+                  ) : (
+                    <div className={styles.emptyRecent}>{menu.noRecentProjects}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <button onClick={onSave}>
             <span>{menu.save}</span>
             <span className={styles.shortcut}>⌘S</span>

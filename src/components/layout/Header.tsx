@@ -9,6 +9,9 @@ import {
   exportForGame,
   saveProjectToFolder,
   loadProjectFromFolder,
+  isFileSystemAccessSupported,
+  pickWebDirectory,
+  getWebDirectoryHandle,
 } from '../../utils/fileUtils'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
@@ -58,9 +61,12 @@ export function Header() {
   const canUndo = pastStates.length > 0
   const canRedo = futureStates.length > 0
 
+  // 웹 File System Access API 지원 여부
+  const [isWebFsSupported, setIsWebFsSupported] = useState(false)
+
   // Tauri 환경 감지 및 dialog 로드
   useEffect(() => {
-    const checkTauri = async () => {
+    const checkEnvironment = async () => {
       if (isTauri()) {
         setIsDesktop(true)
         try {
@@ -69,9 +75,12 @@ export function Header() {
         } catch (e) {
           console.error('Failed to load Tauri dialog plugin:', e)
         }
+      } else {
+        // 웹 환경에서 File System Access API 지원 확인
+        setIsWebFsSupported(isFileSystemAccessSupported())
       }
     }
-    checkTauri()
+    checkEnvironment()
   }, [])
 
   // 프로젝트 리로드 이벤트 리스너
@@ -134,8 +143,25 @@ export function Header() {
 
   const handleSave = async () => {
     closeAllMenus()
+
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isWebFsSupported) {
+      const handle = getWebDirectoryHandle()
+      if (handle) {
+        try {
+          await saveProjectToFolder('', project)
+          markClean()
+        } catch (error) {
+          alert('Failed to save project: ' + (error as Error).message)
+        }
+      } else {
+        await handleSaveAs()
+      }
+      return
+    }
+
     if (!isTauri()) {
-      alert('Folder save is only available in desktop app')
+      alert('Folder save is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -155,8 +181,23 @@ export function Header() {
 
   const handleSaveAs = async () => {
     closeAllMenus()
+
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isWebFsSupported) {
+      try {
+        const handle = await pickWebDirectory()
+        if (handle) {
+          await saveProjectToFolder('', project)
+          markClean()
+        }
+      } catch (error) {
+        alert('Failed to save project: ' + (error as Error).message)
+      }
+      return
+    }
+
     if (!isTauri() || !openDialog) {
-      alert('Folder save is only available in desktop app')
+      alert('Folder save is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -179,8 +220,23 @@ export function Header() {
 
   const handleOpenFolder = async () => {
     closeAllMenus()
+
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isWebFsSupported) {
+      try {
+        const handle = await pickWebDirectory()
+        if (handle) {
+          const loadedProject = await loadProjectFromFolder('')
+          setProject(loadedProject)
+        }
+      } catch (error) {
+        alert('Failed to load project: ' + (error as Error).message)
+      }
+      return
+    }
+
     if (!isTauri() || !openDialog) {
-      alert('Folder open is only available in desktop app')
+      alert('Folder open is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -320,7 +376,8 @@ export function Header() {
             </button>
             <FileMenu
               isOpen={showFileMenu}
-              isDesktop={isDesktop}
+              canFolderOperations={isDesktop || isWebFsSupported}
+              showRecentProjects={isDesktop}
               recentProjects={settings.recentProjects}
               showRecentSubmenu={showRecentSubmenu}
               setShowRecentSubmenu={setShowRecentSubmenu}

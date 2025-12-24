@@ -19,6 +19,133 @@ export const isTauri = (): boolean => {
     ('__TAURI__' in window || '__TAURI_INTERNALS__' in window)
 }
 
+// Check if File System Access API is supported
+export const isFileSystemAccessSupported = (): boolean => {
+  return typeof window !== 'undefined' && 'showDirectoryPicker' in window
+}
+
+// ============================================
+// 웹 File System Access API 관련
+// ============================================
+
+// 웹용 디렉토리 핸들 저장소 (메모리에 유지)
+let webDirectoryHandle: FileSystemDirectoryHandle | null = null
+
+export function getWebDirectoryHandle(): FileSystemDirectoryHandle | null {
+  return webDirectoryHandle
+}
+
+export function setWebDirectoryHandle(handle: FileSystemDirectoryHandle | null): void {
+  webDirectoryHandle = handle
+}
+
+// 웹에서 폴더 선택 다이얼로그 열기
+export async function pickWebDirectory(): Promise<FileSystemDirectoryHandle | null> {
+  if (!isFileSystemAccessSupported()) {
+    throw new Error('File System Access API is not supported in this browser')
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handle = await (window as any).showDirectoryPicker({ mode: 'readwrite' })
+    webDirectoryHandle = handle
+    return handle
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      return null // 사용자가 취소
+    }
+    throw error
+  }
+}
+
+// 웹에서 파일 읽기
+async function readWebFile(dirHandle: FileSystemDirectoryHandle, relativePath: string): Promise<string> {
+  const parts = relativePath.split('/').filter(p => p)
+  let currentHandle: FileSystemDirectoryHandle = dirHandle
+
+  // 경로의 디렉토리 부분 순회
+  for (let i = 0; i < parts.length - 1; i++) {
+    currentHandle = await currentHandle.getDirectoryHandle(parts[i])
+  }
+
+  const fileName = parts[parts.length - 1]
+  const fileHandle = await currentHandle.getFileHandle(fileName)
+  const file = await fileHandle.getFile()
+  return await file.text()
+}
+
+// 웹에서 파일 쓰기
+async function writeWebFile(dirHandle: FileSystemDirectoryHandle, relativePath: string, content: string): Promise<void> {
+  const parts = relativePath.split('/').filter(p => p)
+  let currentHandle: FileSystemDirectoryHandle = dirHandle
+
+  // 경로의 디렉토리 부분 순회 (없으면 생성)
+  for (let i = 0; i < parts.length - 1; i++) {
+    currentHandle = await currentHandle.getDirectoryHandle(parts[i], { create: true })
+  }
+
+  const fileName = parts[parts.length - 1]
+  const fileHandle = await currentHandle.getFileHandle(fileName, { create: true })
+  const writable = await fileHandle.createWritable()
+  await writable.write(content)
+  await writable.close()
+}
+
+// 웹에서 디렉토리 생성
+async function createWebDirectory(dirHandle: FileSystemDirectoryHandle, relativePath: string): Promise<void> {
+  const parts = relativePath.split('/').filter(p => p)
+  let currentHandle: FileSystemDirectoryHandle = dirHandle
+
+  for (const part of parts) {
+    currentHandle = await currentHandle.getDirectoryHandle(part, { create: true })
+  }
+}
+
+// 웹에서 이미지 파일 목록 가져오기
+async function listWebImageFiles(dirHandle: FileSystemDirectoryHandle, relativePath: string): Promise<ImageResource[]> {
+  const resources: ImageResource[] = []
+  const parts = relativePath.split('/').filter(p => p)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let currentHandle: any = dirHandle
+
+  try {
+    for (const part of parts) {
+      currentHandle = await currentHandle.getDirectoryHandle(part)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for await (const entry of currentHandle.values() as AsyncIterable<any>) {
+      if (entry.kind === 'file') {
+        const ext = entry.name.split('.').pop()?.toLowerCase()
+        if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '')) {
+          const file = await entry.getFile()
+          const dataUrl = await fileToDataUrl(file)
+          resources.push({
+            name: entry.name,
+            path: `${relativePath}/${entry.name}`,
+            data_url: dataUrl,
+          })
+        }
+      }
+    }
+  } catch (error) {
+    // 디렉토리가 없으면 빈 배열 반환
+    console.log('[listWebImageFiles] Directory not found:', relativePath)
+  }
+
+  return resources
+}
+
+// File을 data URL로 변환
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 // Read a story file
 export async function readStoryFile(path: string): Promise<string> {
   if (isTauri()) {
@@ -112,8 +239,13 @@ interface StageMeta {
  *     └── chapter_1.json
  */
 export async function saveProjectToFolder(projectDir: string, project: StoryProject): Promise<void> {
+  // 웹 환경에서 File System Access API 사용
+  if (!isTauri() && webDirectoryHandle) {
+    return await saveProjectToFolderWeb(webDirectoryHandle, project)
+  }
+
   if (!isTauri()) {
-    throw new Error('Folder operations are only available in Tauri environment')
+    throw new Error('Folder operations are only available in Tauri environment or with File System Access API')
   }
 
   // 1. 프로젝트 메타데이터 저장 (resources는 저장하지 않음 - 폴더에서 직접 로드)
@@ -148,11 +280,50 @@ export async function saveProjectToFolder(projectDir: string, project: StoryProj
 }
 
 /**
+ * 웹 File System Access API를 사용하여 프로젝트 저장
+ */
+async function saveProjectToFolderWeb(dirHandle: FileSystemDirectoryHandle, project: StoryProject): Promise<void> {
+  // 1. 프로젝트 메타데이터 저장
+  const projectMeta: ProjectMeta = {
+    name: project.name,
+    version: project.version,
+    stages: project.stages.map(s => s.id),
+    gameSettings: project.gameSettings,
+  }
+  await writeWebFile(dirHandle, 'project.json', JSON.stringify(projectMeta, null, 2))
+
+  // 2. 각 스테이지 저장
+  for (const stage of project.stages) {
+    await createWebDirectory(dirHandle, stage.id)
+
+    // 스테이지 메타데이터
+    const stageMeta: StageMeta = {
+      id: stage.id,
+      title: stage.title,
+      description: stage.description || '',
+      partyCharacters: stage.partyCharacters || [],
+      chapters: stage.chapters.map(c => c.id),
+    }
+    await writeWebFile(dirHandle, `${stage.id}/stage.json`, JSON.stringify(stageMeta, null, 2))
+
+    // 각 챕터 저장
+    for (const chapter of stage.chapters) {
+      await writeWebFile(dirHandle, `${stage.id}/${chapter.id}.json`, JSON.stringify(chapter, null, 2))
+    }
+  }
+}
+
+/**
  * 폴더 구조에서 프로젝트 로드
  */
 export async function loadProjectFromFolder(projectDir: string): Promise<StoryProject> {
+  // 웹 환경에서 File System Access API 사용
+  if (!isTauri() && webDirectoryHandle) {
+    return await loadProjectFromFolderWeb(webDirectoryHandle)
+  }
+
   if (!isTauri()) {
-    throw new Error('Folder operations are only available in Tauri environment')
+    throw new Error('Folder operations are only available in Tauri environment or with File System Access API')
   }
 
   // 1. 프로젝트 메타데이터 로드
@@ -225,6 +396,85 @@ export async function loadProjectFromFolder(projectDir: string): Promise<StoryPr
   }
 
   console.log('[loadProject] Total resources loaded:', resources.length)
+  return {
+    name: projectMeta.name,
+    version: projectMeta.version,
+    stages,
+    gameSettings: projectMeta.gameSettings,
+    resources,
+  }
+}
+
+/**
+ * 웹 File System Access API를 사용하여 프로젝트 로드
+ */
+async function loadProjectFromFolderWeb(dirHandle: FileSystemDirectoryHandle): Promise<StoryProject> {
+  // 1. 프로젝트 메타데이터 로드
+  let projectMeta: ProjectMeta
+  try {
+    const projectMetaJson = await readWebFile(dirHandle, 'project.json')
+    console.log('[loadProjectWeb] project.json raw:', projectMetaJson.substring(0, 500))
+    projectMeta = JSON.parse(projectMetaJson)
+    console.log('[loadProjectWeb] project.json parsed:', projectMeta)
+  } catch (error) {
+    console.error('[loadProjectWeb] Failed to parse project.json:', error)
+    throw new Error(`Failed to parse project.json: ${(error as Error).message}`)
+  }
+
+  // 2. 각 스테이지 로드
+  const stages: StoryStage[] = []
+  for (const stageId of projectMeta.stages) {
+    // 스테이지 메타데이터
+    let stageMeta: StageMeta
+    try {
+      const stageMetaJson = await readWebFile(dirHandle, `${stageId}/stage.json`)
+      console.log(`[loadProjectWeb] ${stageId}/stage.json raw:`, stageMetaJson.substring(0, 500))
+      stageMeta = JSON.parse(stageMetaJson)
+      console.log(`[loadProjectWeb] ${stageId}/stage.json parsed:`, stageMeta)
+    } catch (error) {
+      console.error(`[loadProjectWeb] Failed to parse ${stageId}/stage.json:`, error)
+      throw new Error(`Failed to parse ${stageId}/stage.json: ${(error as Error).message}`)
+    }
+
+    // 각 챕터 로드
+    const chapters: StoryChapter[] = []
+    for (const chapterId of stageMeta.chapters) {
+      try {
+        const chapterJson = await readWebFile(dirHandle, `${stageId}/${chapterId}.json`)
+        console.log(`[loadProjectWeb] ${stageId}/${chapterId}.json raw:`, chapterJson.substring(0, 500))
+        const chapter = JSON.parse(chapterJson)
+        console.log(`[loadProjectWeb] ${stageId}/${chapterId}.json parsed, nodes:`, chapter.nodes?.length)
+        chapters.push(chapter)
+      } catch (error) {
+        console.error(`[loadProjectWeb] Failed to parse ${stageId}/${chapterId}.json:`, error)
+        throw new Error(`Failed to parse ${stageId}/${chapterId}.json: ${(error as Error).message}`)
+      }
+    }
+
+    stages.push({
+      id: stageMeta.id,
+      title: stageMeta.title,
+      description: stageMeta.description,
+      partyCharacters: stageMeta.partyCharacters,
+      chapters,
+    })
+  }
+
+  // 3. 리소스 폴더 스캔
+  const resources: ProjectResource[] = []
+  console.log('[loadProjectWeb] Scanning resources/images folder')
+  const imageFiles = await listWebImageFiles(dirHandle, 'resources/images')
+  console.log('[loadProjectWeb] Image files found:', imageFiles.length, imageFiles.map(f => f.name))
+  for (const file of imageFiles) {
+    resources.push({
+      id: `img_${file.name.replace(/\.[^/.]+$/, '')}`,
+      name: file.name.replace(/\.[^/.]+$/, ''),
+      type: 'image',
+      path: file.data_url,
+    })
+  }
+
+  console.log('[loadProjectWeb] Total resources loaded:', resources.length)
   return {
     name: projectMeta.name,
     version: projectMeta.version,

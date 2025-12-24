@@ -8,6 +8,9 @@ import {
   isTauri,
   saveProjectToFolder,
   loadProjectFromFolder,
+  isFileSystemAccessSupported,
+  pickWebDirectory,
+  getWebDirectoryHandle,
 } from '../utils/fileUtils'
 
 // Tauri dialog import (조건부)
@@ -203,8 +206,24 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       return
     }
 
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isFileSystemAccessSupported()) {
+      const handle = getWebDirectoryHandle()
+      if (handle) {
+        try {
+          await saveProjectToFolder('', project)
+          useEditorStore.getState().markClean()
+        } catch (error) {
+          alert('Failed to save: ' + (error as Error).message)
+        }
+      } else {
+        await handleSaveAs()
+      }
+      return
+    }
+
     if (!isTauri()) {
-      alert('Save is only available in desktop app')
+      alert('Save is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -216,6 +235,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       try {
         await saveProjectToFolder(lastPath, project)
         addRecentProject(lastPath, project.name)
+        useEditorStore.getState().markClean()
       } catch (error) {
         alert('Failed to save: ' + (error as Error).message)
       }
@@ -227,8 +247,22 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
   // Cmd+Shift+S: 다른 이름으로 저장
   const handleSaveAs = useCallback(async () => {
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isFileSystemAccessSupported()) {
+      try {
+        const handle = await pickWebDirectory()
+        if (handle) {
+          await saveProjectToFolder('', project)
+          useEditorStore.getState().markClean()
+        }
+      } catch (error) {
+        alert('Failed to save: ' + (error as Error).message)
+      }
+      return
+    }
+
     if (!isTauri() || !openDialog) {
-      alert('Save is only available in desktop app')
+      alert('Save is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -242,6 +276,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if (selected && typeof selected === 'string') {
         await saveProjectToFolder(selected, project)
         useSettingsStore.getState().addRecentProject(selected, project.name)
+        useEditorStore.getState().markClean()
       }
     } catch (error) {
       alert('Failed to save: ' + (error as Error).message)
@@ -255,8 +290,22 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       return
     }
 
+    // 웹 환경에서 File System Access API 사용
+    if (!isTauri() && isFileSystemAccessSupported()) {
+      try {
+        const handle = await pickWebDirectory()
+        if (handle) {
+          const loadedProject = await loadProjectFromFolder('')
+          setProject(loadedProject)
+        }
+      } catch (error) {
+        alert('Failed to open: ' + (error as Error).message)
+      }
+      return
+    }
+
     if (!isTauri() || !openDialog) {
-      alert('Open is only available in desktop app')
+      alert('Open is only available in desktop app or browsers with File System Access API')
       return
     }
 
@@ -270,7 +319,6 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       if (selected && typeof selected === 'string') {
         const loadedProject = await loadProjectFromFolder(selected)
         setProject(loadedProject)
-        alert('Project loaded!')
       }
     } catch (error) {
       alert('Failed to open: ' + (error as Error).message)

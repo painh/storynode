@@ -217,16 +217,9 @@ pub fn run() {
                         let _ = window.emit("tauri://close-requested", ());
                     }
                 }
-                RunEvent::ExitRequested { api, .. } => {
-                    println!("[Tauri] ExitRequested event received");
-                    // 앱 종료 요청도 가로채기
-                    api.prevent_exit();
-
-                    // 모든 창에 이벤트 발송
-                    if let Some(window) = app_handle.get_webview_window("main") {
-                        println!("[Tauri] Emitting close-requested event for app exit");
-                        let _ = window.emit("tauri://close-requested", ());
-                    }
+                RunEvent::ExitRequested { .. } => {
+                    // ExitRequested는 무시 - CloseRequested에서 처리됨
+                    println!("[Tauri] ExitRequested event received - ignoring");
                 }
                 _ => {}
             }
