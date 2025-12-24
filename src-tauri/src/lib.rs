@@ -252,15 +252,7 @@ pub fn run() {
             toggle_devtools,
             check_dev_mode
         ])
-        .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                // 디버그 모드에서 자동으로 개발자 도구 열기
-                if let Some(window) = app.get_webview_window("main") {
-                    window.open_devtools();
-                    println!("[Tauri] DevTools opened automatically");
-                }
-            }
+        .setup(|_app| {
             println!("[Tauri] App started");
             Ok(())
         })
