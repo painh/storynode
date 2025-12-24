@@ -95,7 +95,9 @@ export interface Translations {
     defaultTheme: string
     themeDark: string
     themeLight: string
-    themeSepia: string
+    themeRetro: string
+    themeNovel: string
+    themeCyberpunk: string
   }
 
   // Inspector
@@ -273,7 +275,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: '기본 테마',
       themeDark: '다크',
       themeLight: '라이트',
-      themeSepia: '세피아',
+      themeRetro: '레트로',
+      themeNovel: '노벨',
+      themeCyberpunk: '사이버펑크',
     },
     inspector: {
       nodeId: '노드 ID',
@@ -437,7 +441,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: 'Default Theme',
       themeDark: 'Dark',
       themeLight: 'Light',
-      themeSepia: 'Sepia',
+      themeRetro: 'Retro',
+      themeNovel: 'Novel',
+      themeCyberpunk: 'Cyberpunk',
     },
     inspector: {
       nodeId: 'Node ID',
@@ -603,7 +609,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: '默认主题',
       themeDark: '深色',
       themeLight: '浅色',
-      themeSepia: '复古',
+      themeRetro: '复古',
+      themeNovel: '小说',
+      themeCyberpunk: '赛博朋克',
     },
     inspector: {
       nodeId: '节点ID',
@@ -769,7 +777,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: '預設主題',
       themeDark: '深色',
       themeLight: '淺色',
-      themeSepia: '復古',
+      themeRetro: '復古',
+      themeNovel: '小說',
+      themeCyberpunk: '賽博龐克',
     },
     inspector: {
       nodeId: '節點ID',
@@ -935,7 +945,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: 'Tema Predeterminado',
       themeDark: 'Oscuro',
       themeLight: 'Claro',
-      themeSepia: 'Sepia',
+      themeRetro: 'Retro',
+      themeNovel: 'Novela',
+      themeCyberpunk: 'Ciberpunk',
     },
     inspector: {
       nodeId: 'ID del Nodo',
@@ -1101,7 +1113,9 @@ export const translations: Record<Language, Translations> = {
       defaultTheme: 'デフォルトテーマ',
       themeDark: 'ダーク',
       themeLight: 'ライト',
-      themeSepia: 'セピア',
+      themeRetro: 'レトロ',
+      themeNovel: 'ノベル',
+      themeCyberpunk: 'サイバーパンク',
     },
     inspector: {
       nodeId: 'ノードID',

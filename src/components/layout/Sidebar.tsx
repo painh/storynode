@@ -68,6 +68,7 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const [editingTitle, setEditingTitle] = useState('')
   const [nodeFilter, setNodeFilter] = useState('')
   const [resourceFilter, setResourceFilter] = useState('')
+  const [variableFilter, setVariableFilter] = useState('')
 
   const currentStage = getCurrentStage()
 
@@ -326,8 +327,17 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
           <span className={styles.sectionTitle}>Variables</span>
           <button className={styles.addButton} onClick={handleAddVariable} title="Add Variable">+</button>
         </div>
+        {variables.length > 3 && (
+          <input
+            type="text"
+            className={styles.filterInput}
+            placeholder="Filter variables..."
+            value={variableFilter}
+            onChange={(e) => setVariableFilter(e.target.value)}
+          />
+        )}
         <div className={styles.variableList}>
-          {variables.map((variable) => (
+          {variables.filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter)).map((variable) => (
             <div key={variable.id} className={styles.variableItem}>
               {editingVariableId === variable.id ? (
                 <input
@@ -421,6 +431,11 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
           {variables.length === 0 && (
             <div className={styles.emptyState}>
               <div className={styles.emptyText}>No variables defined</div>
+            </div>
+          )}
+          {variables.length > 0 && variables.filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter)).length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyText}>No matches</div>
             </div>
           )}
         </div>

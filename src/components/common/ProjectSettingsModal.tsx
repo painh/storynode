@@ -1,5 +1,6 @@
 import { useEditorStore } from '../../stores/editorStore'
 import { useTranslation } from '../../i18n'
+import { themePresets } from '../../features/game/themes'
 import styles from './SettingsModal.module.css'
 
 interface ProjectSettingsModalProps {
@@ -87,9 +88,11 @@ export function ProjectSettingsModal({ isOpen, onClose }: ProjectSettingsModalPr
                 value={project.gameSettings?.defaultThemeId || 'dark'}
                 onChange={(e) => updateGameSettings({ defaultThemeId: e.target.value })}
               >
-                <option value="dark">{t.themeDark}</option>
-                <option value="light">{t.themeLight}</option>
-                <option value="sepia">{t.themeSepia}</option>
+                {themePresets.map((theme) => (
+                  <option key={theme.id} value={theme.id}>
+                    {theme.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
