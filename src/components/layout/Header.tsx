@@ -12,6 +12,14 @@ import {
 } from '../../utils/fileUtils'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
+import { useMenuState } from './header/useMenuState'
+import { FileMenu } from './header/FileMenu'
+import { EditMenu } from './header/EditMenu'
+import { ViewMenu } from './header/ViewMenu'
+import { HelpMenu } from './header/HelpMenu'
+import { KeyboardShortcutsModal } from './header/KeyboardShortcutsModal'
+import { StageChapterSelector } from './header/StageChapterSelector'
+import { PlayButton } from './header/PlayButton'
 import styles from './Header.module.css'
 
 // Tauri dialog import (조건부)
@@ -24,11 +32,22 @@ export function Header() {
   const { openGame, status: gameStatus } = useGameStore()
   const { menu, search: searchT } = useTranslation()
   const currentStage = getCurrentStage()
-  const [showFileMenu, setShowFileMenu] = useState(false)
-  const [showEditMenu, setShowEditMenu] = useState(false)
-  const [showViewMenu, setShowViewMenu] = useState(false)
-  const [showHelpMenu, setShowHelpMenu] = useState(false)
-  const [showRecentSubmenu, setShowRecentSubmenu] = useState(false)
+
+  const {
+    menuRef,
+    showFileMenu,
+    showEditMenu,
+    showViewMenu,
+    showHelpMenu,
+    showRecentSubmenu,
+    setShowRecentSubmenu,
+    closeAllMenus,
+    toggleFileMenu,
+    toggleEditMenu,
+    toggleViewMenu,
+    toggleHelpMenu,
+  } = useMenuState()
+
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
@@ -38,24 +57,6 @@ export function Header() {
   const { undo, redo, pastStates, futureStates } = useEditorStore.temporal.getState()
   const canUndo = pastStates.length > 0
   const canRedo = futureStates.length > 0
-
-  // 메뉴 외부 클릭 시 닫기
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowFileMenu(false)
-        setShowEditMenu(false)
-        setShowViewMenu(false)
-        setShowHelpMenu(false)
-        setShowRecentSubmenu(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   // Tauri 환경 감지 및 dialog 로드
   useEffect(() => {
@@ -91,79 +92,7 @@ export function Header() {
     return () => window.removeEventListener('storynode:reload-project', handleReloadProject)
   }, [settings.lastProjectPath, setProject])
 
-  // 저장 (Tauri) - lastProjectPath가 있으면 바로 저장, 없으면 Save As
-  const handleSave = async () => {
-    setShowFileMenu(false)
-    if (!isTauri()) {
-      alert('Folder save is only available in desktop app')
-      return
-    }
-
-    const lastPath = settings.lastProjectPath
-    if (lastPath) {
-      // 기존 경로에 바로 저장
-      try {
-        await saveProjectToFolder(lastPath, project)
-        addRecentProject(lastPath, project.name)
-        markClean() // 저장 후 isDirty를 false로
-      } catch (error) {
-        alert('Failed to save project: ' + (error as Error).message)
-      }
-    } else {
-      // 경로가 없으면 Save As 동작
-      await handleSaveAs()
-    }
-  }
-
-  // 다른 이름으로 저장 (Tauri) - 항상 폴더 선택 다이얼로그
-  const handleSaveAs = async () => {
-    setShowFileMenu(false)
-    if (!isTauri() || !openDialog) {
-      alert('Folder save is only available in desktop app')
-      return
-    }
-
-    try {
-      const selected = await openDialog({
-        directory: true,
-        multiple: false,
-        title: 'Select folder to save project',
-      })
-
-      if (selected && typeof selected === 'string') {
-        await saveProjectToFolder(selected, project)
-        addRecentProject(selected, project.name)
-        markClean() // 저장 후 isDirty를 false로
-      }
-    } catch (error) {
-      alert('Failed to save project: ' + (error as Error).message)
-    }
-  }
-
-  // 폴더 열기 (Tauri)
-  const handleOpenFolder = async () => {
-    setShowFileMenu(false)
-    if (!isTauri() || !openDialog) {
-      alert('Folder open is only available in desktop app')
-      return
-    }
-
-    try {
-      const selected = await openDialog({
-        directory: true,
-        multiple: false,
-        title: 'Select project folder to open',
-      })
-
-      if (selected && typeof selected === 'string') {
-        await openProjectFromPath(selected)
-      }
-    } catch (error) {
-      alert('Failed to load project: ' + (error as Error).message)
-    }
-  }
-
-  // 경로에서 프로젝트 열기 (공통 함수)
+  // 경로에서 프로젝트 열기
   const openProjectFromPath = async (path: string) => {
     try {
       const loadedProject = await loadProjectFromFolder(path)
@@ -174,74 +103,10 @@ export function Header() {
     }
   }
 
-  // 최근 프로젝트 열기
-  const handleOpenRecent = async (path: string) => {
-    setShowFileMenu(false)
-    setShowRecentSubmenu(false)
-    await openProjectFromPath(path)
-  }
-
-  // 단일 JSON 내보내기 (웹 폴백)
-  const handleExportJson = () => {
-    const json = JSON.stringify(project, null, 2)
-    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
-    setShowFileMenu(false)
-  }
-
-  // 게임용 내보내기
-  const handleExportForGame = () => {
-    const json = exportForGame(project)
-    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.json`)
-    setShowFileMenu(false)
-  }
-
-  // 단일 JSON 가져오기 (웹 폴백)
-  const handleImportJson = () => {
-    fileInputRef.current?.click()
-    setShowFileMenu(false)
-  }
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    try {
-      const text = await file.text()
-      const imported = JSON.parse(text)
-
-      // stages가 객체 배열인지 확인 (폴더 구조용 project.json은 ID 배열이라 호환 안됨)
-      const hasValidStages = Array.isArray(imported.stages) &&
-        imported.stages.length > 0 &&
-        typeof imported.stages[0] === 'object' &&
-        imported.stages[0].chapters
-
-      if (hasValidStages) {
-        const newProject = {
-          name: imported.name || 'Imported Project',
-          version: imported.version || '1.0.0',
-          stages: imported.stages,
-        }
-        setProject(newProject)
-        alert('Project imported successfully!')
-      } else if (imported.stages && typeof imported.stages[0] === 'string') {
-        // 폴더 구조용 project.json을 직접 import한 경우
-        alert('This is a folder-based project. Please use "Open Folder" instead.')
-      } else {
-        alert('Invalid project file format. Expected a complete story project JSON.')
-      }
-    } catch (error) {
-      alert('Failed to import file: ' + (error as Error).message)
-    }
-
-    // Reset input
-    e.target.value = ''
-  }
-
+  // File Menu Handlers
   const handleNew = () => {
     if (confirm('Create a new project? Unsaved changes will be lost.')) {
-      // 새 프로젝트 생성 시 lastProjectPath 초기화 (자동저장이 이전 경로에 저장하지 않도록)
       useSettingsStore.getState().setLastProjectPath(null)
-
       setProject({
         name: 'New Story Project',
         version: '1.0.0',
@@ -264,12 +129,183 @@ export function Header() {
         ]
       })
     }
-    setShowFileMenu(false)
+    closeAllMenus()
+  }
+
+  const handleSave = async () => {
+    closeAllMenus()
+    if (!isTauri()) {
+      alert('Folder save is only available in desktop app')
+      return
+    }
+
+    const lastPath = settings.lastProjectPath
+    if (lastPath) {
+      try {
+        await saveProjectToFolder(lastPath, project)
+        addRecentProject(lastPath, project.name)
+        markClean()
+      } catch (error) {
+        alert('Failed to save project: ' + (error as Error).message)
+      }
+    } else {
+      await handleSaveAs()
+    }
+  }
+
+  const handleSaveAs = async () => {
+    closeAllMenus()
+    if (!isTauri() || !openDialog) {
+      alert('Folder save is only available in desktop app')
+      return
+    }
+
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: 'Select folder to save project',
+      })
+
+      if (selected && typeof selected === 'string') {
+        await saveProjectToFolder(selected, project)
+        addRecentProject(selected, project.name)
+        markClean()
+      }
+    } catch (error) {
+      alert('Failed to save project: ' + (error as Error).message)
+    }
+  }
+
+  const handleOpenFolder = async () => {
+    closeAllMenus()
+    if (!isTauri() || !openDialog) {
+      alert('Folder open is only available in desktop app')
+      return
+    }
+
+    try {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        title: 'Select project folder to open',
+      })
+
+      if (selected && typeof selected === 'string') {
+        await openProjectFromPath(selected)
+      }
+    } catch (error) {
+      alert('Failed to load project: ' + (error as Error).message)
+    }
+  }
+
+  const handleOpenRecent = async (path: string) => {
+    closeAllMenus()
+    await openProjectFromPath(path)
   }
 
   const handleClearRecent = () => {
     clearRecentProjects()
     setShowRecentSubmenu(false)
+  }
+
+  const handleExportJson = () => {
+    const json = JSON.stringify(project, null, 2)
+    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
+    closeAllMenus()
+  }
+
+  const handleExportForGame = () => {
+    const json = exportForGame(project)
+    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.json`)
+    closeAllMenus()
+  }
+
+  const handleImportJson = () => {
+    fileInputRef.current?.click()
+    closeAllMenus()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const imported = JSON.parse(text)
+
+      const hasValidStages = Array.isArray(imported.stages) &&
+        imported.stages.length > 0 &&
+        typeof imported.stages[0] === 'object' &&
+        imported.stages[0].chapters
+
+      if (hasValidStages) {
+        const newProject = {
+          name: imported.name || 'Imported Project',
+          version: imported.version || '1.0.0',
+          stages: imported.stages,
+        }
+        setProject(newProject)
+        alert('Project imported successfully!')
+      } else if (imported.stages && typeof imported.stages[0] === 'string') {
+        alert('This is a folder-based project. Please use "Open Folder" instead.')
+      } else {
+        alert('Invalid project file format. Expected a complete story project JSON.')
+      }
+    } catch (error) {
+      alert('Failed to import file: ' + (error as Error).message)
+    }
+
+    e.target.value = ''
+  }
+
+  // Edit Menu Handlers
+  const handleUndo = () => {
+    undo()
+    closeAllMenus()
+  }
+
+  const handleRedo = () => {
+    redo()
+    closeAllMenus()
+  }
+
+  const handleSelectAll = () => {
+    const { getCurrentChapter, setSelectedNodes } = useEditorStore.getState()
+    const chapter = getCurrentChapter()
+    if (chapter) {
+      setSelectedNodes(chapter.nodes.map(n => n.id))
+    }
+    closeAllMenus()
+  }
+
+  const handleDelete = () => {
+    const { selectedNodeIds, deleteNode, setSelectedNodes } = useEditorStore.getState()
+    selectedNodeIds.forEach(id => deleteNode(id))
+    setSelectedNodes([])
+    closeAllMenus()
+  }
+
+  const handleSearchCanvas = () => {
+    openSearch('canvas')
+    closeAllMenus()
+  }
+
+  const handleSearchAll = () => {
+    openSearch('global')
+    closeAllMenus()
+  }
+
+  // View Menu Handlers
+  const handleAutoLayout = () => {
+    window.dispatchEvent(new CustomEvent('storynode:auto-layout'))
+    closeAllMenus()
+  }
+
+  // Help Menu Handlers
+  const handleShowShortcuts = () => {
+    setShowHelpModal(true)
+    closeAllMenus()
   }
 
   return (
@@ -279,227 +315,72 @@ export function Header() {
         <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}
           <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuItem}
-              onClick={() => {
-                setShowFileMenu(!showFileMenu)
-                setShowEditMenu(false)
-                setShowViewMenu(false)
-                setShowHelpMenu(false)
-              }}
-            >
+            <button className={styles.menuItem} onClick={toggleFileMenu}>
               {menu.file}
             </button>
-            {showFileMenu && (
-              <div className={styles.dropdown}>
-                <button onClick={handleNew}>
-                  <span>{menu.newProject}</span>
-                  <span className={styles.shortcut}>⌘N</span>
-                </button>
-                <div className={styles.divider} />
-                {isDesktop ? (
-                  <>
-                    <button onClick={handleOpenFolder}>
-                      <span>{menu.openFolder}</span>
-                      <span className={styles.shortcut}>⌘O</span>
-                    </button>
-                    {/* Open Recent 서브메뉴 */}
-                    <div
-                      className={styles.submenu}
-                      onMouseEnter={() => setShowRecentSubmenu(true)}
-                      onMouseLeave={() => setShowRecentSubmenu(false)}
-                    >
-                      <button className={styles.submenuTrigger}>
-                        {menu.openRecent}
-                      </button>
-                      {showRecentSubmenu && (
-                        <div className={styles.submenuContent}>
-                          {settings.recentProjects.length > 0 ? (
-                            <>
-                              {settings.recentProjects.map((recent) => (
-                                <button
-                                  key={recent.path}
-                                  onClick={() => handleOpenRecent(recent.path)}
-                                >
-                                  <span className={styles.recentName}>{recent.name}</span>
-                                  <span className={styles.recentPath}>{recent.path}</span>
-                                </button>
-                              ))}
-                              <div className={styles.divider} />
-                              <button onClick={handleClearRecent}>{menu.clearRecent}</button>
-                            </>
-                          ) : (
-                            <div className={styles.emptyRecent}>{menu.noRecentProjects}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <button onClick={handleSave}>
-                      <span>{menu.save}</span>
-                      <span className={styles.shortcut}>⌘S</span>
-                    </button>
-                    <button onClick={handleSaveAs}>
-                      <span>{menu.saveAs}</span>
-                      <span className={styles.shortcut}>⇧⌘S</span>
-                    </button>
-                    <div className={styles.divider} />
-                  </>
-                ) : null}
-                <button onClick={handleImportJson}>{menu.importJson}</button>
-                <button onClick={handleExportJson}>{menu.exportJson}</button>
-                <div className={styles.divider} />
-                <button onClick={handleExportForGame}>{menu.exportForGame}</button>
-                <div className={styles.divider} />
-                <button onClick={() => { setShowSettingsModal(true); setShowFileMenu(false) }}>
-                  {menu.settings}...
-                </button>
-              </div>
-            )}
+            <FileMenu
+              isOpen={showFileMenu}
+              isDesktop={isDesktop}
+              recentProjects={settings.recentProjects}
+              showRecentSubmenu={showRecentSubmenu}
+              setShowRecentSubmenu={setShowRecentSubmenu}
+              menu={menu}
+              onNew={handleNew}
+              onOpenFolder={handleOpenFolder}
+              onOpenRecent={handleOpenRecent}
+              onClearRecent={handleClearRecent}
+              onSave={handleSave}
+              onSaveAs={handleSaveAs}
+              onImportJson={handleImportJson}
+              onExportJson={handleExportJson}
+              onExportForGame={handleExportForGame}
+              onOpenSettings={() => { setShowSettingsModal(true); closeAllMenus() }}
+            />
           </div>
 
           {/* Edit Menu */}
           <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuItem}
-              onClick={() => {
-                setShowEditMenu(!showEditMenu)
-                setShowFileMenu(false)
-                setShowViewMenu(false)
-                setShowHelpMenu(false)
-              }}
-            >
+            <button className={styles.menuItem} onClick={toggleEditMenu}>
               {menu.edit}
             </button>
-            {showEditMenu && (
-              <div className={styles.dropdown}>
-                <button
-                  onClick={() => { undo(); setShowEditMenu(false) }}
-                  disabled={!canUndo}
-                  className={!canUndo ? styles.disabled : ''}
-                >
-                  <span>{menu.undo}</span>
-                  <span className={styles.shortcut}>⌘Z</span>
-                </button>
-                <button
-                  onClick={() => { redo(); setShowEditMenu(false) }}
-                  disabled={!canRedo}
-                  className={!canRedo ? styles.disabled : ''}
-                >
-                  <span>{menu.redo}</span>
-                  <span className={styles.shortcut}>⇧⌘Z</span>
-                </button>
-                <div className={styles.divider} />
-                <button onClick={() => {
-                  const { getCurrentChapter, setSelectedNodes } = useEditorStore.getState()
-                  const chapter = getCurrentChapter()
-                  if (chapter) {
-                    setSelectedNodes(chapter.nodes.map(n => n.id))
-                  }
-                  setShowEditMenu(false)
-                }}>
-                  <span>{menu.selectAll}</span>
-                  <span className={styles.shortcut}>⌘A</span>
-                </button>
-                <button onClick={() => {
-                  const { selectedNodeIds, deleteNode, setSelectedNodes } = useEditorStore.getState()
-                  selectedNodeIds.forEach(id => deleteNode(id))
-                  setSelectedNodes([])
-                  setShowEditMenu(false)
-                }}>
-                  <span>{menu.delete}</span>
-                  <span className={styles.shortcut}>⌫</span>
-                </button>
-                <div className={styles.divider} />
-                <button onClick={() => {
-                  openSearch('canvas')
-                  setShowEditMenu(false)
-                }}>
-                  <span>{searchT.currentCanvas}</span>
-                  <span className={styles.shortcut}>⌘F</span>
-                </button>
-                <button onClick={() => {
-                  openSearch('global')
-                  setShowEditMenu(false)
-                }}>
-                  <span>{searchT.allFiles}</span>
-                  <span className={styles.shortcut}>⇧⌘F</span>
-                </button>
-              </div>
-            )}
+            <EditMenu
+              isOpen={showEditMenu}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              menu={menu}
+              search={searchT}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              onSelectAll={handleSelectAll}
+              onDelete={handleDelete}
+              onSearchCanvas={handleSearchCanvas}
+              onSearchAll={handleSearchAll}
+            />
           </div>
 
           {/* View Menu */}
           <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuItem}
-              onClick={() => {
-                setShowViewMenu(!showViewMenu)
-                setShowFileMenu(false)
-                setShowEditMenu(false)
-                setShowHelpMenu(false)
-              }}
-            >
+            <button className={styles.menuItem} onClick={toggleViewMenu}>
               {menu.view}
             </button>
-            {showViewMenu && (
-              <div className={styles.dropdown}>
-                <button onClick={() => {
-                  window.dispatchEvent(new CustomEvent('storynode:auto-layout'))
-                  setShowViewMenu(false)
-                }}>
-                  <span>{menu.autoLayout}</span>
-                  <span className={styles.shortcut}>⌘L</span>
-                </button>
-                {import.meta.env.DEV && (
-                  <>
-                    <div className={styles.divider} />
-                    <button onClick={() => {
-                      window.location.reload()
-                      setShowViewMenu(false)
-                    }}>
-                      <span>{menu.reload}</span>
-                      <span className={styles.shortcut}>⌘R</span>
-                    </button>
-                    <button onClick={async () => {
-                      if (isTauri()) {
-                        const { invoke } = await import('@tauri-apps/api/core')
-                        await invoke('toggle_devtools')
-                      }
-                      setShowViewMenu(false)
-                    }}>
-                      <span>{menu.toggleDevTools}</span>
-                      <span className={styles.shortcut}>⌥⌘I</span>
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
+            <ViewMenu
+              isOpen={showViewMenu}
+              menu={menu}
+              onAutoLayout={handleAutoLayout}
+              onClose={closeAllMenus}
+            />
           </div>
 
           {/* Help Menu */}
           <div className={styles.menuWrapper}>
-            <button
-              className={styles.menuItem}
-              onClick={() => {
-                setShowHelpMenu(!showHelpMenu)
-                setShowFileMenu(false)
-                setShowEditMenu(false)
-                setShowViewMenu(false)
-              }}
-            >
+            <button className={styles.menuItem} onClick={toggleHelpMenu}>
               {menu.help}
             </button>
-            {showHelpMenu && (
-              <div className={styles.dropdown}>
-                <button onClick={() => {
-                  setShowHelpModal(true)
-                  setShowHelpMenu(false)
-                }}>
-                  <span>{menu.keyboardShortcuts}</span>
-                  <span className={styles.shortcut}>?</span>
-                </button>
-              </div>
-            )}
+            <HelpMenu
+              isOpen={showHelpMenu}
+              menu={menu}
+              onShowShortcuts={handleShowShortcuts}
+            />
           </div>
         </div>
       </div>
@@ -509,39 +390,18 @@ export function Header() {
       </div>
 
       <div className={styles.right}>
-        <select
-          className={styles.select}
-          value={currentStageId || ''}
-          onChange={(e) => setCurrentStage(e.target.value)}
-        >
-          {project.stages.map((stage) => (
-            <option key={stage.id} value={stage.id}>
-              {stage.title}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className={styles.select}
-          value={currentChapterId || ''}
-          onChange={(e) => setCurrentChapter(e.target.value)}
-        >
-          {currentStage?.chapters.map((chapter) => (
-            <option key={chapter.id} value={chapter.id}>
-              {chapter.title}
-            </option>
-          ))}
-        </select>
-
-        <button
-          className={styles.playButton}
-          onClick={() => openGame()}
+        <StageChapterSelector
+          stages={project.stages}
+          currentStageId={currentStageId}
+          currentChapterId={currentChapterId}
+          currentStageChapters={currentStage?.chapters}
+          onStageChange={setCurrentStage}
+          onChapterChange={setCurrentChapter}
+        />
+        <PlayButton
           disabled={gameStatus !== 'idle'}
-          title="Play Story (F5)"
-        >
-          <span className={styles.playIcon}>▶</span>
-          <span>Play</span>
-        </button>
+          onClick={() => openGame()}
+        />
       </div>
 
       {/* Hidden file input for import */}
@@ -560,65 +420,10 @@ export function Header() {
       />
 
       {/* Help Modal */}
-      {showHelpModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowHelpModal(false)}>
-          <div className={styles.helpModal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.helpHeader}>
-              <h2>Keyboard Shortcuts</h2>
-              <button className={styles.closeButton} onClick={() => setShowHelpModal(false)}>×</button>
-            </div>
-            <div className={styles.helpContent}>
-              <section>
-                <h3>General</h3>
-                <div className={styles.shortcutList}>
-                  <div><kbd>⌘</kbd> + <kbd>N</kbd><span>New Project</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>O</kbd><span>Open Folder</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>S</kbd><span>Save</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>Z</kbd><span>Undo</span></div>
-                  <div><kbd>⇧</kbd> + <kbd>⌘</kbd> + <kbd>Z</kbd><span>Redo</span></div>
-                </div>
-              </section>
-              <section>
-                <h3>Canvas</h3>
-                <div className={styles.shortcutList}>
-                  <div><kbd>⌘</kbd> + <kbd>L</kbd><span>Auto Layout</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>F</kbd><span>Search in Canvas</span></div>
-                  <div><kbd>⇧</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd><span>Search All</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>A</kbd><span>Select All</span></div>
-                  <div><kbd>Delete</kbd> / <kbd>⌫</kbd><span>Delete Selected</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>C</kbd><span>Copy</span></div>
-                  <div><kbd>⌘</kbd> + <kbd>V</kbd><span>Paste</span></div>
-                </div>
-              </section>
-              <section>
-                <h3>Node Dragging</h3>
-                <div className={styles.shortcutList}>
-                  <div><kbd>Drag</kbd><span>Free movement (1px)</span></div>
-                  <div><kbd>⇧</kbd> + <kbd>Drag</kbd><span>Snap to grid</span></div>
-                </div>
-              </section>
-              <section>
-                <h3>Search</h3>
-                <div className={styles.shortcutList}>
-                  <div><kbd>F3</kbd><span>Next Result</span></div>
-                  <div><kbd>⇧</kbd> + <kbd>F3</kbd><span>Previous Result</span></div>
-                  <div><kbd>Enter</kbd><span>Go to Result & Close</span></div>
-                  <div><kbd>⇧</kbd> + <kbd>Enter</kbd><span>Go to Result (Keep Open)</span></div>
-                  <div><kbd>↑</kbd> / <kbd>↓</kbd><span>Navigate Results</span></div>
-                  <div><kbd>Esc</kbd><span>Close Search</span></div>
-                </div>
-              </section>
-              <section>
-                <h3>Playback</h3>
-                <div className={styles.shortcutList}>
-                  <div><kbd>F5</kbd><span>Play Story</span></div>
-                  <div><kbd>Esc</kbd><span>Stop Playback</span></div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-      )}
+      <KeyboardShortcutsModal
+        isOpen={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+      />
     </header>
   )
 }
