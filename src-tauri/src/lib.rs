@@ -252,8 +252,17 @@ pub fn run() {
             toggle_devtools,
             check_dev_mode
         ])
-        .setup(|_app| {
+        .setup(|app| {
             println!("[Tauri] App started");
+
+            // --dev 옵션일 때 DevTools 자동 열기
+            if DEV_MODE.load(Ordering::Relaxed) {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                    println!("[Tauri] DevTools opened (dev mode)");
+                }
+            }
+
             Ok(())
         })
         .build(tauri::generate_context!())

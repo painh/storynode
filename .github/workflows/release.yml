@@ -63,6 +63,10 @@ jobs:
         if: matrix.platform == 'windows-latest'
         run: |
           cd src-tauri/target/release
+          # exe 파일명 확인 후 압축 (storynode-editor.exe 또는 StoryNode Editor.exe)
+          if (Test-Path "storynode-editor.exe") {
+            Rename-Item "storynode-editor.exe" "StoryNode Editor.exe"
+          }
           Compress-Archive -Path "StoryNode Editor.exe" -DestinationPath "StoryNode-Editor-portable-x64.zip"
         shell: pwsh
 

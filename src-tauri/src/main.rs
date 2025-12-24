@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    userspainhworkstorynode_lib::run()
+    storynode_editor_lib::run()
 }
