@@ -111,15 +111,13 @@ export function TextAdventureScreen({ theme }: TextAdventureScreenProps) {
 
     return (
       <div className={styles.statsBar}>
+        {/* 변수 개수 */}
         <div className={styles.statItem}>
-          <span className={styles.statIcon}>❤️</span>
-          <span className={styles.statLabel}>HP</span>
-          <span className={styles.statValue}>{gameState.variables.hp}</span>
-        </div>
-        <div className={styles.statItem}>
-          <span className={styles.statIcon}>💰</span>
-          <span className={styles.statLabel}>Gold</span>
-          <span className={styles.statValue}>{gameState.variables.gold}</span>
+          <span className={styles.statIcon}>📊</span>
+          <span className={styles.statLabel}>Vars</span>
+          <span className={styles.statValue}>
+            {Object.keys(gameState.variables.variables).length}
+          </span>
         </div>
         {/* 활성화된 플래그 개수 */}
         <div className={styles.statItem}>

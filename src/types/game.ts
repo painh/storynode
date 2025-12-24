@@ -1,6 +1,6 @@
 // 게임 실행 관련 타입 정의
 
-import type { CharacterId, FactionId, ImageLayer, ImageAlignment, ImageEffectType } from './story'
+import type { ImageLayer, ImageAlignment, ImageEffectType } from './story'
 
 // 활성 이미지 (현재 화면에 표시 중인 이미지)
 export interface ActiveImage {
@@ -27,16 +27,13 @@ export type GameStatus = 'idle' | 'playing' | 'paused' | 'ended'
 // 게임 모드 타입
 export type GameMode = 'visualNovel' | 'textAdventure'
 
-// 게임 변수 상태
+// 게임 변수 상태 (모든 변수는 variables에서 관리)
 export interface GameVariables {
-  gold: number
-  hp: number
+  // 레거시 호환용
   flags: Record<string, boolean | number | string>
-  affection: Record<CharacterId, number>
-  reputation: Record<FactionId, number>
   choicesMade: string[] // 선택한 choice ID 기록
-  // 사용자 정의 변수 (챕터에서 선언한 변수)
-  customVariables: Record<string, boolean | number | string | Array<boolean | number | string>>
+  // 모든 변수 (챕터에서 선언)
+  variables: Record<string, boolean | number | string | Array<boolean | number | string>>
 }
 
 // 게임 히스토리 엔트리
@@ -120,23 +117,7 @@ export interface GameTheme {
 
 // 초기 게임 변수
 export const DEFAULT_GAME_VARIABLES: GameVariables = {
-  gold: 0,
-  hp: 100,
   flags: {},
-  affection: {
-    kairen: 0,
-    zed: 0,
-    lyra: 0,
-    elise: 0,
-  },
-  reputation: {
-    kingdom: 0,
-    elves: 0,
-    dwarves: 0,
-    free_cities: 0,
-    mage_tower: 0,
-    dark_lands: 0,
-  },
   choicesMade: [],
-  customVariables: {},
+  variables: {},
 }

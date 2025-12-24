@@ -117,34 +117,19 @@ export function DebugPanel() {
               Variables
             </div>
             <div className={styles.variablesList}>
-              <div className={styles.variableRow}>
-                <span className={styles.variableName}>💰 Gold</span>
-                <span className={styles.variableValue}>{gameState.variables.gold}</span>
-              </div>
-              <div className={styles.variableRow}>
-                <span className={styles.variableName}>❤️ HP</span>
-                <span className={styles.variableValue}>{gameState.variables.hp}</span>
-              </div>
-              {Object.entries(gameState.variables.affection).map(([charId, value]) => (
-                value !== 0 && (
-                  <div key={charId} className={styles.variableRow}>
-                    <span className={styles.variableName}>💕 {charId}</span>
-                    <span className={`${styles.variableValue} ${value > 0 ? styles.positive : value < 0 ? styles.negative : ''}`}>
-                      {value > 0 ? '+' : ''}{value}
-                    </span>
-                  </div>
-                )
+              {Object.entries(gameState.variables.variables).map(([varId, value]) => (
+                <div key={varId} className={styles.variableRow}>
+                  <span className={styles.variableName}>{varId}</span>
+                  <span className={styles.variableValue}>
+                    {Array.isArray(value) ? `[${value.join(', ')}]` : String(value)}
+                  </span>
+                </div>
               ))}
-              {Object.entries(gameState.variables.reputation).map(([factionId, value]) => (
-                value !== 0 && (
-                  <div key={factionId} className={styles.variableRow}>
-                    <span className={styles.variableName}>🏛️ {factionId}</span>
-                    <span className={`${styles.variableValue} ${value > 0 ? styles.positive : value < 0 ? styles.negative : ''}`}>
-                      {value > 0 ? '+' : ''}{value}
-                    </span>
-                  </div>
-                )
-              ))}
+              {Object.keys(gameState.variables.variables).length === 0 && (
+                <div className={styles.variableRow}>
+                  <span className={styles.variableName}>No variables</span>
+                </div>
+              )}
             </div>
 
             {/* 플래그 */}

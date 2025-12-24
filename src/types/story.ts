@@ -106,11 +106,11 @@ export interface CustomNodeTemplate {
   updatedAt: number                // 수정 시간
 }
 
-// 캐릭터 ID 타입
-export type CharacterId = 'kairen' | 'zed' | 'lyra' | 'elise'
+// 캐릭터 ID 타입 (레거시 호환용)
+export type CharacterId = string
 
-// 세력 ID 타입
-export type FactionId = 'kingdom' | 'elves' | 'dwarves' | 'free_cities' | 'mage_tower' | 'dark_lands'
+// 세력 ID 타입 (레거시 호환용)
+export type FactionId = string
 
 // 스토리 조건 타입
 export interface StoryCondition {
@@ -165,7 +165,8 @@ export interface StoryBattleReward {
 // Variable 노드용 타입
 export type VariableAction = 'set' | 'add' | 'subtract' | 'multiply'
 export type ArrayAction = 'push' | 'pop' | 'removeAt' | 'setAt' | 'clear' | 'set'
-export type VariableTarget = 'flag' | 'gold' | 'hp' | 'affection' | 'reputation' | 'variable'
+// 변수 타겟 (variable, flag만 사용, 나머지는 레거시 호환용)
+export type VariableTarget = 'variable' | 'flag' | 'gold' | 'hp' | 'affection' | 'reputation'
 
 // 변수 정의 (선언)
 export type VariableType = 'boolean' | 'number' | 'string' | 'array'
@@ -254,13 +255,6 @@ export interface CommentNode {
   }
 }
 
-// 기본 변수 초기값 설정
-export interface InitialVariables {
-  gold: number
-  hp: number
-  affection: Partial<Record<CharacterId, number>>
-  reputation: Partial<Record<FactionId, number>>
-}
 
 // 스토리 챕터
 export interface StoryChapter {
@@ -277,10 +271,8 @@ export interface StoryChapter {
   }
   // 에디터용 코멘트 노드
   commentNodes?: CommentNode[]
-  // 변수 정의 (선언된 변수 목록)
+  // 변수 정의 (선언된 변수 목록) - 모든 변수는 여기서 선언
   variables?: VariableDefinition[]
-  // 기본 변수 초기값
-  initialVariables?: InitialVariables
 }
 
 // 스토리 스테이지 (챕터 묶음)

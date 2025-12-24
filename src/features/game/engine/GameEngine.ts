@@ -78,33 +78,10 @@ export class GameEngine {
       currentNodeId: startNodeId,
     }
 
-    // 챕터에 설정된 기본 변수 초기값 적용
-    if (chapter.initialVariables) {
-      const init = chapter.initialVariables
-      this.state.variables.gold = init.gold
-      this.state.variables.hp = init.hp
-      // affection 적용
-      if (init.affection) {
-        for (const [charId, value] of Object.entries(init.affection)) {
-          if (value !== undefined) {
-            this.state.variables.affection[charId as keyof typeof this.state.variables.affection] = value
-          }
-        }
-      }
-      // reputation 적용
-      if (init.reputation) {
-        for (const [factionId, value] of Object.entries(init.reputation)) {
-          if (value !== undefined) {
-            this.state.variables.reputation[factionId as keyof typeof this.state.variables.reputation] = value
-          }
-        }
-      }
-    }
-
-    // 챕터에 선언된 커스텀 변수들의 초기값 적용
+    // 챕터에 선언된 변수들의 초기값 적용
     if (chapter.variables) {
       for (const varDef of chapter.variables) {
-        this.state.variables.customVariables[varDef.id] = varDef.defaultValue
+        this.state.variables.variables[varDef.id] = varDef.defaultValue
       }
     }
 
@@ -414,10 +391,14 @@ export class GameEngine {
 
     switch (condition.type) {
       case 'gold':
-        return this.checkNumberRange(vars.gold, condition.min, condition.max, condition.value as number)
-
       case 'hp':
-        return this.checkNumberRange(vars.hp, condition.min, condition.max, condition.value as number)
+        // 레거시: variables에서 같은 이름의 변수를 찾음
+        const legacyValue = vars.variables[condition.type]
+        if (typeof legacyValue === 'number') {
+          return this.checkNumberRange(legacyValue, condition.min, condition.max, condition.value as number)
+        }
+        console.warn(`Legacy condition type "${condition.type}" - define a variable with this name`)
+        return true
 
       case 'flag':
         if (condition.flagKey) {
@@ -433,15 +414,19 @@ export class GameEngine {
         return condition.choiceId ? vars.choicesMade.includes(condition.choiceId) : false
 
       case 'affection':
+        // 레거시: variables에서 "{characterId}_affection" 변수를 찾음
         if (condition.characterId) {
-          const affection = vars.affection[condition.characterId] || 0
+          const affectionVar = vars.variables[`${condition.characterId}_affection`]
+          const affection = typeof affectionVar === 'number' ? affectionVar : 0
           return this.checkNumberRange(affection, condition.min, condition.max, condition.value as number)
         }
         return false
 
       case 'reputation':
+        // 레거시: variables에서 "{factionId}_reputation" 변수를 찾음
         if (condition.factionId) {
-          const reputation = vars.reputation[condition.factionId] || 0
+          const reputationVar = vars.variables[`${condition.factionId}_reputation`]
+          const reputation = typeof reputationVar === 'number' ? reputationVar : 0
           return this.checkNumberRange(reputation, condition.min, condition.max, condition.value as number)
         }
         return false
@@ -474,41 +459,21 @@ export class GameEngine {
     return true
   }
 
-  // 효과 적용
+  // 효과 적용 (레거시 - 선택지 효과용)
   private applyEffects(effects: StoryChoiceEffect): void {
     const vars = this.state.variables
-
-    // 골드 변화
-    if (effects.gold !== undefined) {
-      vars.gold += effects.gold
-      if (vars.gold < 0) vars.gold = 0
-    }
-
-    // HP 변화
-    if (effects.hp !== undefined) {
-      vars.hp += effects.hp
-      if (vars.hp < 0) vars.hp = 0
-    }
 
     // 플래그 설정
     if (effects.setFlags) {
       Object.assign(vars.flags, effects.setFlags)
     }
 
-    // 호감도 변화
-    if (effects.affection) {
-      for (const change of effects.affection) {
-        vars.affection[change.characterId] =
-          (vars.affection[change.characterId] || 0) + change.delta
-      }
+    // 레거시 효과들은 경고 출력
+    if (effects.gold !== undefined || effects.hp !== undefined) {
+      console.warn('Legacy effects (gold/hp) - use variable operations instead')
     }
-
-    // 평판 변화
-    if (effects.reputation) {
-      for (const change of effects.reputation) {
-        vars.reputation[change.factionId] =
-          (vars.reputation[change.factionId] || 0) + change.delta
-      }
+    if (effects.affection?.length || effects.reputation?.length) {
+      console.warn('Legacy effects (affection/reputation) - use variable operations instead')
     }
   }
 
@@ -529,31 +494,24 @@ export class GameEngine {
     switch (op.target) {
       case 'variable':
         if (op.variableId) {
-          const currentValue = vars.customVariables[op.variableId]
+          const currentValue = vars.variables[op.variableId]
 
           // 배열 연산 처리
           if (Array.isArray(currentValue)) {
             this.executeArrayOperation(op.variableId, op.action, op.value, op.index)
           } else if (op.action === 'set') {
-            vars.customVariables[op.variableId] = op.value
+            vars.variables[op.variableId] = op.value
           } else if (typeof currentValue === 'number') {
-            vars.customVariables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
+            vars.variables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
           } else if (typeof currentValue === 'string' && op.action === 'add') {
             // 문자열 더하기 (concatenation)
-            vars.customVariables[op.variableId] = currentValue + String(op.value)
+            vars.variables[op.variableId] = currentValue + String(op.value)
           }
         }
         break
 
-      case 'gold':
-        vars.gold = this.applyAction(vars.gold, op.action, numValue)
-        break
-
-      case 'hp':
-        vars.hp = this.applyAction(vars.hp, op.action, numValue)
-        break
-
       case 'flag':
+        // 레거시 호환
         if (op.key) {
           if (op.action === 'set') {
             vars.flags[op.key] = op.value
@@ -563,24 +521,9 @@ export class GameEngine {
         }
         break
 
-      case 'affection':
-        if (op.characterId) {
-          vars.affection[op.characterId] = this.applyAction(
-            vars.affection[op.characterId] || 0,
-            op.action,
-            numValue
-          )
-        }
-        break
-
-      case 'reputation':
-        if (op.factionId) {
-          vars.reputation[op.factionId] = this.applyAction(
-            vars.reputation[op.factionId] || 0,
-            op.action,
-            numValue
-          )
-        }
+      // 레거시: gold, hp, affection, reputation은 이제 variable로 처리
+      default:
+        console.warn(`Legacy variable target "${op.target}" - use variable instead`)
         break
     }
   }
@@ -609,7 +552,7 @@ export class GameEngine {
     index?: number
   ): void {
     const vars = this.state.variables
-    const arr = vars.customVariables[variableId]
+    const arr = vars.variables[variableId]
     if (!Array.isArray(arr)) return
 
     switch (action) {
@@ -630,12 +573,12 @@ export class GameEngine {
         }
         break
       case 'clear':
-        vars.customVariables[variableId] = []
+        vars.variables[variableId] = []
         break
       case 'set':
         // 전체 배열 교체 (value가 배열이어야 함)
         if (Array.isArray(value)) {
-          vars.customVariables[variableId] = value
+          vars.variables[variableId] = value
         }
         break
     }
