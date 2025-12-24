@@ -5,25 +5,39 @@ export const generateId = () => `node_${Date.now()}_${Math.random().toString(36)
 export const generateResourceId = () => `res_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 export const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
+// Base path 가져오기 (GitHub Pages 등에서 사용)
+const getBasePath = (): string => {
+  // Vite에서 설정한 base path 사용
+  return import.meta.env.BASE_URL || '/'
+}
+
+// 기본 템플릿 리소스 경로 생성 (base path 적용)
+const createTemplateResourcePath = (relativePath: string): string => {
+  const basePath = getBasePath()
+  // basePath가 '/'로 끝나면 그대로, 아니면 '/' 추가
+  const base = basePath.endsWith('/') ? basePath : basePath + '/'
+  return base + relativePath
+}
+
 // 기본 템플릿 리소스
 export const defaultTemplateResources: ProjectResource[] = [
   {
     id: 'img_char1',
     name: 'char1',
     type: 'image',
-    path: '/templates/default/resources/images/char1.png',
+    path: createTemplateResourcePath('templates/default/characters/char1.png'),
   },
   {
     id: 'img_char2',
     name: 'char2',
     type: 'image',
-    path: '/templates/default/resources/images/char2.png',
+    path: createTemplateResourcePath('templates/default/characters/char2.png'),
   },
   {
     id: 'img_background',
     name: 'background',
     type: 'image',
-    path: '/templates/default/resources/images/background.png',
+    path: createTemplateResourcePath('templates/default/backgrounds/background.png'),
   },
 ]
 
