@@ -10,15 +10,6 @@ interface CommentNodeStore {
   data: CommentNodeData
 }
 
-// 클립보드 데이터 타입
-interface ClipboardData {
-  nodes: Array<{
-    node: import('../types/story').StoryNode
-    position: { x: number; y: number }
-  }>
-  comments: CommentNodeStore[]
-}
-
 interface CanvasState {
   // React Flow 상태
   nodes: Node<EditorNodeData>[]
@@ -35,9 +26,6 @@ interface CanvasState {
   // Comment 노드 저장 (챕터별)
   commentNodes: Record<string, CommentNodeStore[]>
 
-  // 클립보드 (복사/붙여넣기)
-  clipboard: ClipboardData | null
-
   // 액션
   setNodes: (nodes: Node<EditorNodeData>[]) => void
   setEdges: (edges: Edge[]) => void
@@ -52,10 +40,6 @@ interface CanvasState {
   updateCommentPosition: (chapterId: string, nodeId: string, position: { x: number; y: number }) => void
   deleteCommentNode: (chapterId: string, nodeId: string) => void
   getCommentNodes: (chapterId: string) => CommentNodeStore[]
-
-  // 클립보드 관리
-  setClipboard: (data: ClipboardData) => void
-  getClipboard: () => ClipboardData | null
 
   // Grid 설정
   setSnapGrid: (size: number) => void
@@ -76,7 +60,6 @@ export const useCanvasStore = create<CanvasState>()(
       showGrid: true,
       nodePositions: {},
       commentNodes: {},
-      clipboard: null,
 
       setNodes: (nodes) => set({ nodes }),
       setEdges: (edges) => set({ edges }),
@@ -153,10 +136,6 @@ export const useCanvasStore = create<CanvasState>()(
         const state = get()
         return state.commentNodes[chapterId] || []
       },
-
-      // 클립보드
-      setClipboard: (data) => set({ clipboard: data }),
-      getClipboard: () => get().clipboard,
 
       // Grid 설정
       setSnapGrid: (size) => set({ snapGrid: size }),

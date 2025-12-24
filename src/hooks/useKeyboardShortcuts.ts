@@ -122,10 +122,10 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     wrapNodesWithComment(nodes)
   }, [])
 
-  // Cmd+C: 복사
-  const handleCopy = useCallback(() => {
+  // Cmd+C: 복사 (시스템 클립보드 사용)
+  const handleCopy = useCallback(async () => {
     const { selectedNodeIds, getCurrentChapter } = useEditorStore.getState()
-    const { getNodePosition, getCommentNodes, setClipboard } = useCanvasStore.getState()
+    const { getNodePosition, getCommentNodes } = useCanvasStore.getState()
     const chapter = getCurrentChapter()
 
     if (!chapter || selectedNodeIds.length === 0) return
@@ -151,55 +151,80 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
     if (nodesToCopy.length === 0 && commentsToCopy.length === 0) return
 
-    setClipboard({
+    const clipboardData = {
+      type: 'storynode-clipboard',
       nodes: nodesToCopy,
       comments: commentsToCopy,
-    })
+    }
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(clipboardData))
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error)
+    }
   }, [])
 
-  // Cmd+V: 붙여넣기
-  const handlePaste = useCallback(() => {
+  // Cmd+V: 붙여넣기 (시스템 클립보드 사용)
+  const handlePaste = useCallback(async () => {
     const { currentChapterId, pasteNodes } = useEditorStore.getState()
-    const { getClipboard, updateNodePosition } = useCanvasStore.getState()
+    const { updateNodePosition } = useCanvasStore.getState()
 
     if (!currentChapterId) return
 
-    const clipboard = getClipboard()
-    if (!clipboard) return
+    try {
+      const text = await navigator.clipboard.readText()
+      const parsed = JSON.parse(text)
 
-    // 붙여넣기 오프셋 (기존 위치에서 약간 이동)
-    const offset = { x: 50, y: 50 }
+      // StoryNode 클립보드 데이터인지 확인
+      if (parsed.type !== 'storynode-clipboard') {
+        // 다른 타입의 데이터면 무시 (토스트 메시지 표시 가능)
+        console.log('Clipboard does not contain StoryNode data')
+        return
+      }
 
-    // Story 노드 붙여넣기
-    if (clipboard.nodes.length > 0) {
-      const nodesWithOffset = clipboard.nodes.map(item => ({
-        node: item.node,
-        position: {
-          x: item.position.x + offset.x,
-          y: item.position.y + offset.y,
-        },
-      }))
+      const clipboard = parsed as {
+        type: string
+        nodes: Array<{ node: import('../types/story').StoryNode; position: { x: number; y: number } }>
+        comments: Array<{ id: string; position: { x: number; y: number }; data: import('../types/editor').CommentNodeData }>
+      }
 
-      const newIds = pasteNodes(nodesWithOffset)
+      // 붙여넣기 오프셋 (기존 위치에서 약간 이동)
+      const offset = { x: 50, y: 50 }
 
-      // 새 노드들의 위치 저장
-      nodesWithOffset.forEach((item, index) => {
-        if (newIds[index]) {
-          updateNodePosition(currentChapterId, newIds[index], item.position)
-        }
-      })
-    }
+      // Story 노드 붙여넣기
+      if (clipboard.nodes.length > 0) {
+        const nodesWithOffset = clipboard.nodes.map(item => ({
+          node: item.node,
+          position: {
+            x: item.position.x + offset.x,
+            y: item.position.y + offset.y,
+          },
+        }))
 
-    // Comment 노드 붙여넣기
-    if (clipboard.comments.length > 0) {
-      clipboard.comments.forEach(comment => {
-        const newId = useCanvasStore.getState().createCommentNode(currentChapterId, {
-          x: comment.position.x + offset.x,
-          y: comment.position.y + offset.y,
+        const newIds = pasteNodes(nodesWithOffset)
+
+        // 새 노드들의 위치 저장
+        nodesWithOffset.forEach((item, index) => {
+          if (newIds[index]) {
+            updateNodePosition(currentChapterId, newIds[index], item.position)
+          }
         })
-        // Comment 데이터 업데이트
-        useCanvasStore.getState().updateCommentNode(currentChapterId, newId, comment.data)
-      })
+      }
+
+      // Comment 노드 붙여넣기
+      if (clipboard.comments.length > 0) {
+        clipboard.comments.forEach(comment => {
+          const newId = useCanvasStore.getState().createCommentNode(currentChapterId, {
+            x: comment.position.x + offset.x,
+            y: comment.position.y + offset.y,
+          })
+          // Comment 데이터 업데이트
+          useCanvasStore.getState().updateCommentNode(currentChapterId, newId, comment.data)
+        })
+      }
+    } catch (error) {
+      // JSON 파싱 실패 또는 클립보드 접근 실패시 무시
+      console.log('Failed to paste:', error)
     }
   }, [])
 
