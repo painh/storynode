@@ -1,4 +1,4 @@
-import type { StoryProject, ProjectResource, StoryNode } from '../../types/story'
+import type { StoryProject, ProjectResource, StoryNode, VariableDefinition } from '../../types/story'
 import { autoLayoutNodes } from '../../utils/autoLayout'
 
 // ID 생성 함수
@@ -80,16 +80,16 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
         effectDuration: 300,
       },
     },
-    // 변수 초기화 (골드, 플래그 설정)
+    // 변수 초기화 (골드 설정 - 이제 variable 타겟 사용)
     {
       id: variableInitId,
       type: 'variable',
       position: { x: 850, y: 300 },
       nextNodeId: dialogue1Id,
       variableOperations: [
-        { target: 'gold', action: 'set', value: 100 },
-        { target: 'flag', action: 'set', key: 'met_merchant', value: false },
-        { target: 'flag', action: 'set', key: 'bought_item', value: false },
+        { target: 'variable', action: 'set', variableId: 'gold', value: 100 },
+        { target: 'variable', action: 'set', variableId: 'met_merchant', value: false },
+        { target: 'variable', action: 'set', variableId: 'bought_item', value: false },
       ],
     },
     // 대사 1
@@ -294,6 +294,53 @@ export const defaultTemplateResources: ProjectResource[] = [
   },
 ]
 
+// 기본 변수 정의 (샘플)
+export const defaultVariables: VariableDefinition[] = [
+  {
+    id: 'gold',
+    name: 'Gold',
+    type: 'number',
+    defaultValue: 100,
+    description: '보유 골드',
+  },
+  {
+    id: 'hp',
+    name: 'HP',
+    type: 'number',
+    defaultValue: 100,
+    description: '체력',
+  },
+  {
+    id: 'playerName',
+    name: 'Player Name',
+    type: 'string',
+    defaultValue: '용사',
+    description: '플레이어 이름',
+  },
+  {
+    id: 'met_merchant',
+    name: 'Met Merchant',
+    type: 'boolean',
+    defaultValue: false,
+    description: '상인을 만났는지 여부',
+  },
+  {
+    id: 'bought_item',
+    name: 'Bought Item',
+    type: 'boolean',
+    defaultValue: false,
+    description: '아이템을 구매했는지 여부',
+  },
+  {
+    id: 'inventory',
+    name: 'Inventory',
+    type: 'array',
+    defaultValue: [],
+    arrayItemType: 'string',
+    description: '인벤토리 아이템 목록',
+  },
+]
+
 // 기본 프로젝트 생성
 export const createDefaultProject = (): StoryProject => {
   const { nodes, startNodeId } = createDefaultChapterNodes()
@@ -314,6 +361,7 @@ export const createDefaultProject = (): StoryProject => {
             description: 'First chapter',
             nodes,
             startNodeId,
+            variables: [...defaultVariables],
           }
         ]
       }
