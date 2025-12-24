@@ -34,3 +34,6 @@ editor/projects/*
 Cargo.lock
 !editor/src-tauri/Cargo.lock
 !player/src-tauri/Cargo.lock
+
+# Shared package build output
+shared/*/dist/
