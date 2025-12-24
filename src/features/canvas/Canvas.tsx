@@ -81,10 +81,18 @@ function CanvasInner() {
   )
   useCanvasEventListeners(chapter, updateNode, setNodes, setEdges)
 
-  // 챕터/노드 변경 시 노드 업데이트
+  // 챕터/노드 변경 시 노드 업데이트 (선택 상태 유지)
   const commentNodesKey = JSON.stringify(commentNodes.map(c => ({ id: c.id, pos: c.position, data: c.data })))
   useEffect(() => {
-    setNodes(initialNodes)
+    setNodes(currentNodes => {
+      // 현재 선택된 노드 ID 목록
+      const selectedIds = new Set(currentNodes.filter(n => n.selected).map(n => n.id))
+      // 새 노드에 선택 상태 복원
+      return initialNodes.map(node => ({
+        ...node,
+        selected: selectedIds.has(node.id),
+      }))
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChapterId, commentNodesKey, initialNodes])
 
