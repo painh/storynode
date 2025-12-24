@@ -30,10 +30,6 @@ Unreal Engine Blueprint 스타일의 직관적인 노드 편집으로 복잡한 
 - **자동 레이아웃** - 노드 자동 정렬
 - **Undo/Redo** - 무제한 실행 취소
 
-## 스크린샷
-
-![Editor Screenshot](docs/screenshot.png)
-
 ## 개발
 
 ```bash
