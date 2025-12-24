@@ -900,6 +900,12 @@ function getGameEngineScript(): string {
       }
 
       addToHistory(node) {
+        // 중복 방지: 같은 노드가 연속으로 추가되는 것을 방지
+        const lastEntry = this.state.history[this.state.history.length - 1];
+        if (lastEntry && lastEntry.nodeId === node.id && lastEntry.type === node.type) {
+          return;
+        }
+
         this.state.history.push({
           nodeId: node.id,
           type: node.type,

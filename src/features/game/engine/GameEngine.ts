@@ -299,6 +299,12 @@ export class GameEngine {
   private addImageToHistory(node: StoryNode): void {
     if (!node.imageData) return
 
+    // 중복 방지: 같은 이미지 노드가 연속으로 추가되는 것을 방지
+    const lastEntry = this.state.history[this.state.history.length - 1]
+    if (lastEntry && lastEntry.nodeId === node.id && lastEntry.type === 'image') {
+      return
+    }
+
     const { resourcePath, layer, effect, effects, effectDuration } = node.imageData
     const isRemoval = !resourcePath
 
@@ -609,6 +615,12 @@ export class GameEngine {
 
   // 히스토리에 추가
   private addToHistory(node: StoryNode): void {
+    // 중복 방지: 같은 노드가 연속으로 추가되는 것을 방지
+    const lastEntry = this.state.history[this.state.history.length - 1]
+    if (lastEntry && lastEntry.nodeId === node.id && lastEntry.type === node.type) {
+      return
+    }
+
     this.state.history.push({
       nodeId: node.id,
       type: node.type,
