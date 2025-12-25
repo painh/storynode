@@ -1,7 +1,7 @@
 {
   "name": "@storynode/game-engine",
   "version": "1.0.0",
-  "description": "StoryNode game engine - shared between editor and player",
+  "description": "Interactive story engine for visual novels and text adventures",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,11 +13,34 @@
     "./styles": "./dist/styles.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "keywords": [
+    "visual-novel",
+    "story-engine",
+    "interactive-fiction",
+    "game-engine",
+    "text-adventure",
+    "dialogue-system",
+    "narrative",
+    "choice-based"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/painh/storynode.git",
+    "directory": "shared/game-engine"
+  },
+  "homepage": "https://github.com/painh/storynode#readme",
+  "bugs": {
+    "url": "https://github.com/painh/storynode/issues"
+  },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
