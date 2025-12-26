@@ -18,6 +18,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
   const dialogue2Id = generateId()
   const choiceId = generateId()
   const choice1ResultId = generateId()
+  const choice1VariableId = generateId()  // 구매 후 변수 처리
   const choice2ResultId = generateId()
   const choice3ResultId = generateId()
   const conditionId = generateId()
@@ -81,13 +82,14 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       },
     },
     // 변수 초기화 (골드 설정 - 이제 variable 타겟 사용)
+    // gold를 75로 설정해서 50골드 선택지는 활성화, 200골드 선택지는 비활성화 테스트
     {
       id: variableInitId,
       type: 'variable',
       position: { x: 850, y: 300 },
       nextNodeId: dialogue1Id,
       variableOperations: [
-        { target: 'variable', action: 'set', variableId: 'gold', value: 100 },
+        { target: 'variable', action: 'set', variableId: 'gold', value: 75 },
         { target: 'variable', action: 'set', variableId: 'met_merchant', value: false },
         { target: 'variable', action: 'set', variableId: 'bought_item', value: false },
       ],
@@ -117,12 +119,13 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       position: { x: 1600, y: 200 },
       text: '어떻게 하시겠습니까?',
       choices: [
-        // 선택지 1: 조건부 선택지 (골드가 50 이상일 때만 표시)
+        // 선택지 1: 조건부 선택지 (골드가 50 이상일 때만 활성화)
         {
           id: generateId(),
           text: '물건 구매하기 (50골드)',
           nextNodeId: choice1ResultId,
-          condition: { type: 'gold', min: 50 },
+          condition: { type: 'variable', variableId: 'gold', operator: '>=', value: 50 },
+          disabledText: '골드 50 필요',
           effects: {
             gold: -50,
             setFlags: { bought_item: true, met_merchant: true },
@@ -141,12 +144,13 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
           },
           resultText: '가게를 둘러보았습니다.',
         },
-        // 선택지 3: 조건부 선택지 (특정 플래그가 있을 때)
+        // 선택지 3: 조건부 선택지 (골드가 200 이상일 때만 활성화)
         {
           id: generateId(),
           text: '비밀 거래 제안하기',
           nextNodeId: choice3ResultId,
-          condition: { type: 'flag', flagKey: 'knows_secret', flagValue: true },
+          condition: { type: 'variable', variableId: 'gold', operator: '>=', value: 200 },
+          disabledText: '골드 200 필요',
           effects: {
             gold: 100,
             setFlags: { secret_deal_done: true },
@@ -166,7 +170,24 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       position: { x: 1850, y: 50 },
       speaker: '상인',
       text: '좋은 선택이십니다! 감사합니다.',
+      nextNodeId: choice1VariableId,
+    },
+    // 구매 후 변수 처리 - 변수 참조 예시 포함
+    {
+      id: choice1VariableId,
+      type: 'variable',
+      position: { x: 2050, y: 50 },
       nextNodeId: conditionId,
+      variableOperations: [
+        // Gold -= 50 (구매 비용)
+        { target: 'variable', action: 'subtract', variableId: 'gold', value: 50 },
+        // HP += 10 (물약 효과)
+        { target: 'variable', action: 'add', variableId: 'hp', value: 10 },
+        // bought_item = true
+        { target: 'variable', action: 'set', variableId: 'bought_item', value: true },
+        // Inventory.push("체력 물약")
+        { target: 'variable', action: 'push', variableId: 'inventory', value: '체력 물약' },
+      ],
     },
     // 선택 결과 2 - 구경
     {
@@ -177,39 +198,44 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       text: '천천히 구경하세요~',
       nextNodeId: conditionId,
     },
-    // 선택 결과 3 - 비밀 거래
+    // 선택 결과 3 - 비밀 거래 (변수 참조 예시)
     {
       id: choice3ResultId,
-      type: 'dialogue',
+      type: 'variable',
       position: { x: 1850, y: 350 },
-      speaker: '상인',
-      text: '(소곤) 좋아요, 거래 성사!',
       nextNodeId: conditionId,
+      variableOperations: [
+        // Gold += HP (HP만큼 골드 추가 - 변수 참조 예시!)
+        { 
+          target: 'variable', 
+          action: 'add', 
+          variableId: 'gold', 
+          value: 0,
+          useVariableValue: true, 
+          sourceVariableId: 'hp' 
+        },
+        // met_merchant = true
+        { target: 'variable', action: 'set', variableId: 'met_merchant', value: true },
+      ],
     },
     // 조건 노드 - 여러 조건 타입 활용
     {
       id: conditionId,
       type: 'condition',
-      position: { x: 2100, y: 200 },
+      position: { x: 2250, y: 200 },
       conditionBranches: [
-        // 조건 1: 골드 범위 체크
+        // 조건 1: 물건 구매 여부 (먼저 체크)
         {
           id: generateId(),
-          condition: { type: 'gold', min: 100, max: 999 },
-          nextNodeId: goldBranchId,
-        },
-        // 조건 2: 플래그 체크
-        {
-          id: generateId(),
-          condition: { type: 'flag', flagKey: 'bought_item', flagValue: true },
+          condition: { type: 'variable', variableId: 'bought_item', operator: '==', value: true },
           nextNodeId: flagBranchId,
         },
-        // 조건 3: 호감도 체크 (예시)
-        // {
-        //   id: generateId(),
-        //   condition: { type: 'affection', characterId: 'kairen', min: 10 },
-        //   nextNodeId: affinityBranchId,
-        // },
+        // 조건 2: 골드 100 이상 체크
+        {
+          id: generateId(),
+          condition: { type: 'variable', variableId: 'gold', operator: '>=', value: 100 },
+          nextNodeId: goldBranchId,
+        },
       ],
       defaultNextNodeId: defaultBranchId,
     },

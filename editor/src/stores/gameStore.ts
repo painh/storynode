@@ -41,6 +41,8 @@ interface GameStoreState {
   // 디버그 토글
   toggleDebug: () => void
   setDebugOption: (option: keyof DebugInfo, value: boolean) => void
+  toggleImageVisibility: (imageId: string) => void
+  toggleImageBorder: (imageId: string) => void
 
   // 테마
   setTheme: (themeId: string) => void
@@ -65,6 +67,8 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     showVariables: true,
     showHistory: true,
     showNodeInfo: true,
+    hiddenImageIds: new Set<string>(),
+    borderedImageIds: new Set<string>(),
   },
 
   currentThemeId: 'dark',
@@ -187,6 +191,40 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
         [option]: value,
       },
     }))
+  },
+
+  toggleImageVisibility: (imageId) => {
+    set((state) => {
+      const newHiddenIds = new Set(state.debug.hiddenImageIds)
+      if (newHiddenIds.has(imageId)) {
+        newHiddenIds.delete(imageId)
+      } else {
+        newHiddenIds.add(imageId)
+      }
+      return {
+        debug: {
+          ...state.debug,
+          hiddenImageIds: newHiddenIds,
+        },
+      }
+    })
+  },
+
+  toggleImageBorder: (imageId) => {
+    set((state) => {
+      const newBorderedIds = new Set(state.debug.borderedImageIds)
+      if (newBorderedIds.has(imageId)) {
+        newBorderedIds.delete(imageId)
+      } else {
+        newBorderedIds.add(imageId)
+      }
+      return {
+        debug: {
+          ...state.debug,
+          borderedImageIds: newBorderedIds,
+        },
+      }
+    })
   },
 
   setTheme: (themeId) => {

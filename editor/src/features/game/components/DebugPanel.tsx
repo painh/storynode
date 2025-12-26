@@ -5,7 +5,10 @@ import { useGameStore } from '../../../stores/gameStore'
 import styles from '../styles/DebugPanel.module.css'
 
 export function DebugPanel() {
-  const { debug, setDebugOption, gameState, currentNode } = useGameStore()
+  const { debug, setDebugOption, gameState, currentNode, toggleImageVisibility, toggleImageBorder } = useGameStore()
+
+  // 활성 이미지 목록
+  const activeImages = gameState?.activeImages || []
 
   const recentHistory = useMemo(() => {
     if (!gameState) return []
@@ -177,6 +180,54 @@ export function DebugPanel() {
             ) : (
               <div className={styles.emptyMessage}>No history yet</div>
             )}
+          </div>
+        )}
+
+        {/* 활성 이미지 목록 */}
+        {activeImages.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionTitle}>
+              <span>🖼️</span>
+              Active Images ({activeImages.length})
+            </div>
+            <div className={styles.imageList}>
+              {activeImages.map((img) => {
+                const isHidden = debug.hiddenImageIds.has(img.id)
+                const hasBorder = debug.borderedImageIds.has(img.id)
+                return (
+                  <div 
+                    key={`${img.id}-${img.instanceId}`} 
+                    className={`${styles.imageItem} ${isHidden ? styles.imageHidden : ''}`}
+                  >
+                    <div className={styles.imageThumbnail}>
+                      <img src={img.resourcePath} alt="" />
+                    </div>
+                    <div className={styles.imageInfo}>
+                      <span className={`${styles.imageLayer} ${styles[img.layer]}`}>
+                        {img.layer}
+                      </span>
+                      <span className={styles.imageAlign}>{img.alignment}</span>
+                    </div>
+                    <div className={styles.imageActions}>
+                      <button
+                        className={`${styles.imageActionBtn} ${hasBorder ? styles.active : ''}`}
+                        onClick={() => toggleImageBorder(img.id)}
+                        title="Toggle border"
+                      >
+                        ▢
+                      </button>
+                      <button
+                        className={`${styles.imageActionBtn} ${isHidden ? styles.active : ''}`}
+                        onClick={() => toggleImageVisibility(img.id)}
+                        title={isHidden ? 'Show image' : 'Hide image'}
+                      >
+                        {isHidden ? '👁️' : '👁️‍🗨️'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>

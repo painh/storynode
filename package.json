@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "npm run dev -w editor",
     "build": "npm run build -w editor",
+    "test": "npm run test -w editor",
     "tauri": "npm run tauri -w editor",
     "tauri:dev": "npm run tauri dev -w editor",
     "tauri:build": "npm run tauri build -w editor"

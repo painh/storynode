@@ -14,20 +14,107 @@
 }
 
 .modal {
-  width: 90vw;
-  height: 90vh;
-  max-width: 1200px;
-  max-height: 800px;
+  width: 1200px;
+  height: 800px;
+  max-width: 95vw;
+  max-height: 95vh;
+  min-width: 600px;
+  min-height: 400px;
   border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: 0 16px 64px rgba(0, 0, 0, 0.6);
   transition: background-color 0.3s ease, border-color 0.3s ease;
+  position: relative;
 
   /* 테마 CSS 변수로 적용 */
   background: var(--game-background);
   border: 1px solid var(--game-border);
+}
+
+/* 사용자가 리사이즈했을 때 max 제한 해제 */
+.modal.resized {
+  max-width: none;
+  max-height: none;
+}
+
+.modal.maximized {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+/* 리사이즈 핸들 */
+.resizeHandle {
+  position: absolute;
+  z-index: 100;
+}
+
+.resizeN {
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: n-resize;
+}
+
+.resizeS {
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: s-resize;
+}
+
+.resizeE {
+  right: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: e-resize;
+}
+
+.resizeW {
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: w-resize;
+}
+
+.resizeNE {
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: ne-resize;
+}
+
+.resizeNW {
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: nw-resize;
+}
+
+.resizeSE {
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  cursor: se-resize;
+}
+
+.resizeSW {
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  cursor: sw-resize;
 }
 
 .header {

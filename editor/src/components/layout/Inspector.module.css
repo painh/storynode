@@ -138,8 +138,30 @@
 .choiceHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   margin-bottom: 8px;
+}
+
+.expandBtn {
+  width: 24px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  margin-left: auto;
+}
+
+.expandBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.expandBtn.hasCondition {
+  color: #ff9800;
 }
 
 .choiceIndex {
@@ -166,6 +188,105 @@
 .removeBtn:hover {
   background: #c62828;
   color: white;
+}
+
+/* Condition Panel */
+.conditionPanel {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--border-default);
+}
+
+.conditionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.conditionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.removeConditionBtn {
+  font-size: 10px;
+  color: #ef5350;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.removeConditionBtn:hover {
+  background: rgba(239, 83, 80, 0.2);
+}
+
+.conditionRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.conditionSelect {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+}
+
+.operatorSelect {
+  width: 50px;
+  padding: 6px 4px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.conditionValueInput,
+.conditionValueSelect {
+  width: 70px;
+  padding: 6px 8px;
+  font-size: 11px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+}
+
+.disabledTextRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.smallLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
 }
 
 .noChoices {

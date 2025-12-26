@@ -251,3 +251,99 @@
   text-align: center;
   padding: 12px;
 }
+
+/* 이미지 목록 */
+.imageList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.imageItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  transition: opacity 0.2s;
+}
+
+.imageItem.imageHidden {
+  opacity: 0.4;
+}
+
+.imageThumbnail {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.imageThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.imageLayer {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  width: fit-content;
+}
+
+.imageLayer.background {
+  background: rgba(100, 149, 237, 0.3);
+  color: #87CEFA;
+}
+
+.imageLayer.character {
+  background: rgba(255, 182, 193, 0.3);
+  color: #FFB6C1;
+}
+
+.imageAlign {
+  font-size: 9px;
+  color: var(--game-debug-text);
+  opacity: 0.5;
+}
+
+.imageActions {
+  display: flex;
+  gap: 4px;
+}
+
+.imageActionBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: all 0.15s;
+}
+
+.imageActionBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0.8;
+}
+
+.imageActionBtn.active {
+  background: rgba(255, 0, 255, 0.2);
+  opacity: 1;
+}

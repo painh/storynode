@@ -243,8 +243,36 @@ export function VariableNodeInspector({ node, onUpdate }: VariableNodeInspectorP
               </div>
             )}
             <div className={styles.field}>
-              <label className={styles.label}>값</label>
-              {varType === 'boolean' ? (
+              <div className={styles.labelRow}>
+                <label className={styles.label}>값</label>
+                {varType !== 'boolean' && (
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={op.useVariableValue || false}
+                      onChange={(e) => handleOperationChange(index, { 
+                        useVariableValue: e.target.checked,
+                        sourceVariableId: e.target.checked ? variables.find(v => v.id !== op.variableId)?.id : undefined
+                      })}
+                    />
+                    변수에서
+                  </label>
+                )}
+              </div>
+              {op.useVariableValue ? (
+                <select
+                  className={styles.select}
+                  value={op.sourceVariableId || ''}
+                  onChange={(e) => handleOperationChange(index, { sourceVariableId: e.target.value })}
+                >
+                  <option value="">변수 선택...</option>
+                  {variables.filter(v => v.type === varType || (v.type === 'number' && varType === 'number')).map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} ({v.type})
+                    </option>
+                  ))}
+                </select>
+              ) : varType === 'boolean' ? (
                 <select
                   className={styles.select}
                   value={String(op.value)}

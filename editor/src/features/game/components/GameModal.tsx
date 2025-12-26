@@ -1,6 +1,6 @@
 // 게임 모달 컴포넌트
 
-import { useEffect, useMemo, useCallback, CSSProperties } from 'react'
+import { useEffect, useMemo, useCallback, useState, useRef, CSSProperties } from 'react'
 import { useGameStore } from '../../../stores/gameStore'
 import { useEditorStore } from '../../../stores/editorStore'
 import { getThemeById, themePresets } from '../themes'
@@ -28,6 +28,16 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
     restart,
     closeGame,
   } = useGameStore()
+
+  // 최대화 및 크기 조절 상태
+  const [isMaximized, setIsMaximized] = useState(false)
+  const [isResized, setIsResized] = useState(false)
+  const [modalSize, setModalSize] = useState({ width: 0, height: 0 })
+  const modalRef = useRef<HTMLDivElement>(null)
+  const isResizing = useRef(false)
+  const resizeDirection = useRef<string>('')
+  const startPos = useRef({ x: 0, y: 0 })
+  const startSize = useRef({ width: 0, height: 0 })
 
   const updateGameSettings = useEditorStore((state) => state.updateGameSettings)
   const customThemesFromStore = useEditorStore((state) => state.project.gameSettings?.customThemes)
@@ -71,6 +81,60 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
       colors: { ...ct.colors, debugPanelBg: '#1a1a1a', debugPanelText: '#00ff00' },
     }))]
   }, [customThemes])
+
+  // 최대화 토글
+  const toggleMaximize = useCallback(() => {
+    setIsMaximized(prev => !prev)
+  }, [])
+
+  // 리사이즈 시작
+  const handleResizeStart = useCallback((e: React.MouseEvent, direction: string) => {
+    if (isMaximized) return
+    e.preventDefault()
+    e.stopPropagation()
+    isResizing.current = true
+    resizeDirection.current = direction
+    startPos.current = { x: e.clientX, y: e.clientY }
+    setIsResized(true)
+    
+    const modal = modalRef.current
+    if (modal) {
+      const rect = modal.getBoundingClientRect()
+      startSize.current = { width: rect.width, height: rect.height }
+      if (modalSize.width === 0) {
+        setModalSize({ width: rect.width, height: rect.height })
+      }
+    }
+
+    document.addEventListener('mousemove', handleResizeMove)
+    document.addEventListener('mouseup', handleResizeEnd)
+  }, [isMaximized, modalSize.width])
+
+  // 리사이즈 중
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!isResizing.current) return
+
+    const deltaX = e.clientX - startPos.current.x
+    const deltaY = e.clientY - startPos.current.y
+    const dir = resizeDirection.current
+
+    let newWidth = startSize.current.width
+    let newHeight = startSize.current.height
+
+    if (dir.includes('e')) newWidth = Math.max(600, startSize.current.width + deltaX)
+    if (dir.includes('w')) newWidth = Math.max(600, startSize.current.width - deltaX)
+    if (dir.includes('s')) newHeight = Math.max(400, startSize.current.height + deltaY)
+    if (dir.includes('n')) newHeight = Math.max(400, startSize.current.height - deltaY)
+
+    setModalSize({ width: newWidth, height: newHeight })
+  }, [])
+
+  // 리사이즈 종료
+  const handleResizeEnd = useCallback(() => {
+    isResizing.current = false
+    document.removeEventListener('mousemove', handleResizeMove)
+    document.removeEventListener('mouseup', handleResizeEnd)
+  }, [handleResizeMove])
 
   // ESC 키로 닫기/일시정지
   useEffect(() => {
@@ -136,7 +200,27 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
 
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && handleTogglePause()}>
-      <div className={styles.modal} style={themeStyles}>
+      <div 
+        ref={modalRef}
+        className={`${styles.modal} ${isMaximized ? styles.maximized : ''} ${isResized ? styles.resized : ''}`} 
+        style={{
+          ...themeStyles,
+          ...(modalSize.width > 0 && !isMaximized ? { width: modalSize.width, height: modalSize.height } : {})
+        }}
+      >
+        {/* 리사이즈 핸들 */}
+        {!isMaximized && (
+          <>
+            <div className={`${styles.resizeHandle} ${styles.resizeN}`} onMouseDown={(e) => handleResizeStart(e, 'n')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeS}`} onMouseDown={(e) => handleResizeStart(e, 's')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeE}`} onMouseDown={(e) => handleResizeStart(e, 'e')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeW}`} onMouseDown={(e) => handleResizeStart(e, 'w')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeNE}`} onMouseDown={(e) => handleResizeStart(e, 'ne')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeNW}`} onMouseDown={(e) => handleResizeStart(e, 'nw')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeSE}`} onMouseDown={(e) => handleResizeStart(e, 'se')} />
+            <div className={`${styles.resizeHandle} ${styles.resizeSW}`} onMouseDown={(e) => handleResizeStart(e, 'sw')} />
+          </>
+        )}
         {/* 헤더 */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
@@ -177,6 +261,15 @@ export function GameModal({ isOpen, onClose }: GameModalProps) {
               title="Toggle Debug Panel (D)"
             >
               🔧
+            </button>
+
+            {/* 최대화 */}
+            <button
+              className={styles.iconButton}
+              onClick={toggleMaximize}
+              title={isMaximized ? 'Restore' : 'Maximize'}
+            >
+              {isMaximized ? '🗗' : '🗖'}
             </button>
 
             {/* 재시작 */}

@@ -2,47 +2,59 @@ import { memo } from 'react'
 import type { NodeProps, Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
-import type { VariableOperation } from '../../types/story'
-import { useTranslation } from '../../i18n'
+import type { VariableOperation, VariableDefinition } from '../../types/story'
+import { useEditorStore } from '../../stores/editorStore'
 import styles from './VariableNode.module.css'
 
-function formatOperation(op: VariableOperation, t: ReturnType<typeof useTranslation>): string {
-  const actionLabels: Record<string, string> = {
-    set: t.inspector.set,
-    add: t.inspector.add,
-    subtract: t.inspector.subtract,
-    multiply: t.inspector.multiply,
-    push: 'push',
-    pop: 'pop',
-    removeAt: 'removeAt',
-    setAt: 'setAt',
-    clear: 'clear',
+function formatOperation(op: VariableOperation, variables: VariableDefinition[]): string {
+  const getOperatorSymbol = (action: string) => {
+    switch (action) {
+      case 'set': return '='
+      case 'add': return '+='
+      case 'subtract': return '-='
+      case 'multiply': return '*='
+      default: return '='
+    }
   }
-  const action = actionLabels[op.action] || op.action
+
+  const getVariableName = (varId: string) => {
+    const found = variables.find(v => v.id === varId)
+    return found?.name || varId
+  }
+
+  // 값 또는 변수 참조 표시
+  const getValueDisplay = () => {
+    if (op.useVariableValue && op.sourceVariableId) {
+      return getVariableName(op.sourceVariableId)
+    }
+    return String(op.value)
+  }
 
   switch (op.target) {
     case 'variable':
+      const varName = op.variableId ? getVariableName(op.variableId) : '?'
+      const valueDisplay = getValueDisplay()
       // 배열 연산
       if (['push', 'pop', 'removeAt', 'setAt', 'clear'].includes(op.action)) {
-        if (op.action === 'push') return `[].push(${op.value})`
-        if (op.action === 'pop') return `[].pop()`
-        if (op.action === 'removeAt') return `[].removeAt(${op.index})`
-        if (op.action === 'setAt') return `[${op.index}] = ${op.value}`
-        if (op.action === 'clear') return `[] = []`
+        if (op.action === 'push') return `${varName}.push(${valueDisplay})`
+        if (op.action === 'pop') return `${varName}.pop()`
+        if (op.action === 'removeAt') return `${varName}.removeAt(${op.index})`
+        if (op.action === 'setAt') return `${varName}[${op.index}] = ${valueDisplay}`
+        if (op.action === 'clear') return `${varName} = []`
       }
-      return `${action} = ${op.value}`
+      return `${varName} ${getOperatorSymbol(op.action)} ${valueDisplay}`
     case 'flag':
-      return `${action} ${op.key} = ${op.value}`
+      return `flag.${op.key} = ${op.value}`
     case 'gold':
-      return `${action} ${t.inspector.gold} ${op.action === 'set' ? '=' : op.action === 'add' ? '+' : op.action === 'subtract' ? '-' : '×'} ${op.value}`
+      return `Gold ${getOperatorSymbol(op.action)} ${op.value}`
     case 'hp':
-      return `${action} ${t.inspector.hp} ${op.action === 'set' ? '=' : op.action === 'add' ? '+' : op.action === 'subtract' ? '-' : '×'} ${op.value}`
+      return `HP ${getOperatorSymbol(op.action)} ${op.value}`
     case 'affection':
-      return `${action} ${op.characterId} ${op.action === 'set' ? '=' : '+'} ${op.value}`
+      return `${op.characterId}_affection ${getOperatorSymbol(op.action)} ${op.value}`
     case 'reputation':
-      return `${action} ${op.factionId} ${op.action === 'set' ? '=' : '+'} ${op.value}`
+      return `${op.factionId}_rep ${getOperatorSymbol(op.action)} ${op.value}`
     default:
-      return `${action} ${op.value}`
+      return `? = ${op.value}`
   }
 }
 
@@ -52,7 +64,7 @@ export const VariableNode = memo(function VariableNode({
   selected,
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
-  const t = useTranslation()
+  const variables = useEditorStore((state) => state.project.variables) || []
 
   if (!storyNode) return null
 
@@ -69,12 +81,12 @@ export const VariableNode = memo(function VariableNode({
     >
       <div className={styles.content}>
         {operations.length === 0 ? (
-          <div className={styles.empty}>{t.common.empty}</div>
+          <div className={styles.empty}>No operations</div>
         ) : (
           <div className={styles.operations}>
             {operations.slice(0, 3).map((op, index) => (
               <div key={index} className={styles.operation}>
-                {formatOperation(op, t)}
+                {formatOperation(op, variables)}
               </div>
             ))}
             {operations.length > 3 && (

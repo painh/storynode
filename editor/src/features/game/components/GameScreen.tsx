@@ -115,7 +115,11 @@ const getExitEffectClass = (effect?: string): string => {
 }
 
 // 이미지 레이어 컴포넌트
-function ImageLayers({ images }: { images: ActiveImage[] }) {
+function ImageLayers({ images, hiddenImageIds, borderedImageIds }: { 
+  images: ActiveImage[]
+  hiddenImageIds: Set<string>
+  borderedImageIds: Set<string>
+}) {
   // 레이어 순서로 정렬 (background가 가장 뒤, 그 다음 character)
   const sortedImages = useMemo(() => {
     const layerPriority: Record<string, number> = {
@@ -161,22 +165,24 @@ function ImageLayers({ images }: { images: ActiveImage[] }) {
 
   return (
     <div className={styles.imageLayerContainer}>
-      {sortedImages.map((img) => (
-        <img
-          // instanceId로 키를 설정하여 매번 새 애니메이션 재생
-          key={`${img.layer}-${img.layerOrder}-${img.instanceId}`}
-          src={img.resourcePath}
-          alt=""
-          className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClasses(img.effects, img.effect)}`}
-          style={getImageStyle(img)}
-        />
-      ))}
+      {sortedImages.map((img) => 
+        hiddenImageIds.has(img.id) ? null : (
+          <img
+            // instanceId로 키를 설정하여 매번 새 애니메이션 재생
+            key={`${img.layer}-${img.layerOrder}-${img.instanceId}`}
+            src={img.resourcePath}
+            alt=""
+            className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClasses(img.effects, img.effect)} ${borderedImageIds.has(img.id) ? styles.debugBorder : ''}`}
+            style={getImageStyle(img)}
+          />
+        )
+      )}
     </div>
   )
 }
 
 export function GameScreen({ theme }: GameScreenProps) {
-  const { currentNode, status, advance, selectChoice, gameState } = useGameStore()
+  const { currentNode, status, advance, selectChoice, gameState, debug, engine } = useGameStore()
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
 
@@ -354,7 +360,11 @@ export function GameScreen({ theme }: GameScreenProps) {
   return (
     <div className={styles.screen}>
       {/* 이미지 레이어 */}
-      <ImageLayers images={activeImages} />
+      <ImageLayers 
+        images={activeImages} 
+        hiddenImageIds={debug.hiddenImageIds}
+        borderedImageIds={debug.borderedImageIds}
+      />
 
       <div className={styles.characterArea}>
         {/* 캐릭터 스탠딩 이미지 영역 */}
@@ -392,15 +402,22 @@ export function GameScreen({ theme }: GameScreenProps) {
           {/* 선택지 */}
           {isChoiceNode && currentNode.choices && currentNode.choices.length > 0 && !isTyping && (
             <div className={styles.choicesArea}>
-              {currentNode.choices.map((choice, index) => (
-                <button
-                  key={choice.id}
-                  className={styles.choiceButton}
-                  onClick={() => handleSelectChoice(index)}
-                >
-                  {choice.text}
-                </button>
-              ))}
+              {currentNode.choices.map((choice, index) => {
+                const isDisabled = !!(choice.condition && engine && !engine.checkCondition(choice.condition))
+                return (
+                  <button
+                    key={choice.id}
+                    className={`${styles.choiceButton} ${isDisabled ? styles.disabled : ''}`}
+                    onClick={() => !isDisabled && handleSelectChoice(index)}
+                    disabled={isDisabled}
+                  >
+                    {choice.text}
+                    {isDisabled && choice.disabledText && (
+                      <span className={styles.disabledReason}>{choice.disabledText}</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>

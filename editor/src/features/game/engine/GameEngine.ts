@@ -455,8 +455,54 @@ export class GameEngine {
         // 렐릭 보유 여부 (현재는 flag로 대체 가능)
         return condition.value ? Boolean(vars.flags[`relic_${condition.value}`]) : false
 
+      case 'variable':
+        if (condition.variableId) {
+          const varValue = vars.variables[condition.variableId]
+          const compareValue = condition.value
+          const operator = condition.operator || '=='
+          return this.compareValues(varValue, operator, compareValue)
+        }
+        return false
+
       default:
         return true
+    }
+  }
+
+  // 값 비교 (variable 조건용)
+  private compareValues(
+    left: boolean | number | string | Array<boolean | number | string> | undefined,
+    operator: string,
+    right: number | string | boolean | undefined
+  ): boolean {
+    // 배열은 길이로 비교
+    if (Array.isArray(left)) {
+      left = left.length
+    }
+    
+    // undefined 처리
+    if (left === undefined) {
+      if (typeof right === 'number') left = 0
+      else if (typeof right === 'boolean') left = false
+      else if (typeof right === 'string') left = ''
+      else left = false
+    }
+
+    switch (operator) {
+      case '==':
+        return left == right
+      case '!=':
+        return left != right
+      case '>':
+        return typeof left === 'number' && typeof right === 'number' && left > right
+      case '>=':
+        return typeof left === 'number' && typeof right === 'number' && left >= right
+      case '<':
+        return typeof left === 'number' && typeof right === 'number' && left < right
+      case '<=':
+        return typeof left === 'number' && typeof right === 'number' && left <= right
+      default:
+        return false
     }
   }
 
@@ -505,7 +551,17 @@ export class GameEngine {
   // 단일 변수 연산 실행
   private executeVariableOperation(op: VariableOperation): void {
     const vars = this.state.variables
-    const numValue = typeof op.value === 'number' ? op.value : 0
+    
+    // 변수 참조인 경우 sourceVariableId에서 값 가져오기
+    let operandValue = op.value
+    if (op.useVariableValue && op.sourceVariableId) {
+      const sourceValue = vars.variables[op.sourceVariableId]
+      if (sourceValue !== undefined) {
+        operandValue = sourceValue as number | string | boolean
+      }
+    }
+    
+    const numValue = typeof operandValue === 'number' ? operandValue : 0
 
     switch (op.target) {
       case 'variable':
@@ -514,14 +570,14 @@ export class GameEngine {
 
           // 배열 연산 처리
           if (Array.isArray(currentValue)) {
-            this.executeArrayOperation(op.variableId, op.action, op.value, op.index)
+            this.executeArrayOperation(op.variableId, op.action, operandValue, op.index)
           } else if (op.action === 'set') {
-            vars.variables[op.variableId] = op.value
+            vars.variables[op.variableId] = operandValue
           } else if (typeof currentValue === 'number') {
             vars.variables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
           } else if (typeof currentValue === 'string' && op.action === 'add') {
             // 문자열 더하기 (concatenation)
-            vars.variables[op.variableId] = currentValue + String(op.value)
+            vars.variables[op.variableId] = currentValue + String(operandValue)
           }
         }
         break
@@ -530,7 +586,7 @@ export class GameEngine {
         // 레거시 호환
         if (op.key) {
           if (op.action === 'set') {
-            vars.flags[op.key] = op.value
+            vars.flags[op.key] = operandValue
           } else if (typeof vars.flags[op.key] === 'number') {
             vars.flags[op.key] = this.applyAction(vars.flags[op.key] as number, op.action, numValue)
           }
@@ -643,6 +699,11 @@ export class GameEngine {
   // 노드 변경 알림
   private notifyNodeChange(): void {
     this.options.onNodeChange?.(this.getCurrentNode())
+  }
+
+  // 조건 평가 (외부에서 호출 가능)
+  checkCondition(condition: StoryCondition): boolean {
+    return this.evaluateCondition(condition)
   }
 
   // 상태 가져오기

@@ -1,5 +1,7 @@
 # StoryNode Editor
 
+[![CI](https://github.com/painh/storynode/actions/workflows/ci.yml/badge.svg)](https://github.com/painh/storynode/actions/workflows/ci.yml)
+
 노드 기반 비주얼 노벨 / 인터랙티브 스토리 에디터
 
 Unreal Engine Blueprint 스타일의 직관적인 노드 편집으로 복잡한 분기 스토리를 쉽게 만들 수 있습니다.

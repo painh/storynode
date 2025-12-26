@@ -44,6 +44,9 @@ export type ImageExitEffectType =
 // 이미지 교체 타이밍
 export type ImageTransitionTiming = 'sequential' | 'crossfade'
 
+// 이미지 채우기 방식
+export type ImageObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down'
+
 // 효과 그룹 (동시 적용 불가능한 효과들)
 export const IMAGE_EFFECT_GROUPS: Record<string, ImageEffectType[]> = {
   slide: ['slideLeft', 'slideRight', 'slideUp', 'slideDown'],
@@ -62,6 +65,7 @@ export interface ImageNodeData {
   x?: number                // custom 정렬시 x 좌표
   y?: number                // custom 정렬시 y 좌표
   flipHorizontal?: boolean  // 좌우 반전
+  objectFit?: ImageObjectFit // 이미지 채우기 방식 (기본: contain)
   effect?: ImageEffect      // 이미지 효과 (deprecated, 하위 호환용)
   effects?: ImageEffectType[] // 다중 이미지 효과
   effectDuration?: number   // 효과 지속 시간 (ms)
@@ -112,10 +116,13 @@ export type CharacterId = string
 // 세력 ID 타입 (레거시 호환용)
 export type FactionId = string
 
+// 비교 연산자 타입
+export type ComparisonOperator = '==' | '!=' | '>' | '>=' | '<' | '<='
+
 // 스토리 조건 타입
 export interface StoryCondition {
-  type: 'gold' | 'hp' | 'has_relic' | 'character' | 'flag' | 'choice_made' | 'affection' | 'reputation'
-  value?: number | string
+  type: 'gold' | 'hp' | 'has_relic' | 'character' | 'flag' | 'choice_made' | 'affection' | 'reputation' | 'variable'
+  value?: number | string | boolean
   characterId?: CharacterId
   flagKey?: string
   flagValue?: boolean | number | string
@@ -124,6 +131,9 @@ export interface StoryCondition {
   factionId?: FactionId
   min?: number
   max?: number
+  // variable 타입용
+  variableId?: string
+  operator?: ComparisonOperator
 }
 
 // 선택 효과 타입
@@ -152,6 +162,7 @@ export interface StoryChoice {
   condition?: StoryCondition
   effects?: StoryChoiceEffect
   resultText?: string
+  disabledText?: string  // 조건 불만족 시 표시할 텍스트 (예: "골드 100 필요")
 }
 
 // 스토리 전투 보상
@@ -190,6 +201,9 @@ export interface VariableOperation {
   factionId?: FactionId     // reputation용
   value: number | string | boolean
   index?: number            // array setAt/removeAt용
+  // 변수 참조용 (다른 변수의 값을 사용)
+  useVariableValue?: boolean      // true면 value 대신 sourceVariableId의 값 사용
+  sourceVariableId?: string       // 참조할 변수 ID
 }
 
 // Condition 노드용 - 다중 출력
