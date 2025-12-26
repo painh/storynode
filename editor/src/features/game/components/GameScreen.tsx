@@ -197,7 +197,8 @@ export function GameScreen({ theme }: GameScreenProps) {
       return
     }
 
-    const fullText = currentNode.text
+    // 변수 치환 적용
+    const fullText = engine ? engine.interpolateText(currentNode.text) : currentNode.text
 
     if (theme.effects.dialogueAnimation === 'instant') {
       setDisplayedText(fullText)
@@ -236,7 +237,8 @@ export function GameScreen({ theme }: GameScreenProps) {
 
     // 타이핑 중이면 전체 텍스트 표시
     if (isTyping && currentNode.text) {
-      setDisplayedText(currentNode.text)
+      const fullText = engine ? engine.interpolateText(currentNode.text) : currentNode.text
+      setDisplayedText(fullText)
       setIsTyping(false)
       return
     }
@@ -404,6 +406,10 @@ export function GameScreen({ theme }: GameScreenProps) {
             <div className={styles.choicesArea}>
               {currentNode.choices.map((choice, index) => {
                 const isDisabled = !!(choice.condition && engine && !engine.checkCondition(choice.condition))
+                const choiceText = engine ? engine.interpolateText(choice.text) : choice.text
+                const disabledText = choice.disabledText && engine 
+                  ? engine.interpolateText(choice.disabledText) 
+                  : choice.disabledText
                 return (
                   <button
                     key={choice.id}
@@ -411,9 +417,9 @@ export function GameScreen({ theme }: GameScreenProps) {
                     onClick={() => !isDisabled && handleSelectChoice(index)}
                     disabled={isDisabled}
                   >
-                    {choice.text}
-                    {isDisabled && choice.disabledText && (
-                      <span className={styles.disabledReason}>{choice.disabledText}</span>
+                    {choiceText}
+                    {isDisabled && disabledText && (
+                      <span className={styles.disabledReason}>{disabledText}</span>
                     )}
                   </button>
                 )

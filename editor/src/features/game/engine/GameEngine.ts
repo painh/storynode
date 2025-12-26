@@ -706,6 +706,34 @@ export class GameEngine {
     return this.evaluateCondition(condition)
   }
 
+  // 텍스트 내 변수 치환 ({{변수명}} 또는 {{변수ID}} 형식)
+  interpolateText(text: string): string {
+    if (!text) return text
+    
+    return text.replace(/\{\{([^}]+)\}\}/g, (match, varNameOrId) => {
+      const trimmed = varNameOrId.trim()
+      const vars = this.state.variables.variables
+      
+      // 1. 변수 ID로 먼저 찾기
+      if (vars[trimmed] !== undefined) {
+        const value = vars[trimmed]
+        return Array.isArray(value) ? value.join(', ') : String(value)
+      }
+      
+      // 2. 변수 이름으로 찾기 (프로젝트 변수 정의에서)
+      if (this.project.variables) {
+        const varDef = this.project.variables.find(v => v.name === trimmed)
+        if (varDef && vars[varDef.id] !== undefined) {
+          const value = vars[varDef.id]
+          return Array.isArray(value) ? value.join(', ') : String(value)
+        }
+      }
+      
+      // 3. 찾지 못하면 원본 유지
+      return match
+    })
+  }
+
   // 상태 가져오기
   getState(): GameState {
     return { ...this.state }
