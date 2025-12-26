@@ -672,3 +672,18 @@
   background: var(--border-default);
   margin: 8px 0;
 }
+
+/* CodeMirror Editor Wrapper */
+.codeEditorWrapper {
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.codeEditorWrapper .cm-editor {
+  font-size: 13px;
+}
+
+.codeEditorWrapper .cm-editor.cm-focused {
+  outline: none;
+}
