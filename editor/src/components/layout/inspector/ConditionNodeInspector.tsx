@@ -1,4 +1,5 @@
-import type { StoryNode, ConditionBranch, StoryCondition, CharacterId, FactionId } from '../../../types/story'
+import type { StoryNode, ConditionBranch, StoryCondition, CharacterId, FactionId, ComparisonOperator } from '../../../types/story'
+import { useEditorStore } from '../../../stores/editorStore'
 import { HelpTooltip } from './HelpTooltip'
 import styles from '../Inspector.module.css'
 
@@ -8,14 +9,24 @@ interface ConditionNodeInspectorProps {
 }
 
 const CONDITION_TYPES: { value: StoryCondition['type']; label: string }[] = [
-  { value: 'flag', label: '플래그' },
-  { value: 'gold', label: '골드' },
-  { value: 'hp', label: 'HP' },
+  { value: 'variable', label: '변수' },
+  { value: 'flag', label: '플래그 (레거시)' },
+  { value: 'gold', label: '골드 (레거시)' },
+  { value: 'hp', label: 'HP (레거시)' },
   { value: 'has_relic', label: '유물 보유' },
   { value: 'character', label: '캐릭터' },
   { value: 'choice_made', label: '선택 여부' },
   { value: 'affection', label: '호감도' },
   { value: 'reputation', label: '평판' },
+]
+
+const COMPARISON_OPERATORS: { value: ComparisonOperator; label: string }[] = [
+  { value: '==', label: '같음 (==)' },
+  { value: '!=', label: '다름 (!=)' },
+  { value: '>', label: '초과 (>)' },
+  { value: '>=', label: '이상 (>=)' },
+  { value: '<', label: '미만 (<)' },
+  { value: '<=', label: '이하 (<=)' },
 ]
 
 const CHARACTER_IDS: { value: CharacterId; label: string }[] = [
@@ -47,6 +58,7 @@ const HELP_TEXTS = {
 
 export function ConditionNodeInspector({ node, onUpdate }: ConditionNodeInspectorProps) {
   const branches = node.conditionBranches || []
+  const variables = useEditorStore((state) => state.project.variables) || []
 
   const handleAddBranch = () => {
     const newBranch: ConditionBranch = {
@@ -71,6 +83,9 @@ export function ConditionNodeInspector({ node, onUpdate }: ConditionNodeInspecto
   const handleConditionTypeChange = (index: number, type: StoryCondition['type']) => {
     let newCondition: StoryCondition
     switch (type) {
+      case 'variable':
+        newCondition = { type: 'variable', variableId: variables[0]?.id || '', operator: '==', value: 0 }
+        break
       case 'flag':
         newCondition = { type: 'flag', flagKey: '', flagValue: true }
         break
@@ -101,6 +116,75 @@ export function ConditionNodeInspector({ node, onUpdate }: ConditionNodeInspecto
 
   const renderConditionEditor = (index: number, condition: StoryCondition) => {
     switch (condition.type) {
+      case 'variable': {
+        const selectedVar = variables.find(v => v.id === condition.variableId)
+        const varType = selectedVar?.type || 'number'
+        
+        return (
+          <>
+            <div className={styles.field}>
+              <label className={styles.label}>변수</label>
+              <select
+                className={styles.select}
+                value={condition.variableId || ''}
+                onChange={(e) => {
+                  const newVar = variables.find(v => v.id === e.target.value)
+                  let defaultValue: number | string | boolean = 0
+                  if (newVar?.type === 'boolean') defaultValue = true
+                  else if (newVar?.type === 'string') defaultValue = ''
+                  handleBranchConditionChange(index, { ...condition, variableId: e.target.value, value: defaultValue })
+                }}
+              >
+                {variables.length === 0 && <option value="">변수 없음</option>}
+                {variables.map(v => (
+                  <option key={v.id} value={v.id}>{v.name} ({v.type})</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>연산자</label>
+              <select
+                className={styles.select}
+                value={condition.operator || '=='}
+                onChange={(e) => handleBranchConditionChange(index, { ...condition, operator: e.target.value as ComparisonOperator })}
+              >
+                {COMPARISON_OPERATORS.map(op => (
+                  <option key={op.value} value={op.value}>{op.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>값</label>
+              {varType === 'boolean' ? (
+                <select
+                  className={styles.select}
+                  value={String(condition.value)}
+                  onChange={(e) => handleBranchConditionChange(index, { ...condition, value: e.target.value === 'true' })}
+                >
+                  <option value="true">true (참)</option>
+                  <option value="false">false (거짓)</option>
+                </select>
+              ) : varType === 'number' ? (
+                <input
+                  type="number"
+                  className={styles.input}
+                  value={typeof condition.value === 'number' ? condition.value : 0}
+                  onChange={(e) => handleBranchConditionChange(index, { ...condition, value: Number(e.target.value) })}
+                />
+              ) : (
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={String(condition.value || '')}
+                  onChange={(e) => handleBranchConditionChange(index, { ...condition, value: e.target.value })}
+                  placeholder="값 입력"
+                />
+              )}
+            </div>
+          </>
+        )
+      }
+
       case 'flag':
         return (
           <>
