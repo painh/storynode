@@ -10,6 +10,7 @@ import {
   SelectionMode,
   type Edge,
   type Node,
+  type EdgeMouseHandler,
   BackgroundVariant,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
@@ -53,7 +54,7 @@ function CanvasInner() {
     getVariableById,
   } = useEditorStore()
 
-  const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes } = useCanvasStore()
+  const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes, setSelectedEdgeId, pendingEdgeDelete, clearPendingEdgeDelete } = useCanvasStore()
   const [isShiftPressed, setIsShiftPressed] = useState(false)
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { status: gameStatus, gameState } = useGameStore()
@@ -109,6 +110,14 @@ function CanvasInner() {
     setCanvasNodes(nodes)
   }, [nodes, setCanvasNodes])
 
+  // 인스펙터에서 요청한 엣지 삭제 처리
+  useEffect(() => {
+    if (pendingEdgeDelete) {
+      setEdges((edges) => edges.filter((e) => e.id !== pendingEdgeDelete))
+      clearPendingEdgeDelete()
+    }
+  }, [pendingEdgeDelete, clearPendingEdgeDelete, setEdges])
+
   // 검색 결과로 이동
   useEffect(() => {
     if (!highlightedNodeId || !chapter || !navigateTimestamp) return
@@ -144,9 +153,9 @@ function CanvasInner() {
     }
   }, [])
 
-  // 노드 선택
+  // 노드/엣지 선택
   const onSelectionChange = useCallback(
-    ({ nodes: selectedNodes }: { nodes: Node[]; edges: Edge[] }) => {
+    ({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
       const nodeIds = selectedNodes.map(n => n.id)
       setSelectedNodes(nodeIds)
 
@@ -154,9 +163,49 @@ function CanvasInner() {
       if (hasNonCommentNode) {
         setSelectedComment(null)
       }
+
+      // 엣지 선택 처리
+      if (selectedEdges.length === 1) {
+        setSelectedEdgeId(selectedEdges[0].id)
+      } else {
+        setSelectedEdgeId(null)
+      }
     },
-    [setSelectedNodes, setSelectedComment]
+    [setSelectedNodes, setSelectedComment, setSelectedEdgeId]
   )
+
+  // 엣지 더블클릭으로 웨이포인트 추가
+  const onEdgeDoubleClick: EdgeMouseHandler = useCallback((event, edge) => {
+    const svg = (event.target as Element).closest('svg')
+    if (!svg) return
+
+    const point = svg.createSVGPoint()
+    point.x = event.clientX
+    point.y = event.clientY
+
+    const ctm = svg.getScreenCTM()
+    if (!ctm) return
+
+    const svgPoint = point.matrixTransform(ctm.inverse())
+
+    // 새 웨이포인트 생성
+    const newWaypoint = {
+      id: `wp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      x: svgPoint.x,
+      y: svgPoint.y,
+    }
+
+    setEdges((edges) =>
+      edges.map((e) => {
+        if (e.id !== edge.id) return e
+        const currentWaypoints = (e.data as { waypoints?: typeof newWaypoint[] })?.waypoints || []
+        return {
+          ...e,
+          data: { ...e.data, waypoints: [...currentWaypoints, newWaypoint] },
+        }
+      })
+    )
+  }, [setEdges])
 
   // 드래그 앤 드롭
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -246,6 +295,7 @@ function CanvasInner() {
       onNodeDragStop={onNodeDragStop}
       onDragOver={onDragOver}
       onDrop={onDrop}
+      onEdgeDoubleClick={onEdgeDoubleClick}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView

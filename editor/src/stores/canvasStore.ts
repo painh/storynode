@@ -16,6 +16,12 @@ interface CanvasState {
   edges: Edge[]
   viewport: Viewport
 
+  // 선택 상태
+  selectedEdgeId: string | null
+  
+  // 엣지 삭제 요청 (Canvas에서 처리)
+  pendingEdgeDelete: string | null
+
   // Grid 설정
   snapGrid: number
   showGrid: boolean
@@ -41,6 +47,11 @@ interface CanvasState {
   deleteCommentNode: (chapterId: string, nodeId: string) => void
   getCommentNodes: (chapterId: string) => CommentNodeStore[]
 
+  // 선택 상태
+  setSelectedEdgeId: (edgeId: string | null) => void
+  requestEdgeDelete: (edgeId: string) => void
+  clearPendingEdgeDelete: () => void
+
   // Grid 설정
   setSnapGrid: (size: number) => void
   setShowGrid: (show: boolean) => void
@@ -56,6 +67,8 @@ export const useCanvasStore = create<CanvasState>()(
       nodes: [],
       edges: [],
       viewport: { x: 0, y: 0, zoom: 1 },
+      selectedEdgeId: null,
+      pendingEdgeDelete: null,
       snapGrid: 20,
       showGrid: true,
       nodePositions: {},
@@ -137,11 +150,16 @@ export const useCanvasStore = create<CanvasState>()(
         return state.commentNodes[chapterId] || []
       },
 
+      // 선택 상태
+      setSelectedEdgeId: (edgeId) => set({ selectedEdgeId: edgeId }),
+      requestEdgeDelete: (edgeId) => set({ pendingEdgeDelete: edgeId }),
+      clearPendingEdgeDelete: () => set({ pendingEdgeDelete: null }),
+
       // Grid 설정
       setSnapGrid: (size) => set({ snapGrid: size }),
       setShowGrid: (show) => set({ showGrid: show }),
 
-      clearCanvas: () => set({ nodes: [], edges: [] }),
+      clearCanvas: () => set({ nodes: [], edges: [], selectedEdgeId: null }),
     }),
     {
       // Undo/Redo 설정 - nodePositions와 commentNodes만 추적

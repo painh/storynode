@@ -1,4 +1,5 @@
 import { useEditorStore } from '../../stores/editorStore'
+import { useCanvasStore } from '../../stores/canvasStore'
 import { NODE_COLORS, NODE_ICONS, NODE_LABELS } from '../../types/editor'
 import type { StoryNode, StoryChoice } from '../../types/story'
 import { CommentNodeInspector } from './inspector/CommentNodeInspector'
@@ -15,6 +16,7 @@ import styles from './Inspector.module.css'
 
 export function Inspector() {
   const { selectedNodeIds, selectedCommentId, getNodeById, getCommentById, updateNode, updateCommentNode, project } = useEditorStore()
+  const { selectedEdgeId, setSelectedEdgeId, requestEdgeDelete } = useCanvasStore()
   const t = useTranslation()
 
   // 프로젝트 리소스에서 이미지 목록 가져오기
@@ -24,6 +26,13 @@ export function Inspector() {
   const selectedNode = selectedNodeIds.length === 1 ? getNodeById(selectedNodeIds[0]) : undefined
   const selectedComment = selectedCommentId ? getCommentById(selectedCommentId) : undefined
 
+  // 엣지 삭제 핸들러
+  const handleDeleteEdge = () => {
+    if (!selectedEdgeId) return
+    requestEdgeDelete(selectedEdgeId)
+    setSelectedEdgeId(null)
+  }
+
   // 코멘트 노드가 선택된 경우
   if (selectedComment) {
     return (
@@ -31,6 +40,41 @@ export function Inspector() {
         comment={selectedComment}
         onUpdate={(updates) => updateCommentNode(selectedCommentId!, updates)}
       />
+    )
+  }
+
+  // 엣지가 선택된 경우
+  if (selectedEdgeId && selectedNodeIds.length === 0) {
+    return (
+      <aside className={styles.inspector}>
+        <div className={styles.header} style={{ borderColor: '#ff6b00' }}>
+          <span className={styles.icon}>🔗</span>
+          <span className={styles.type}>Edge</span>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.field}>
+            <label className={styles.label}>Edge ID</label>
+            <input
+              type="text"
+              className={styles.input}
+              value={selectedEdgeId}
+              readOnly
+            />
+          </div>
+          <div className={styles.field}>
+            <p style={{ color: '#888', fontSize: '12px', marginBottom: '8px' }}>
+              엣지를 더블클릭하면 웨이포인트(중간점)가 추가됩니다.
+              웨이포인트를 드래그하여 경로를 조절하세요.
+            </p>
+          </div>
+          <button
+            className={styles.deleteButton}
+            onClick={handleDeleteEdge}
+          >
+            Delete Edge
+          </button>
+        </div>
+      </aside>
     )
   }
 
