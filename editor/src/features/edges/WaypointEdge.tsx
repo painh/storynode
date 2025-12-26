@@ -1,9 +1,9 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
-import { BaseEdge, EdgeLabelRenderer, type EdgeProps, useReactFlow } from '@xyflow/react'
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, Position, type EdgeProps, useReactFlow } from '@xyflow/react'
 import type { EditorEdgeData, EdgeWaypoint } from '../../types/editor'
 import styles from './WaypointEdge.module.css'
 
-// 웨이포인트를 포함한 경로 생성
+// 웨이포인트를 포함한 경로 생성 (직선 연결)
 const createPathWithWaypoints = (
   sourceX: number,
   sourceY: number,
@@ -133,8 +133,17 @@ export function WaypointEdge({
     )
   }, [id, setEdges])
 
-  // 경로 생성
-  const edgePath = createPathWithWaypoints(sourceX, sourceY, targetX, targetY, waypoints)
+  // 경로 생성: 웨이포인트가 없으면 베지어 곡선, 있으면 직선 연결
+  const edgePath = waypoints.length === 0
+    ? getBezierPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+      })[0]
+    : createPathWithWaypoints(sourceX, sourceY, targetX, targetY, waypoints)
 
   // 선택 시 하이라이트 스타일
   const edgeStyle = selected
