@@ -383,9 +383,332 @@ export const defaultChapterVariables: VariableDefinition[] = [
   },
 ]
 
+// 챕터 2 로컬 변수 (가위바위보 게임용)
+export const chapter2Variables: VariableDefinition[] = [
+  {
+    id: 'player_choice',
+    name: 'Player Choice',
+    type: 'number',
+    defaultValue: 0,
+    description: '플레이어 선택 (0=가위, 1=바위, 2=보)',
+  },
+  {
+    id: 'npc_choice',
+    name: 'NPC Choice',
+    type: 'number',
+    defaultValue: 0,
+    description: 'NPC 선택 (0=가위, 1=바위, 2=보)',
+  },
+  {
+    id: 'game_result',
+    name: 'Game Result',
+    type: 'number',
+    defaultValue: 0,
+    description: '결과 (0=무승부, 1=승리, 2=패배)',
+  },
+  {
+    id: 'win_count',
+    name: 'Win Count',
+    type: 'number',
+    defaultValue: 0,
+    description: '승리 횟수',
+  },
+  {
+    id: 'bet_amount',
+    name: 'Bet Amount',
+    type: 'number',
+    defaultValue: 10,
+    description: '배팅 금액',
+  },
+]
+
+// 챕터 2: 가위바위보 미니게임 노드 생성
+export const createChapter2Nodes = (): { nodes: StoryNode[]; startNodeId: string } => {
+  const startId = generateId()
+  const bgImageId = generateId()
+  const introId = generateId()
+  const checkGoldId = generateId()
+  const notEnoughGoldId = generateId()
+  const showGoldId = generateId()
+  const choiceId = generateId()
+  const scissorsId = generateId()
+  const rockId = generateId()
+  const paperId = generateId()
+  const randomNpcId = generateId()
+  const checkResultId = generateId()
+  const winBranchId = generateId()
+  const loseBranchId = generateId()
+  const drawBranchId = generateId()
+  const winRewardId = generateId()
+  const loseRewardId = generateId()
+  const playAgainId = generateId()
+  const exitGameId = generateId()
+  const chapterEndId = generateId()
+
+  const nodes: StoryNode[] = [
+    // Start
+    {
+      id: startId,
+      type: 'start',
+      position: { x: 100, y: 300 },
+      nextNodeId: bgImageId,
+    },
+    // 배경 이미지
+    {
+      id: bgImageId,
+      type: 'image',
+      position: { x: 300, y: 300 },
+      nextNodeId: introId,
+      imageData: {
+        resourcePath: 'templates/default/backgrounds/background.png',
+        layer: 'background',
+        layerOrder: 0,
+        alignment: 'center',
+        effect: 'fadeIn',
+        effectDuration: 300,
+      },
+    },
+    // 인트로 - 챕터1 변수 참조
+    {
+      id: introId,
+      type: 'dialogue',
+      position: { x: 500, y: 300 },
+      speaker: '도박사',
+      text: '어서오게 {{Player Name}}! 가위바위보 한 판 어떤가?\n현재 자네의 골드는 {{Gold}}이군.',
+      nextNodeId: checkGoldId,
+    },
+    // 골드 체크 (10골드 이상인지)
+    {
+      id: checkGoldId,
+      type: 'condition',
+      position: { x: 700, y: 300 },
+      conditionBranches: [
+        {
+          id: generateId(),
+          condition: { type: 'variable', variableId: 'gold', operator: '>=', value: 10 },
+          nextNodeId: showGoldId,
+        },
+      ],
+      defaultNextNodeId: notEnoughGoldId,
+    },
+    // 골드 부족
+    {
+      id: notEnoughGoldId,
+      type: 'dialogue',
+      position: { x: 900, y: 450 },
+      speaker: '도박사',
+      text: '흠, 10골드도 없군... 돈 벌어서 다시 오게나.',
+      nextNodeId: chapterEndId,
+    },
+    // 게임 설명
+    {
+      id: showGoldId,
+      type: 'dialogue',
+      position: { x: 900, y: 200 },
+      speaker: '도박사',
+      text: '10골드를 걸고 가위바위보를 하지. 이기면 20골드를 받고, 지면 10골드를 잃네!',
+      nextNodeId: choiceId,
+    },
+    // 가위바위보 선택
+    {
+      id: choiceId,
+      type: 'choice',
+      position: { x: 1100, y: 200 },
+      text: '무엇을 낼까?',
+      choices: [
+        {
+          id: generateId(),
+          text: '✌️ 가위',
+          nextNodeId: scissorsId,
+        },
+        {
+          id: generateId(),
+          text: '✊ 바위',
+          nextNodeId: rockId,
+        },
+        {
+          id: generateId(),
+          text: '🖐️ 보',
+          nextNodeId: paperId,
+        },
+        {
+          id: generateId(),
+          text: '그만하기',
+          nextNodeId: exitGameId,
+        },
+      ],
+    },
+    // 가위 선택
+    {
+      id: scissorsId,
+      type: 'variable',
+      position: { x: 1300, y: 50 },
+      nextNodeId: randomNpcId,
+      variableOperations: [
+        { target: 'variable', action: 'set', variableId: 'player_choice', value: 0 },
+      ],
+    },
+    // 바위 선택
+    {
+      id: rockId,
+      type: 'variable',
+      position: { x: 1300, y: 200 },
+      nextNodeId: randomNpcId,
+      variableOperations: [
+        { target: 'variable', action: 'set', variableId: 'player_choice', value: 1 },
+      ],
+    },
+    // 보 선택
+    {
+      id: paperId,
+      type: 'variable',
+      position: { x: 1300, y: 350 },
+      nextNodeId: randomNpcId,
+      variableOperations: [
+        { target: 'variable', action: 'set', variableId: 'player_choice', value: 2 },
+      ],
+    },
+    // JavaScript로 NPC 랜덤 선택 및 결과 계산
+    {
+      id: randomNpcId,
+      type: 'javascript',
+      position: { x: 1500, y: 200 },
+      nextNodeId: checkResultId,
+      javascriptCode: `// 가위바위보 로직
+// 0=가위, 1=바위, 2=보
+
+// NPC 랜덤 선택 (0~2)
+const npcChoice = Math.floor(Math.random() * 3);
+chapters.rps.npc_choice = npcChoice;
+
+// 플레이어 선택
+const playerChoice = chapters.rps.player_choice;
+
+// 승패 판정
+// (player - npc + 3) % 3 => 0:무승부, 1:패배, 2:승리
+const result = (playerChoice - npcChoice + 3) % 3;
+
+// 결과 저장 (0=무승부, 1=승리, 2=패배로 변환)
+if (result === 0) {
+  chapters.rps.game_result = 0; // 무승부
+} else if (result === 2) {
+  chapters.rps.game_result = 1; // 승리
+} else {
+  chapters.rps.game_result = 2; // 패배
+}
+
+// 선택 이름 배열
+const choices = ['가위', '바위', '보'];
+console.log('플레이어:', choices[playerChoice], '/ NPC:', choices[npcChoice]);
+console.log('결과:', chapters.rps.game_result === 0 ? '무승부' : chapters.rps.game_result === 1 ? '승리' : '패배');`,
+    },
+    // 결과 분기
+    {
+      id: checkResultId,
+      type: 'condition',
+      position: { x: 1700, y: 200 },
+      conditionBranches: [
+        {
+          id: generateId(),
+          condition: { type: 'variable', variableId: 'game_result', operator: '==', value: 1 },
+          nextNodeId: winBranchId,
+        },
+        {
+          id: generateId(),
+          condition: { type: 'variable', variableId: 'game_result', operator: '==', value: 2 },
+          nextNodeId: loseBranchId,
+        },
+      ],
+      defaultNextNodeId: drawBranchId,
+    },
+    // 승리
+    {
+      id: winBranchId,
+      type: 'dialogue',
+      position: { x: 1900, y: 50 },
+      speaker: '도박사',
+      text: '이런, 졌군! 자네 운이 좋아.\n20골드를 가져가게!',
+      nextNodeId: winRewardId,
+    },
+    // 승리 보상
+    {
+      id: winRewardId,
+      type: 'variable',
+      position: { x: 2100, y: 50 },
+      nextNodeId: playAgainId,
+      variableOperations: [
+        { target: 'variable', action: 'add', variableId: 'gold', value: 20 },
+        { target: 'variable', action: 'add', variableId: 'win_count', value: 1 },
+      ],
+    },
+    // 패배
+    {
+      id: loseBranchId,
+      type: 'dialogue',
+      position: { x: 1900, y: 200 },
+      speaker: '도박사',
+      text: '하하! 내가 이겼네!\n10골드는 내 것이야.',
+      nextNodeId: loseRewardId,
+    },
+    // 패배 페널티
+    {
+      id: loseRewardId,
+      type: 'variable',
+      position: { x: 2100, y: 200 },
+      nextNodeId: playAgainId,
+      variableOperations: [
+        { target: 'variable', action: 'subtract', variableId: 'gold', value: 10 },
+      ],
+    },
+    // 무승부
+    {
+      id: drawBranchId,
+      type: 'dialogue',
+      position: { x: 1900, y: 350 },
+      speaker: '도박사',
+      text: '오호, 비겼군! 다시 해볼까?',
+      nextNodeId: playAgainId,
+    },
+    // 다시 할지 선택
+    {
+      id: playAgainId,
+      type: 'dialogue',
+      position: { x: 2300, y: 200 },
+      speaker: '시스템',
+      text: '현재 골드: {{Gold}}\n승리 횟수: {{win_count}}회',
+      nextNodeId: checkGoldId, // 다시 골드 체크로 루프
+    },
+    // 그만하기
+    {
+      id: exitGameId,
+      type: 'dialogue',
+      position: { x: 1300, y: 500 },
+      speaker: '도박사',
+      text: '그래, 다음에 또 오게나!\n{{win_count}}번 이겼으니 대단하군.',
+      nextNodeId: chapterEndId,
+    },
+    // 챕터 종료
+    {
+      id: chapterEndId,
+      type: 'chapter_end',
+      position: { x: 1500, y: 500 },
+    },
+  ]
+
+  // 자동 정렬 적용
+  const layoutResult = autoLayoutNodes(nodes, startId)
+  const layoutedNodes = nodes.map(node => ({
+    ...node,
+    position: layoutResult[node.id] || node.position,
+  }))
+
+  return { nodes: layoutedNodes, startNodeId: startId }
+}
+
 // 기본 프로젝트 생성
 export const createDefaultProject = (): StoryProject => {
-  const { nodes, startNodeId } = createDefaultChapterNodes()
+  const { nodes: chapter1Nodes, startNodeId: chapter1StartId } = createDefaultChapterNodes()
+  const { nodes: chapter2Nodes, startNodeId: chapter2StartId } = createChapter2Nodes()
 
   return {
     name: 'New Story Project',
@@ -399,12 +722,21 @@ export const createDefaultProject = (): StoryProject => {
         chapters: [
           {
             id: 'chapter_1',
-            title: 'Chapter 1',
-            description: 'First chapter',
-            nodes,
-            startNodeId,
-            variables: [...defaultChapterVariables], // 챕터 로컬 변수 추가
+            title: 'Chapter 1: 상점',
+            description: '상인과의 만남 - 변수, 조건분기, JavaScript 예시',
+            nodes: chapter1Nodes,
+            startNodeId: chapter1StartId,
+            variables: [...defaultChapterVariables],
             alias: 'shop', // JavaScript에서 chapters.shop.변수명 으로 접근
+          },
+          {
+            id: 'chapter_2',
+            title: 'Chapter 2: 가위바위보',
+            description: '도박사와의 미니게임 - 랜덤, 루프, 전역변수 참조',
+            nodes: chapter2Nodes,
+            startNodeId: chapter2StartId,
+            variables: [...chapter2Variables],
+            alias: 'rps', // Rock-Paper-Scissors
           }
         ]
       }
