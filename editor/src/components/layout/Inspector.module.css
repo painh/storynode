@@ -686,3 +686,34 @@
 .codeEditorWrapper .cm-editor.cm-focused {
   outline: none;
 }
+
+/* Field hints and warnings */
+.fieldHint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.fieldWarning {
+  font-size: 11px;
+  color: #ff9800;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fieldWarning::before {
+  content: '⚠️';
+  font-size: 10px;
+}
+
+.fieldPreview {
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}

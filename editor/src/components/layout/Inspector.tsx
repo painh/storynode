@@ -8,6 +8,7 @@ import { CustomNodeInspector } from './inspector/CustomNodeInspector'
 import { ConditionNodeInspector } from './inspector/ConditionNodeInspector'
 import { VariableNodeInspector } from './inspector/VariableNodeInspector'
 import { JavaScriptNodeInspector } from './inspector/JavaScriptNodeInspector'
+import { ChapterEndNodeInspector } from './inspector/ChapterEndNodeInspector'
 import { HelpTooltip } from './inspector/HelpTooltip'
 import { useTranslation } from '../../i18n'
 import styles from './Inspector.module.css'
@@ -171,6 +172,14 @@ export function Inspector() {
         {/* Variable: variableOperations */}
         {selectedNode.type === 'variable' && (
           <VariableNodeInspector
+            node={selectedNode}
+            onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+          />
+        )}
+
+        {/* Chapter End: chapterEndData */}
+        {selectedNode.type === 'chapter_end' && (
+          <ChapterEndNodeInspector
             node={selectedNode}
             onUpdate={(updates) => updateNode(selectedNode.id, updates)}
           />

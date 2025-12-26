@@ -8,14 +8,23 @@ import type {
   StoryCondition,
   StoryChoiceEffect,
   VariableOperation,
+  ChapterEndAction,
 } from '../../../types/story'
 import type { GameState, GameVariables, GameHistoryEntry, ActiveImage } from '../../../types/game'
 import { DEFAULT_GAME_VARIABLES } from '../../../types/game'
+
+// 챕터 전환 정보
+export interface ChapterTransition {
+  action: ChapterEndAction
+  nextStageId?: string
+  nextChapterId?: string
+}
 
 export interface GameEngineOptions {
   onStateChange?: (state: GameState) => void
   onNodeChange?: (node: StoryNode | null) => void
   onGameEnd?: () => void
+  onChapterEnd?: (transition: ChapterTransition) => void  // 챕터 종료 시 호출
 }
 
 export class GameEngine {
@@ -355,9 +364,9 @@ export class GameEngine {
       return
     }
 
-    // chapter_end면 게임 종료
+    // chapter_end면 챕터 종료 처리
     if (currentNode.type === 'chapter_end') {
-      this.options.onGameEnd?.()
+      this.handleChapterEnd(currentNode)
       return
     }
 
@@ -883,5 +892,121 @@ export class GameEngine {
   // 재시작
   restart(): void {
     this.start(this.state.currentStageId, this.state.currentChapterId)
+  }
+
+  // 챕터 종료 처리
+  private handleChapterEnd(node: StoryNode): void {
+    const chapterEndData = node.chapterEndData || { action: 'next' as const }
+    const action = chapterEndData.action
+
+    // 다음 챕터 정보 계산
+    let nextStageId: string | undefined
+    let nextChapterId: string | undefined
+
+    switch (action) {
+      case 'next': {
+        // 현재 스테이지에서 다음 챕터 찾기
+        const currentStage = this.project.stages.find(s => s.id === this.state.currentStageId)
+        if (currentStage) {
+          const currentChapterIndex = currentStage.chapters.findIndex(
+            c => c.id === this.state.currentChapterId
+          )
+          const nextChapter = currentStage.chapters[currentChapterIndex + 1]
+          
+          if (nextChapter) {
+            nextStageId = currentStage.id
+            nextChapterId = nextChapter.id
+          } else {
+            // 현재 스테이지에 더 이상 챕터가 없으면 다음 스테이지 확인
+            const currentStageIndex = this.project.stages.findIndex(
+              s => s.id === this.state.currentStageId
+            )
+            const nextStage = this.project.stages[currentStageIndex + 1]
+            
+            if (nextStage && nextStage.chapters.length > 0) {
+              nextStageId = nextStage.id
+              nextChapterId = nextStage.chapters[0].id
+            }
+            // 다음 스테이지도 없으면 게임 종료
+          }
+        }
+        break
+      }
+      
+      case 'goto': {
+        nextStageId = chapterEndData.nextStageId || this.state.currentStageId
+        nextChapterId = chapterEndData.nextChapterId
+        break
+      }
+      
+      case 'select':
+      case 'end':
+        // 챕터 선택이나 게임 종료는 UI에서 처리
+        break
+    }
+
+    // 콜백 호출
+    const transition: ChapterTransition = {
+      action,
+      nextStageId,
+      nextChapterId,
+    }
+
+    // onChapterEnd 콜백이 있으면 호출
+    if (this.options.onChapterEnd) {
+      this.options.onChapterEnd(transition)
+    } else {
+      // 콜백이 없으면 기본 동작: next면 자동 진행, 나머지는 onGameEnd 호출
+      if (action === 'next' && nextChapterId) {
+        this.startChapter(nextStageId!, nextChapterId)
+      } else {
+        this.options.onGameEnd?.()
+      }
+    }
+  }
+
+  // 특정 챕터 시작 (외부에서 호출 가능)
+  startChapter(stageId: string, chapterId: string): void {
+    const stage = this.project.stages.find(s => s.id === stageId)
+    if (!stage) {
+      console.error(`Stage not found: ${stageId}`)
+      return
+    }
+
+    const chapter = stage.chapters.find(c => c.id === chapterId)
+    if (!chapter) {
+      console.error(`Chapter not found: ${chapterId}`)
+      return
+    }
+
+    // startNodeId 찾기
+    let startNodeId = chapter.startNodeId
+    if (!startNodeId && chapter.nodes.length > 0) {
+      const startNode = chapter.nodes.find(n => n.type === 'start')
+      startNodeId = startNode?.id || chapter.nodes[0].id
+    }
+
+    // 상태 업데이트 (변수는 유지, 이미지/히스토리 초기화)
+    this.state.currentStageId = stageId
+    this.state.currentChapterId = chapterId
+    this.state.currentNodeId = startNodeId
+    this.state.activeImages = []
+    // 히스토리는 유지 (챕터 간 히스토리 연속)
+
+    // 챕터 로컬 변수 초기화 (전역 변수는 유지)
+    if (chapter.variables) {
+      for (const varDef of chapter.variables) {
+        this.state.variables.variables[varDef.id] = varDef.defaultValue
+      }
+    }
+
+    // 첫 노드 처리
+    const currentNode = this.getCurrentNode()
+    if (currentNode) {
+      this.processNodeEntry(currentNode)
+    }
+
+    this.notifyStateChange()
+    this.notifyNodeChange()
   }
 }

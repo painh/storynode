@@ -220,6 +220,16 @@ export interface DataBinding {
   sourcePath: string      // 주는 프로퍼티 경로
 }
 
+// 챕터 종료 후 액션 타입
+export type ChapterEndAction = 'next' | 'select' | 'end' | 'goto'
+
+// 챕터 종료 데이터
+export interface ChapterEndData {
+  action: ChapterEndAction
+  nextChapterId?: string    // 'goto' 액션일 때 이동할 챕터 ID
+  nextStageId?: string      // 다른 스테이지의 챕터로 이동할 때
+}
+
 // 스토리 노드
 export interface StoryNode {
   id: string
@@ -250,6 +260,9 @@ export interface StoryNode {
 
   // custom 노드용
   customData?: CustomNodeData
+
+  // chapter_end 노드용
+  chapterEndData?: ChapterEndData
 
   // 데이터 바인딩 (다른 노드에서 값 주입)
   dataBindings?: DataBinding[]

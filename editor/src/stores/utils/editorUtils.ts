@@ -278,11 +278,15 @@ console.log('상인 만남:', chapters.shop.met_merchant);`,
       text: '{{Player Name}}님, 다음에 또 오세요!',
       nextNodeId: chapterEndId,
     },
-    // 챕터 종료
+    // 챕터 종료 - 다음 챕터(가위바위보)로 이동
     {
       id: chapterEndId,
       type: 'chapter_end',
       position: { x: 2600, y: 200 },
+      text: '상점 방문을 마치셨습니다.',
+      chapterEndData: {
+        action: 'next',
+      },
     },
   ]
 
@@ -687,11 +691,15 @@ console.log('결과:', chapters.rps.game_result === 0 ? '무승부' : chapters.r
       text: '그래, 다음에 또 오게나!\n{{win_count}}번 이겼으니 대단하군.',
       nextNodeId: chapterEndId,
     },
-    // 챕터 종료
+    // 챕터 종료 - 게임 종료
     {
       id: chapterEndId,
       type: 'chapter_end',
       position: { x: 1500, y: 500 },
+      text: '가위바위보 게임을 종료합니다.',
+      chapterEndData: {
+        action: 'end',
+      },
     },
   ]
 
