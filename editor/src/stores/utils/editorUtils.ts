@@ -329,7 +329,7 @@ export const defaultTemplateResources: ProjectResource[] = [
   },
 ]
 
-// 기본 변수 정의 (샘플)
+// 기본 변수 정의 (전역 - 게임 전체에서 유지)
 export const defaultVariables: VariableDefinition[] = [
   {
     id: 'gold',
@@ -353,6 +353,18 @@ export const defaultVariables: VariableDefinition[] = [
     description: '플레이어 이름',
   },
   {
+    id: 'inventory',
+    name: 'Inventory',
+    type: 'array',
+    defaultValue: [],
+    arrayItemType: 'string',
+    description: '인벤토리 아이템 목록',
+  },
+]
+
+// 챕터 로컬 변수 예시 (Chapter 1용 - 이 챕터 내에서만 의미있는 변수)
+export const defaultChapterVariables: VariableDefinition[] = [
+  {
     id: 'met_merchant',
     name: 'Met Merchant',
     type: 'boolean',
@@ -365,32 +377,6 @@ export const defaultVariables: VariableDefinition[] = [
     type: 'boolean',
     defaultValue: false,
     description: '아이템을 구매했는지 여부',
-  },
-  {
-    id: 'inventory',
-    name: 'Inventory',
-    type: 'array',
-    defaultValue: [],
-    arrayItemType: 'string',
-    description: '인벤토리 아이템 목록',
-  },
-]
-
-// 챕터 로컬 변수 예시 (Chapter 1용)
-export const defaultChapterVariables: VariableDefinition[] = [
-  {
-    id: 'chapter_visits',
-    name: 'Chapter Visits',
-    type: 'number',
-    defaultValue: 0,
-    description: '이 챕터 방문 횟수 (챕터 로컬)',
-  },
-  {
-    id: 'local_flag',
-    name: 'Local Flag',
-    type: 'boolean',
-    defaultValue: false,
-    description: '챕터 내에서만 유효한 플래그',
   },
 ]
 
