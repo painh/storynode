@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import type { EditorEdgeData, EdgeWaypoint } from '../../../types/editor'
 import styles from '../Inspector.module.css'
@@ -9,18 +8,17 @@ interface EdgeInspectorProps {
 }
 
 export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
-  const { edges, requestEdgeUpdate } = useCanvasStore()
-  const [snapGridSize, setSnapGridSize] = useState(20)
+  const { edges, requestEdgeUpdate, snapToGrid, setSnapToGrid, snapGrid, setSnapGrid } = useCanvasStore()
 
   const edge = edges.find(e => e.id === edgeId)
   const waypoints = (edge?.data as EditorEdgeData)?.waypoints || []
 
-  // 웨이포인트를 그리드에 스냅
-  const handleSnapToGrid = () => {
+  // 현재 웨이포인트들을 그리드에 스냅
+  const handleSnapCurrentWaypoints = () => {
     const snappedWaypoints = waypoints.map(wp => ({
       ...wp,
-      x: Math.round(wp.x / snapGridSize) * snapGridSize,
-      y: Math.round(wp.y / snapGridSize) * snapGridSize,
+      x: Math.round(wp.x / snapGrid) * snapGrid,
+      y: Math.round(wp.y / snapGrid) * snapGrid,
     }))
     requestEdgeUpdate(edgeId, { waypoints: snappedWaypoints })
   }
@@ -137,27 +135,39 @@ export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
           </div>
         )}
 
-        {/* 그리드 스냅 */}
+        <div className={styles.divider} />
+
+        {/* 그리드 스냅 설정 (글로벌) */}
+        <div className={styles.field}>
+          <label className={styles.label}>Grid Snap</label>
+          <div className={styles.snapRow}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={snapToGrid}
+                onChange={(e) => setSnapToGrid(e.target.checked)}
+              />
+              Enable
+            </label>
+            <input
+              type="number"
+              className={styles.snapInput}
+              value={snapGrid}
+              onChange={(e) => setSnapGrid(Math.max(1, Number(e.target.value)))}
+              min={1}
+              step={5}
+              disabled={!snapToGrid}
+            />
+            <span style={{ color: '#888', fontSize: '11px' }}>px</span>
+          </div>
+        </div>
+
+        {/* 현재 웨이포인트 정렬 버튼 */}
         {waypoints.length > 0 && (
           <>
-            <div className={styles.divider} />
-            <div className={styles.field}>
-              <label className={styles.label}>Grid Snap</label>
-              <div className={styles.snapRow}>
-                <input
-                  type="number"
-                  className={styles.snapInput}
-                  value={snapGridSize}
-                  onChange={(e) => setSnapGridSize(Math.max(1, Number(e.target.value)))}
-                  min={1}
-                  step={5}
-                />
-                <span style={{ color: '#888', fontSize: '11px' }}>px</span>
-                <button className={styles.snapButton} onClick={handleSnapToGrid}>
-                  Snap to Grid
-                </button>
-              </div>
-            </div>
+            <button className={styles.snapButton} onClick={handleSnapCurrentWaypoints}>
+              Align Waypoints to Grid
+            </button>
 
             {/* 곡선으로 되돌리기 */}
             <button

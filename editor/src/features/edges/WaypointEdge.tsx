@@ -1,5 +1,6 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, Position, type EdgeProps, useReactFlow } from '@xyflow/react'
+import { useCanvasStore } from '../../stores/canvasStore'
 import type { EditorEdgeData, EdgeWaypoint } from '../../types/editor'
 import styles from './WaypointEdge.module.css'
 
@@ -35,6 +36,7 @@ interface WaypointHandleProps {
 function WaypointHandle({ waypoint, onDrag, onDelete }: WaypointHandleProps) {
   const [isDragging, setIsDragging] = useState(false)
   const { screenToFlowPosition } = useReactFlow()
+  const { snapToGrid, snapGrid } = useCanvasStore()
   const startPosRef = useRef({ x: 0, y: 0 })
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -54,7 +56,16 @@ function WaypointHandle({ waypoint, onDrag, onDelete }: WaypointHandleProps) {
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      const flowPos = screenToFlowPosition({ x: e.clientX, y: e.clientY })
+      let flowPos = screenToFlowPosition({ x: e.clientX, y: e.clientY })
+      
+      // 스냅 적용
+      if (snapToGrid) {
+        flowPos = {
+          x: Math.round(flowPos.x / snapGrid) * snapGrid,
+          y: Math.round(flowPos.y / snapGrid) * snapGrid,
+        }
+      }
+      
       onDrag(waypoint.id, flowPos.x, flowPos.y)
     }
 
@@ -69,7 +80,7 @@ function WaypointHandle({ waypoint, onDrag, onDelete }: WaypointHandleProps) {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, waypoint.id, onDrag, screenToFlowPosition])
+  }, [isDragging, waypoint.id, onDrag, screenToFlowPosition, snapToGrid, snapGrid])
 
   return (
     <div

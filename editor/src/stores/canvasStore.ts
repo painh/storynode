@@ -28,6 +28,7 @@ interface CanvasState {
   // Grid 설정
   snapGrid: number
   showGrid: boolean
+  snapToGrid: boolean
 
   // 노드 위치 저장 (챕터별)
   nodePositions: Record<string, Record<string, { x: number; y: number }>>
@@ -60,6 +61,7 @@ interface CanvasState {
   // Grid 설정
   setSnapGrid: (size: number) => void
   setShowGrid: (show: boolean) => void
+  setSnapToGrid: (snap: boolean) => void
 
   clearCanvas: () => void
 }
@@ -77,6 +79,7 @@ export const useCanvasStore = create<CanvasState>()(
       pendingEdgeUpdate: null,
       snapGrid: 20,
       showGrid: true,
+      snapToGrid: false,
       nodePositions: {},
       commentNodes: {},
 
@@ -166,6 +169,7 @@ export const useCanvasStore = create<CanvasState>()(
       // Grid 설정
       setSnapGrid: (size) => set({ snapGrid: size }),
       setShowGrid: (show) => set({ showGrid: show }),
+      setSnapToGrid: (snap) => set({ snapToGrid: snap }),
 
       clearCanvas: () => set({ nodes: [], edges: [], selectedEdgeId: null }),
     }),
