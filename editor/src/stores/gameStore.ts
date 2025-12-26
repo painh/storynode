@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import type { GameStatus, GameState, DebugInfo, GameMode } from '../types/game'
 import type { StoryNode } from '../types/story'
-import { GameEngine } from '../features/game/engine/GameEngine'
+import { GameEngine, type ChapterTransition } from '../features/game/engine/GameEngine'
 import { useEditorStore } from './editorStore'
 import { useSettingsStore } from './settingsStore'
 import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
@@ -114,6 +114,30 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       },
       onGameEnd: () => {
         set({ status: 'ended' })
+      },
+      onChapterEnd: (transition: ChapterTransition) => {
+        const { engine } = get()
+        if (!engine) return
+
+        switch (transition.action) {
+          case 'next':
+          case 'goto':
+            // 다음 챕터가 있으면 자동 전환
+            if (transition.nextChapterId && transition.nextStageId) {
+              engine.startChapter(transition.nextStageId, transition.nextChapterId)
+            } else {
+              // 다음 챕터가 없으면 게임 종료
+              set({ status: 'ended' })
+            }
+            break
+          case 'select':
+            // TODO: 챕터 선택 UI 표시
+            set({ status: 'ended' })
+            break
+          case 'end':
+            set({ status: 'ended' })
+            break
+        }
       },
     })
 
