@@ -1,7 +1,8 @@
-import { memo } from 'react'
+import { memo, useState, useCallback } from 'react'
 import { type NodeProps, type Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
+import { useEditorStore } from '../../stores/editorStore'
 import { useTranslation } from '../../i18n'
 import styles from './ImageNode.module.css'
 
@@ -12,6 +13,8 @@ export const ImageNode = memo(function ImageNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
   const { common } = useTranslation()
+  const updateNode = useEditorStore((state) => state.updateNode)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   if (!storyNode) return null
 
@@ -46,6 +49,40 @@ export const ImageNode = memo(function ImageNode({
     }
   }
 
+  // 드래그 앤 드롭 핸들러
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    const imageType = e.dataTransfer.types.includes('application/storynode-image-path')
+    if (imageType) {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsDragOver(true)
+    }
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragOver(false)
+
+    const imagePath = e.dataTransfer.getData('application/storynode-image-path')
+    if (imagePath && storyNode) {
+      updateNode(storyNode.id, {
+        imageData: {
+          ...storyNode.imageData,
+          resourcePath: imagePath,
+          layer: storyNode.imageData?.layer || 'character',
+          layerOrder: storyNode.imageData?.layerOrder ?? 0,
+          alignment: storyNode.imageData?.alignment || 'center',
+        }
+      })
+    }
+  }, [storyNode, updateNode])
+
   return (
     <BaseNode
       nodeId={id}
@@ -55,7 +92,12 @@ export const ImageNode = memo(function ImageNode({
       hasOutputExec={true}
       isPlaying={data.isPlaying}
     >
-      <div className={styles.content}>
+      <div
+        className={`${styles.content} ${isDragOver ? styles.dragOver : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         {hasImage ? (
           <div className={styles.preview}>
             <img

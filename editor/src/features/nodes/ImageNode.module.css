@@ -1,5 +1,13 @@
 .content {
   min-width: 160px;
+  transition: all 0.15s ease;
+}
+
+.dragOver {
+  outline: 2px dashed var(--selection-border);
+  outline-offset: 2px;
+  background: rgba(52, 152, 219, 0.1);
+  border-radius: 4px;
 }
 
 .preview {
