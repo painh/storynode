@@ -19,7 +19,7 @@ import { useCanvasStore } from '../../stores/canvasStore'
 import { useSearchStore } from '../../stores/searchStore'
 import { useGameStore } from '../../stores/gameStore'
 import { nodeTypes } from '../nodes/nodeRegistry'
-import { SmartEdge } from '../edges/SmartEdge'
+import { WaypointEdge } from '../edges/WaypointEdge'
 import { DataEdge } from '../edges/DataEdge'
 import type { StoryNodeType } from '../../types/story'
 
@@ -34,7 +34,7 @@ import { CanvasMiniMap } from './components/CanvasMiniMap'
 import styles from './Canvas.module.css'
 
 const edgeTypes = {
-  smart: SmartEdge,
+  smart: WaypointEdge,
   data: DataEdge,
 }
 

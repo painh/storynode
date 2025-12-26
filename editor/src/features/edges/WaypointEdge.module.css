@@ -1,0 +1,76 @@
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #c62828;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  transition: all 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.deleteBtn:hover {
+  background: #e53935;
+  transform: scale(1.2);
+}
+
+/* 웨이포인트 핸들 */
+.waypoint {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid #666;
+  border-radius: 50%;
+  cursor: grab;
+  transition: all 0.15s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.waypoint:hover {
+  background: #ff9800;
+  border-color: #ff9800;
+  transform: scale(1.3);
+}
+
+.waypoint.dragging {
+  cursor: grabbing;
+  background: #ff9800;
+  border-color: #e65100;
+  transform: scale(1.4);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.5);
+}
+
+/* 엣지에 호버 시 추가 버튼 */
+.addWaypointZone {
+  position: absolute;
+  cursor: crosshair;
+  pointer-events: all;
+}
+
+.addWaypointHint {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: rgba(76, 175, 80, 0.8);
+  border: 2px solid #4CAF50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.addWaypointZone:hover .addWaypointHint {
+  opacity: 1;
+}

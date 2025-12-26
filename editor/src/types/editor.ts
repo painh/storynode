@@ -1,5 +1,10 @@
-import type { Node, Edge } from '@xyflow/react'
+import type { Node, Edge, XYPosition } from '@xyflow/react'
 import type { StoryNode, StoryNodeType } from './story'
+
+// 엣지 웨이포인트 (경로 조절용 중간점)
+export interface EdgeWaypoint extends XYPosition {
+  id: string
+}
 
 // 에디터 전용 노드 타입 (게임 데이터에 포함 안됨)
 export type EditorOnlyNodeType = 'comment'
@@ -28,8 +33,13 @@ export interface EditorNodeData extends Record<string, unknown> {
 // React Flow 노드 타입
 export type EditorNode = Node<EditorNodeData>
 
+// 엣지 데이터 (waypoints 포함)
+export interface EditorEdgeData extends Record<string, unknown> {
+  waypoints?: EdgeWaypoint[]
+}
+
 // React Flow 엣지 타입
-export type EditorEdge = Edge
+export type EditorEdge = Edge<EditorEdgeData>
 
 // 노드 타입별 색상
 export const NODE_COLORS: Record<AllNodeType, string> = {
