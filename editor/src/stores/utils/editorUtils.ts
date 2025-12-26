@@ -21,6 +21,7 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
   const choice1VariableId = generateId()  // 구매 후 변수 처리
   const choice2ResultId = generateId()
   const choice3ResultId = generateId()
+  const javascriptId = generateId()  // JavaScript 노드 추가
   const conditionId = generateId()
   const goldBranchId = generateId()
   const flagBranchId = generateId()
@@ -198,25 +199,33 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       text: '천천히 구경하세요~',
       nextNodeId: conditionId,
     },
-    // 선택 결과 3 - 비밀 거래 (변수 참조 예시)
+    // 선택 결과 3 - 비밀 거래 (JavaScript로 복잡한 계산)
     {
       id: choice3ResultId,
-      type: 'variable',
+      type: 'dialogue',
       position: { x: 1850, y: 350 },
+      speaker: '상인',
+      text: '좋아요, 특별히 비밀 거래를 해드리죠...',
+      nextNodeId: javascriptId,
+    },
+    // JavaScript 노드 - 복잡한 수식 계산 예시
+    {
+      id: javascriptId,
+      type: 'javascript',
+      position: { x: 2050, y: 350 },
       nextNodeId: conditionId,
-      variableOperations: [
-        // Gold += HP (HP만큼 골드 추가 - 변수 참조 예시!)
-        { 
-          target: 'variable', 
-          action: 'add', 
-          variableId: 'gold', 
-          value: 0,
-          useVariableValue: true, 
-          sourceVariableId: 'hp' 
-        },
-        // met_merchant = true
-        { target: 'variable', action: 'set', variableId: 'met_merchant', value: true },
-      ],
+      // 복잡한 수식 예시: Gold = (HP * 2) + (Gold * 0.5) + 100
+      javascriptCode: `// 복잡한 수식 계산 예시
+// 비밀 거래 보너스: HP의 2배 + 현재 골드의 50% + 100
+
+const bonus = (variables.HP * 2) + (variables.Gold * 0.5) + 100;
+variables.Gold = Math.floor(bonus);
+
+// 상인과 만난 플래그 설정
+variables['Met Merchant'] = true;
+
+// 콘솔에 결과 출력 (디버그용)
+console.log('비밀 거래 완료! 새 골드:', variables.Gold);`,
     },
     // 조건 노드 - 여러 조건 타입 활용
     {
