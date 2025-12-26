@@ -34,6 +34,10 @@ export interface AppSettings {
 
   // 마지막으로 열었던 프로젝트 경로
   lastProjectPath: string | null
+
+  // 패널 너비 설정
+  leftPanelWidth: number
+  rightPanelWidth: number
 }
 
 // 기본 설정값
@@ -46,6 +50,8 @@ const defaultSettings: AppSettings = {
   saveBeforeGameRun: true,
   recentProjects: [],
   lastProjectPath: null,
+  leftPanelWidth: 220,
+  rightPanelWidth: 320,
 }
 
 interface SettingsState {
@@ -71,6 +77,7 @@ interface SettingsState {
   setAutoSaveMode: (mode: AutoSaveMode) => void
   setAutoSaveIntervalMinutes: (minutes: number) => void
   setSaveBeforeGameRun: (value: boolean) => void
+  setPanelWidths: (left: number, right: number) => void
 }
 
 const MAX_RECENT_PROJECTS = 10
@@ -237,6 +244,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setSaveBeforeGameRun: (value) => {
     set((state) => ({
       settings: { ...state.settings, saveBeforeGameRun: value }
+    }))
+    get().saveSettings()
+  },
+
+  setPanelWidths: (left, right) => {
+    set((state) => ({
+      settings: { ...state.settings, leftPanelWidth: left, rightPanelWidth: right }
     }))
     get().saveSettings()
   },

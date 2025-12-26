@@ -1,7 +1,6 @@
 .inspector {
-  width: var(--panel-width-right);
+  width: 100%;
   background: var(--bg-secondary);
-  border-left: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   overflow-y: auto;

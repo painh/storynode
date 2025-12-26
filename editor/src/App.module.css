@@ -11,3 +11,42 @@
   display: flex;
   overflow: hidden;
 }
+
+/* Resizable Panel Container */
+.panelContainer {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.panelContainer.left {
+  border-right: 1px solid var(--border-default);
+}
+
+.panelContainer.right {
+  border-left: 1px solid var(--border-default);
+}
+
+/* Resize Handle */
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.resizeHandle:hover,
+.resizeHandle.active {
+  background: var(--selection-border);
+}
+
+.panelContainer.left .resizeHandle {
+  right: -3px;
+}
+
+.panelContainer.right .resizeHandle {
+  left: -3px;
+}

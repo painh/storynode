@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Header } from './components/layout/Header'
 import { Sidebar } from './components/layout/Sidebar'
 import { Inspector } from './components/layout/Inspector'
@@ -18,13 +18,76 @@ import styles from './App.module.css'
 
 type ScreenType = 'editor' | 'templateEditor'
 
+const MIN_PANEL_WIDTH = 200
+const MAX_PANEL_WIDTH = 600
+
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('editor')
-  const { loadSettings, settings, isLoaded } = useSettingsStore()
+  const [isResizing, setIsResizing] = useState<'left' | 'right' | null>(null)
+  const { loadSettings, settings, isLoaded, setPanelWidths } = useSettingsStore()
   const { setProject } = useEditorStore()
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
   const { isModalOpen: isGameModalOpen, closeGame } = useGameStore()
+
+  // 패널 너비는 설정에서 가져오되, 리사이즈 중에는 로컬 상태 사용 (성능)
+  const [localLeftWidth, setLocalLeftWidth] = useState(settings.leftPanelWidth)
+  const [localRightWidth, setLocalRightWidth] = useState(settings.rightPanelWidth)
+  const saveTimeoutRef = useRef<number | null>(null)
+
+  // 설정이 로드되면 로컬 상태 동기화
+  useEffect(() => {
+    if (isLoaded) {
+      setLocalLeftWidth(settings.leftPanelWidth)
+      setLocalRightWidth(settings.rightPanelWidth)
+    }
+  }, [isLoaded, settings.leftPanelWidth, settings.rightPanelWidth])
+
+  // Resize handlers
+  const handleMouseDown = useCallback((side: 'left' | 'right') => {
+    setIsResizing(side)
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return
+
+    if (isResizing === 'left') {
+      const newWidth = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, e.clientX))
+      setLocalLeftWidth(newWidth)
+    } else if (isResizing === 'right') {
+      const newWidth = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, window.innerWidth - e.clientX))
+      setLocalRightWidth(newWidth)
+    }
+  }, [isResizing])
+
+  const handleMouseUp = useCallback(() => {
+    if (isResizing) {
+      // 드래그 끝날 때 설정 저장 (debounced)
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+      saveTimeoutRef.current = window.setTimeout(() => {
+        setPanelWidths(localLeftWidth, localRightWidth)
+      }, 100)
+    }
+    setIsResizing(null)
+  }, [isResizing, localLeftWidth, localRightWidth, setPanelWidths])
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp])
 
   console.log('[App] Render - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
 
@@ -85,9 +148,31 @@ function App() {
     <div className={styles.app}>
       <Header onOpenTemplateEditor={() => setCurrentScreen('templateEditor')} />
       <div className={styles.workspace}>
-        <Sidebar onOpenTemplateEditor={() => setCurrentScreen('templateEditor')} />
+        {/* Left Panel (Sidebar) */}
+        <div 
+          className={`${styles.panelContainer} ${styles.left}`}
+          style={{ width: localLeftWidth }}
+        >
+          <Sidebar onOpenTemplateEditor={() => setCurrentScreen('templateEditor')} />
+          <div 
+            className={`${styles.resizeHandle} ${isResizing === 'left' ? styles.active : ''}`}
+            onMouseDown={() => handleMouseDown('left')}
+          />
+        </div>
+
         <Canvas />
-        <Inspector />
+
+        {/* Right Panel (Inspector) */}
+        <div 
+          className={`${styles.panelContainer} ${styles.right}`}
+          style={{ width: localRightWidth }}
+        >
+          <div 
+            className={`${styles.resizeHandle} ${isResizing === 'right' ? styles.active : ''}`}
+            onMouseDown={() => handleMouseDown('right')}
+          />
+          <Inspector />
+        </div>
       </div>
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
       <GameModal isOpen={isGameModalOpen} onClose={closeGame} />
