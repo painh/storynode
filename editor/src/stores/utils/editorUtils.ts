@@ -218,15 +218,17 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       javascriptCode: `// 복잡한 수식 계산 예시
 // 비밀 거래 보너스: HP의 2배 + 현재 골드의 50% + 100
 
-// 변수는 ID로 접근 (gold, hp 등)
+// 전역 변수는 variables.변수ID 로 접근
 const bonus = (variables.hp * 2) + (variables.gold * 0.5) + 100;
 variables.gold = Math.floor(bonus);
 
-// 챕터 변수도 ID로 접근 (met_merchant)
-variables.met_merchant = true;
+// 챕터 변수는 chapters.별칭.변수ID 로 접근
+// (이 챕터의 alias는 "shop")
+chapters.shop.met_merchant = true;
 
 // 콘솔에 결과 출력 (디버그용)
-console.log('비밀 거래 완료! 새 골드:', variables.gold);`,
+console.log('비밀 거래 완료! 새 골드:', variables.gold);
+console.log('상인 만남:', chapters.shop.met_merchant);`,
     },
     // 조건 노드 - 여러 조건 타입 활용
     {
@@ -402,6 +404,7 @@ export const createDefaultProject = (): StoryProject => {
             nodes,
             startNodeId,
             variables: [...defaultChapterVariables], // 챕터 로컬 변수 추가
+            alias: 'shop', // JavaScript에서 chapters.shop.변수명 으로 접근
           }
         ]
       }

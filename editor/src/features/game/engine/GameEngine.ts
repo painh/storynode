@@ -169,6 +169,15 @@ export class GameEngine {
       }
     }
 
+    // javascript 노드면 코드 실행 후 자동 진행
+    if (node.type === 'javascript') {
+      this.executeJavaScript(node)
+      if (node.nextNodeId) {
+        this.goToNode(node.nextNodeId)
+        return
+      }
+    }
+
     // image 노드면 이미지 레이어 업데이트 후 효과 재생
     if (node.type === 'image') {
       this.processImageNode(node)
@@ -674,6 +683,88 @@ export class GameEngine {
     }
 
     return node.defaultNextNodeId || null
+  }
+
+  // JavaScript 노드 실행
+  private executeJavaScript(node: StoryNode): void {
+    if (!node.javascriptCode) return
+
+    try {
+      // 전역 변수 프록시: variables.변수ID 로 접근
+      const variables = this.state.variables.variables
+
+      // 챕터 변수 프록시: chapters.별칭.변수ID 로 접근
+      const chapters = this.createChaptersProxy()
+
+      // 사용 가능한 함수들
+      const setFlag = (key: string, value: boolean | number | string) => {
+        this.state.variables.flags[key] = value
+      }
+      const getFlag = (key: string) => this.state.variables.flags[key]
+      const log = (...args: unknown[]) => console.log('[JS Node]', ...args)
+
+      // 코드 실행 (Function 생성자 사용)
+      const fn = new Function(
+        'variables',
+        'chapters',
+        'setFlag',
+        'getFlag',
+        'console',
+        node.javascriptCode
+      )
+
+      fn(variables, chapters, setFlag, getFlag, { log, warn: console.warn, error: console.error })
+    } catch (error) {
+      console.error('[GameEngine] JavaScript execution error:', error)
+    }
+  }
+
+  // chapters 프록시 생성 (chapters.별칭.변수ID 접근용)
+  private createChaptersProxy(): Record<string, Record<string, unknown>> {
+    const proxy: Record<string, Record<string, unknown>> = {}
+    const vars = this.state.variables.variables
+
+    // 모든 챕터를 순회하며 alias가 있는 챕터의 변수들을 프록시로 생성
+    for (const stage of this.project.stages) {
+      for (const chapter of stage.chapters) {
+        if (chapter.alias && chapter.variables) {
+          // 해당 챕터의 변수들에 대한 프록시 생성
+          proxy[chapter.alias] = new Proxy({} as Record<string, unknown>, {
+            get: (_target, prop: string) => {
+              // 챕터 변수 ID로 접근
+              const varDef = chapter.variables?.find(v => v.id === prop)
+              if (varDef) {
+                return vars[varDef.id]
+              }
+              // 변수 이름으로도 접근 시도
+              const varByName = chapter.variables?.find(v => v.name === prop)
+              if (varByName) {
+                return vars[varByName.id]
+              }
+              return undefined
+            },
+            set: (_target, prop: string, value: unknown) => {
+              // 챕터 변수 ID로 접근
+              const varDef = chapter.variables?.find(v => v.id === prop)
+              if (varDef) {
+                vars[varDef.id] = value as boolean | number | string | Array<boolean | number | string>
+                return true
+              }
+              // 변수 이름으로도 접근 시도
+              const varByName = chapter.variables?.find(v => v.name === prop)
+              if (varByName) {
+                vars[varByName.id] = value as boolean | number | string | Array<boolean | number | string>
+                return true
+              }
+              console.warn(`[GameEngine] Chapter variable not found: ${prop}`)
+              return false
+            },
+          })
+        }
+      }
+    }
+
+    return proxy
   }
 
   // 히스토리에 추가

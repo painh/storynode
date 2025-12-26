@@ -487,6 +487,28 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
             </div>
             {!chapterVarsCollapsed && (
               <div className={styles.variableSectionContent}>
+                {/* 챕터 별칭 설정 */}
+                {currentChapter && currentStageId && (
+                  <div className={styles.aliasField}>
+                    <label className={styles.aliasLabel}>Alias (for JS)</label>
+                    <input
+                      type="text"
+                      className={styles.aliasInput}
+                      value={currentChapter.alias || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z0-9_]/g, '') // 영문, 숫자, _ 만 허용
+                        updateChapter(currentStageId, currentChapter.id, { alias: value || undefined })
+                      }}
+                      placeholder="e.g. shop, dungeon"
+                      title="JavaScript 노드에서 chapters.별칭.변수명 으로 접근 가능"
+                    />
+                    <span className={styles.aliasHint}>
+                      {currentChapter.alias 
+                        ? `JS: chapters.${currentChapter.alias}.변수ID`
+                        : 'JS에서 챕터 변수 접근용'}
+                    </span>
+                  </div>
+                )}
                 {chapterVariables
                   .filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter))
                   .map((variable) => renderVariableItem(variable, true, updateChapterVariable, deleteChapterVariable))}

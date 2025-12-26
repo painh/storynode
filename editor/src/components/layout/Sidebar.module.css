@@ -594,3 +594,51 @@
 .chapterVariable:hover {
   border-left-color: var(--node-event, #e67e22);
 }
+
+/* Chapter Alias Field */
+.aliasField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  border: 1px dashed var(--border-default);
+}
+
+.aliasLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.aliasInput {
+  padding: 6px 8px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-default);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: monospace;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.aliasInput:focus {
+  border-color: var(--node-event, #e67e22);
+}
+
+.aliasInput::placeholder {
+  color: var(--text-muted);
+  font-family: inherit;
+}
+
+.aliasHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: monospace;
+  font-style: italic;
+}

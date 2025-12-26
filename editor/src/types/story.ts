@@ -287,6 +287,8 @@ export interface StoryChapter {
   commentNodes?: CommentNode[]
   // 챕터 로컬 변수 (챕터 시작 시 초기화됨)
   variables?: VariableDefinition[]
+  // 챕터 별칭 (JavaScript에서 chapters.별칭.변수명 으로 접근)
+  alias?: string
 }
 
 // 스토리 스테이지 (챕터 묶음)
