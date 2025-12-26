@@ -210,6 +210,26 @@ export interface Translations {
     exitEffect: string
     transitionTiming: string
     objectFit: string
+    // 챕터 종료
+    chapterEndAction: string
+  }
+
+  // 챕터 종료 액션
+  chapterEnd: {
+    actionLabel: string
+    nextChapterLabel: string
+    nextChapterAuto: string
+    lastChapter: string
+    differentStageWarning: string
+    // 액션 옵션
+    actionNext: string
+    actionNextDesc: string
+    actionGoto: string
+    actionGotoDesc: string
+    actionSelect: string
+    actionSelectDesc: string
+    actionEnd: string
+    actionEndDesc: string
   }
 }
 
@@ -399,6 +419,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: '같은 레이어+순서에 있는 기존 이미지의 퇴장 효과입니다.\n새 이미지로 교체될 때 적용됩니다.',
       transitionTiming: '퇴장과 등장 효과의 타이밍입니다.\n• 순차: 기존 이미지가 사라진 후 새 이미지 등장\n• 동시: 기존 이미지가 사라지면서 새 이미지 등장',
       objectFit: '이미지가 영역에 맞춰지는 방식입니다.\n• Contain: 비율 유지, 전체 표시\n• Cover: 비율 유지, 영역 채움 (잘릴 수 있음)\n• Fill: 비율 무시, 영역 채움\n• None: 원본 크기\n• Scale Down: 필요시에만 축소',
+      chapterEndAction: '챕터가 종료될 때 수행할 동작을 선택합니다.\n\n• 다음 챕터로: 순서상 다음 챕터로 자동 진행\n• 특정 챕터로 이동: 지정한 챕터로 바로 이동\n• 챕터 선택 화면: 플레이어가 다음 챕터를 선택\n• 게임 종료: 게임을 완전히 종료하고 엔딩 표시',
+    },
+    chapterEnd: {
+      actionLabel: '챕터 종료 후 액션',
+      nextChapterLabel: '이동할 챕터',
+      nextChapterAuto: '다음 챕터 (자동)',
+      lastChapter: '(마지막 챕터 - 게임 종료)',
+      differentStageWarning: '다른 스테이지의 챕터로 이동합니다',
+      actionNext: '다음 챕터로',
+      actionNextDesc: '순서상 다음 챕터로 자동 진행합니다. 같은 스테이지 내에 다음 챕터가 없으면 다음 스테이지의 첫 챕터로 이동합니다.',
+      actionGoto: '특정 챕터로 이동',
+      actionGotoDesc: '지정한 특정 챕터로 바로 이동합니다. 다른 스테이지의 챕터도 선택할 수 있습니다.',
+      actionSelect: '챕터 선택 화면',
+      actionSelectDesc: '플레이어에게 다음에 진행할 챕터를 선택할 수 있는 화면을 표시합니다.',
+      actionEnd: '게임 종료',
+      actionEndDesc: '게임을 완전히 종료하고 엔딩 화면을 표시합니다. 스토리가 완결되는 지점에서 사용합니다.',
     },
   },
   en: {
@@ -586,6 +622,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: 'Exit effect for existing image at same layer+order.\nApplied when replaced with new image.',
       transitionTiming: 'Timing of exit and entrance effects.\n• Sequential: New image appears after old one exits\n• Crossfade: New image appears while old one exits',
       objectFit: 'How the image fits within its container.\n• Contain: Preserve ratio, show entire image\n• Cover: Preserve ratio, fill area (may crop)\n• Fill: Ignore ratio, fill area\n• None: Original size\n• Scale Down: Only shrink if needed',
+      chapterEndAction: 'Select the action to perform when the chapter ends.\n\n• Next Chapter: Auto-progress to next chapter in order\n• Go to Specific Chapter: Jump to a designated chapter\n• Chapter Selection: Let player choose the next chapter\n• End Game: Completely end the game and show ending',
+    },
+    chapterEnd: {
+      actionLabel: 'After Chapter End Action',
+      nextChapterLabel: 'Target Chapter',
+      nextChapterAuto: 'Next Chapter (Auto)',
+      lastChapter: '(Last chapter - Game ends)',
+      differentStageWarning: 'Moving to a chapter in a different stage',
+      actionNext: 'Next Chapter',
+      actionNextDesc: 'Auto-progress to the next chapter in order. If no next chapter exists in the same stage, moves to the first chapter of the next stage.',
+      actionGoto: 'Go to Specific Chapter',
+      actionGotoDesc: 'Jump directly to a specified chapter. Chapters from other stages can also be selected.',
+      actionSelect: 'Chapter Selection',
+      actionSelectDesc: 'Display a screen where the player can choose which chapter to play next.',
+      actionEnd: 'End Game',
+      actionEndDesc: 'Completely end the game and display the ending screen. Use this at the conclusion of the story.',
     },
   },
 
@@ -775,6 +827,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: '同一图层+顺序的现有图像的退出效果。\n被新图像替换时应用。',
       transitionTiming: '退出和进入效果的时机。\n• 顺序：旧图像退出后新图像出现\n• 交叉淡入淡出：新图像出现的同时旧图像退出',
       objectFit: '图像如何适应其容器。\n• Contain：保持比例，显示整个图像\n• Cover：保持比例，填充区域（可能裁剪）\n• Fill：忽略比例，填充区域\n• None：原始尺寸\n• Scale Down：仅在需要时缩小',
+      chapterEndAction: '选择章节结束时执行的操作。\n\n• 下一章节：按顺序自动进入下一章节\n• 跳转到指定章节：直接跳转到指定章节\n• 章节选择：让玩家选择下一章节\n• 结束游戏：完全结束游戏并显示结局',
+    },
+    chapterEnd: {
+      actionLabel: '章节结束后操作',
+      nextChapterLabel: '目标章节',
+      nextChapterAuto: '下一章节（自动）',
+      lastChapter: '（最后一章 - 游戏结束）',
+      differentStageWarning: '将跳转到其他阶段的章节',
+      actionNext: '下一章节',
+      actionNextDesc: '按顺序自动进入下一章节。如果同一阶段没有下一章节，则跳转到下一阶段的第一章节。',
+      actionGoto: '跳转到指定章节',
+      actionGotoDesc: '直接跳转到指定的特定章节。也可以选择其他阶段的章节。',
+      actionSelect: '章节选择',
+      actionSelectDesc: '显示一个界面，让玩家选择接下来要玩的章节。',
+      actionEnd: '结束游戏',
+      actionEndDesc: '完全结束游戏并显示结局画面。用于故事的结尾处。',
     },
   },
 
@@ -964,6 +1032,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: '同一圖層+順序的現有圖像的退出效果。\n被新圖像取代時套用。',
       transitionTiming: '退出和進入效果的時機。\n• 順序：舊圖像退出後新圖像出現\n• 交叉淡入淡出：新圖像出現的同時舊圖像退出',
       objectFit: '圖像如何適應其容器。\n• Contain：保持比例，顯示整個圖像\n• Cover：保持比例，填充區域（可能裁剪）\n• Fill：忽略比例，填充區域\n• None：原始尺寸\n• Scale Down：僅在需要時縮小',
+      chapterEndAction: '選擇章節結束時執行的操作。\n\n• 下一章節：按順序自動進入下一章節\n• 跳轉到指定章節：直接跳轉到指定章節\n• 章節選擇：讓玩家選擇下一章節\n• 結束遊戲：完全結束遊戲並顯示結局',
+    },
+    chapterEnd: {
+      actionLabel: '章節結束後操作',
+      nextChapterLabel: '目標章節',
+      nextChapterAuto: '下一章節（自動）',
+      lastChapter: '（最後一章 - 遊戲結束）',
+      differentStageWarning: '將跳轉到其他階段的章節',
+      actionNext: '下一章節',
+      actionNextDesc: '按順序自動進入下一章節。如果同一階段沒有下一章節，則跳轉到下一階段的第一章節。',
+      actionGoto: '跳轉到指定章節',
+      actionGotoDesc: '直接跳轉到指定的特定章節。也可以選擇其他階段的章節。',
+      actionSelect: '章節選擇',
+      actionSelectDesc: '顯示一個介面，讓玩家選擇接下來要玩的章節。',
+      actionEnd: '結束遊戲',
+      actionEndDesc: '完全結束遊戲並顯示結局畫面。用於故事的結尾處。',
     },
   },
 
@@ -1153,6 +1237,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: 'Efecto de salida para imagen existente en misma capa+orden.\nAplicado al ser reemplazada por nueva imagen.',
       transitionTiming: 'Momento de efectos de salida y entrada.\n• Secuencial: Nueva imagen aparece después de que sale la anterior\n• Cruzado: Nueva imagen aparece mientras sale la anterior',
       objectFit: 'Cómo la imagen se ajusta a su contenedor.\n• Contain: Preservar proporción, mostrar imagen completa\n• Cover: Preservar proporción, llenar área (puede recortar)\n• Fill: Ignorar proporción, llenar área\n• None: Tamaño original\n• Scale Down: Solo reducir si es necesario',
+      chapterEndAction: 'Selecciona la acción a realizar cuando termine el capítulo.\n\n• Siguiente Capítulo: Avanzar automáticamente al siguiente capítulo\n• Ir a Capítulo Específico: Saltar a un capítulo designado\n• Selección de Capítulo: Dejar que el jugador elija el siguiente capítulo\n• Fin del Juego: Terminar completamente el juego y mostrar el final',
+    },
+    chapterEnd: {
+      actionLabel: 'Acción Después del Capítulo',
+      nextChapterLabel: 'Capítulo Destino',
+      nextChapterAuto: 'Siguiente Capítulo (Auto)',
+      lastChapter: '(Último capítulo - Fin del juego)',
+      differentStageWarning: 'Moviendo a un capítulo en una etapa diferente',
+      actionNext: 'Siguiente Capítulo',
+      actionNextDesc: 'Avanzar automáticamente al siguiente capítulo en orden. Si no hay siguiente capítulo en la misma etapa, avanza al primer capítulo de la siguiente etapa.',
+      actionGoto: 'Ir a Capítulo Específico',
+      actionGotoDesc: 'Saltar directamente a un capítulo especificado. También se pueden seleccionar capítulos de otras etapas.',
+      actionSelect: 'Selección de Capítulo',
+      actionSelectDesc: 'Mostrar una pantalla donde el jugador puede elegir qué capítulo jugar a continuación.',
+      actionEnd: 'Fin del Juego',
+      actionEndDesc: 'Terminar completamente el juego y mostrar la pantalla de final. Usar esto en la conclusión de la historia.',
     },
   },
 
@@ -1342,6 +1442,22 @@ export const translations: Record<Language, Translations> = {
       exitEffect: '同じレイヤー+順序にある既存画像の退出エフェクトです。\n新しい画像に置き換えられる時に適用されます。',
       transitionTiming: '退出と登場エフェクトのタイミングです。\n• 順次：古い画像が退出後に新しい画像が登場\n• クロスフェード：古い画像が退出しながら新しい画像が登場',
       objectFit: '画像がコンテナにどのように収まるかを指定します。\n• Contain：比率を維持、画像全体を表示\n• Cover：比率を維持、エリアを埋める（トリミングされる場合あり）\n• Fill：比率を無視、エリアを埋める\n• None：元のサイズ\n• Scale Down：必要な場合のみ縮小',
+      chapterEndAction: 'チャプター終了時に実行するアクションを選択します。\n\n• 次のチャプターへ：順番通りに次のチャプターへ自動進行\n• 特定のチャプターへ移動：指定したチャプターへジャンプ\n• チャプター選択：プレイヤーに次のチャプターを選択させる\n• ゲーム終了：ゲームを完全に終了してエンディングを表示',
+    },
+    chapterEnd: {
+      actionLabel: 'チャプター終了後のアクション',
+      nextChapterLabel: '移動先チャプター',
+      nextChapterAuto: '次のチャプター（自動）',
+      lastChapter: '（最後のチャプター - ゲーム終了）',
+      differentStageWarning: '別のステージのチャプターへ移動します',
+      actionNext: '次のチャプターへ',
+      actionNextDesc: '順番通りに次のチャプターへ自動進行します。同じステージに次のチャプターがない場合は、次のステージの最初のチャプターへ移動します。',
+      actionGoto: '特定のチャプターへ移動',
+      actionGotoDesc: '指定した特定のチャプターへ直接ジャンプします。他のステージのチャプターも選択できます。',
+      actionSelect: 'チャプター選択',
+      actionSelectDesc: 'プレイヤーが次にプレイするチャプターを選択できる画面を表示します。',
+      actionEnd: 'ゲーム終了',
+      actionEndDesc: 'ゲームを完全に終了してエンディング画面を表示します。ストーリーの結末で使用します。',
     },
   },
 }

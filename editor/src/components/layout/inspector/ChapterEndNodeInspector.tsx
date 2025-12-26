@@ -1,5 +1,7 @@
 import type { StoryNode, ChapterEndAction, ChapterEndData } from '../../../types/story'
 import { useEditorStore } from '../../../stores/editorStore'
+import { useTranslation } from '../../../i18n/useTranslation'
+import { HelpTooltip } from './HelpTooltip'
 import styles from '../Inspector.module.css'
 
 interface ChapterEndNodeInspectorProps {
@@ -7,15 +9,17 @@ interface ChapterEndNodeInspectorProps {
   onUpdate: (updates: Partial<StoryNode>) => void
 }
 
-const ACTION_OPTIONS: { value: ChapterEndAction; label: string; description: string }[] = [
-  { value: 'next', label: '다음 챕터로', description: '순서상 다음 챕터로 자동 진행' },
-  { value: 'goto', label: '특정 챕터로 이동', description: '지정한 챕터로 이동' },
-  { value: 'select', label: '챕터 선택 화면', description: '플레이어가 챕터를 선택' },
-  { value: 'end', label: '게임 종료', description: '게임을 종료하고 엔딩 표시' },
-]
-
 export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspectorProps) {
   const { project, currentStageId } = useEditorStore()
+  const { chapterEnd, help } = useTranslation()
+
+  // 액션 옵션 (로컬라이징 적용)
+  const ACTION_OPTIONS: { value: ChapterEndAction; label: string; description: string }[] = [
+    { value: 'next', label: chapterEnd.actionNext, description: chapterEnd.actionNextDesc },
+    { value: 'goto', label: chapterEnd.actionGoto, description: chapterEnd.actionGotoDesc },
+    { value: 'select', label: chapterEnd.actionSelect, description: chapterEnd.actionSelectDesc },
+    { value: 'end', label: chapterEnd.actionEnd, description: chapterEnd.actionEndDesc },
+  ]
 
   // 현재 데이터 또는 기본값
   const chapterEndData: ChapterEndData = node.chapterEndData || { action: 'next' }
@@ -62,7 +66,10 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
       <div className={styles.divider} />
       
       <div className={styles.field}>
-        <label className={styles.label}>챕터 종료 후 액션</label>
+        <div className={styles.labelWithHelp}>
+          <label className={styles.label}>{chapterEnd.actionLabel}</label>
+          <HelpTooltip content={help.chapterEndAction} />
+        </div>
         <select
           className={styles.select}
           value={chapterEndData.action}
@@ -82,7 +89,7 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
       {/* goto 액션일 때 챕터 선택 */}
       {chapterEndData.action === 'goto' && (
         <div className={styles.field}>
-          <label className={styles.label}>이동할 챕터</label>
+          <label className={styles.label}>{chapterEnd.nextChapterLabel}</label>
           <select
             className={styles.select}
             value={chapterEndData.nextChapterId || ''}
@@ -98,7 +105,7 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
           </select>
           {chapterEndData.nextStageId && chapterEndData.nextStageId !== currentStageId && (
             <div className={styles.fieldWarning}>
-              다른 스테이지의 챕터로 이동합니다
+              {chapterEnd.differentStageWarning}
             </div>
           )}
         </div>
@@ -107,7 +114,7 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
       {/* next 액션일 때 다음 챕터 미리보기 */}
       {chapterEndData.action === 'next' && currentStage && (
         <div className={styles.field}>
-          <label className={styles.label}>다음 챕터 (자동)</label>
+          <label className={styles.label}>{chapterEnd.nextChapterAuto}</label>
           <div className={styles.fieldPreview}>
             {(() => {
               const currentChapterIndex = currentStage.chapters.findIndex(
@@ -127,7 +134,7 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
                 return `→ [${nextStage.title}] ${nextStage.chapters[0].title}`
               }
               
-              return '(마지막 챕터 - 게임 종료)'
+              return chapterEnd.lastChapter
             })()}
           </div>
         </div>
