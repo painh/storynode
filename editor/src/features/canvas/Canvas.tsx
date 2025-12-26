@@ -54,7 +54,7 @@ function CanvasInner() {
     getVariableById,
   } = useEditorStore()
 
-  const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes, setSelectedEdgeId, pendingEdgeDelete, clearPendingEdgeDelete } = useCanvasStore()
+  const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes, setEdges: setCanvasEdges, setSelectedEdgeId, pendingEdgeDelete, clearPendingEdgeDelete, pendingEdgeUpdate, clearPendingEdgeUpdate } = useCanvasStore()
   const [isShiftPressed, setIsShiftPressed] = useState(false)
   const { highlightedNodeId, navigateTimestamp } = useSearchStore()
   const { status: gameStatus, gameState } = useGameStore()
@@ -117,6 +117,22 @@ function CanvasInner() {
       clearPendingEdgeDelete()
     }
   }, [pendingEdgeDelete, clearPendingEdgeDelete, setEdges])
+
+  // 인스펙터에서 요청한 엣지 업데이트 처리
+  useEffect(() => {
+    if (pendingEdgeUpdate) {
+      setEdges((edges) => edges.map((e) => {
+        if (e.id !== pendingEdgeUpdate.edgeId) return e
+        return { ...e, data: { ...e.data, ...pendingEdgeUpdate.data } }
+      }))
+      clearPendingEdgeUpdate()
+    }
+  }, [pendingEdgeUpdate, clearPendingEdgeUpdate, setEdges])
+
+  // React Flow edges를 canvasStore에 동기화
+  useEffect(() => {
+    setCanvasEdges(edges)
+  }, [edges, setCanvasEdges])
 
   // 검색 결과로 이동
   useEffect(() => {

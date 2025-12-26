@@ -21,6 +21,9 @@ interface CanvasState {
   
   // 엣지 삭제 요청 (Canvas에서 처리)
   pendingEdgeDelete: string | null
+  
+  // 엣지 업데이트 요청 (Canvas에서 처리)
+  pendingEdgeUpdate: { edgeId: string; data: Record<string, unknown> } | null
 
   // Grid 설정
   snapGrid: number
@@ -51,6 +54,8 @@ interface CanvasState {
   setSelectedEdgeId: (edgeId: string | null) => void
   requestEdgeDelete: (edgeId: string) => void
   clearPendingEdgeDelete: () => void
+  requestEdgeUpdate: (edgeId: string, data: Record<string, unknown>) => void
+  clearPendingEdgeUpdate: () => void
 
   // Grid 설정
   setSnapGrid: (size: number) => void
@@ -69,6 +74,7 @@ export const useCanvasStore = create<CanvasState>()(
       viewport: { x: 0, y: 0, zoom: 1 },
       selectedEdgeId: null,
       pendingEdgeDelete: null,
+      pendingEdgeUpdate: null,
       snapGrid: 20,
       showGrid: true,
       nodePositions: {},
@@ -154,6 +160,8 @@ export const useCanvasStore = create<CanvasState>()(
       setSelectedEdgeId: (edgeId) => set({ selectedEdgeId: edgeId }),
       requestEdgeDelete: (edgeId) => set({ pendingEdgeDelete: edgeId }),
       clearPendingEdgeDelete: () => set({ pendingEdgeDelete: null }),
+      requestEdgeUpdate: (edgeId, data) => set({ pendingEdgeUpdate: { edgeId, data } }),
+      clearPendingEdgeUpdate: () => set({ pendingEdgeUpdate: null }),
 
       // Grid 설정
       setSnapGrid: (size) => set({ snapGrid: size }),

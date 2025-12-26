@@ -9,7 +9,7 @@ interface EdgeInspectorProps {
 }
 
 export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
-  const { edges, setEdges } = useCanvasStore()
+  const { edges, requestEdgeUpdate } = useCanvasStore()
   const [snapGridSize, setSnapGridSize] = useState(20)
 
   const edge = edges.find(e => e.id === edgeId)
@@ -17,89 +17,55 @@ export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
 
   // 웨이포인트를 그리드에 스냅
   const handleSnapToGrid = () => {
-    setEdges(edges.map(e => {
-      if (e.id !== edgeId) return e
-      const currentWaypoints = (e.data as EditorEdgeData)?.waypoints || []
-      const snappedWaypoints = currentWaypoints.map(wp => ({
-        ...wp,
-        x: Math.round(wp.x / snapGridSize) * snapGridSize,
-        y: Math.round(wp.y / snapGridSize) * snapGridSize,
-      }))
-      return {
-        ...e,
-        data: { ...e.data, waypoints: snappedWaypoints },
-      }
+    const snappedWaypoints = waypoints.map(wp => ({
+      ...wp,
+      x: Math.round(wp.x / snapGridSize) * snapGridSize,
+      y: Math.round(wp.y / snapGridSize) * snapGridSize,
     }))
+    requestEdgeUpdate(edgeId, { waypoints: snappedWaypoints })
   }
 
   // 모든 웨이포인트 삭제 (곡선으로 되돌리기)
   const handleClearWaypoints = () => {
-    setEdges(edges.map(e => {
-      if (e.id !== edgeId) return e
-      return {
-        ...e,
-        data: { ...e.data, waypoints: [] },
-      }
-    }))
+    requestEdgeUpdate(edgeId, { waypoints: [] })
   }
 
   // 웨이포인트 위치 직접 수정
   const handleWaypointChange = (index: number, field: 'x' | 'y', value: number) => {
-    setEdges(edges.map(e => {
-      if (e.id !== edgeId) return e
-      const currentWaypoints = (e.data as EditorEdgeData)?.waypoints || []
-      const newWaypoints = currentWaypoints.map((wp, i) => 
-        i === index ? { ...wp, [field]: value } : wp
-      )
-      return {
-        ...e,
-        data: { ...e.data, waypoints: newWaypoints },
-      }
-    }))
+    const newWaypoints = waypoints.map((wp, i) => 
+      i === index ? { ...wp, [field]: value } : wp
+    )
+    requestEdgeUpdate(edgeId, { waypoints: newWaypoints })
   }
 
   // 웨이포인트 삭제
   const handleDeleteWaypoint = (index: number) => {
-    setEdges(edges.map(e => {
-      if (e.id !== edgeId) return e
-      const currentWaypoints = (e.data as EditorEdgeData)?.waypoints || []
-      return {
-        ...e,
-        data: { ...e.data, waypoints: currentWaypoints.filter((_, i) => i !== index) },
-      }
-    }))
+    const newWaypoints = waypoints.filter((_, i) => i !== index)
+    requestEdgeUpdate(edgeId, { waypoints: newWaypoints })
   }
 
   // 웨이포인트 추가 (중간 지점에)
   const handleAddWaypoint = () => {
-    setEdges(edges.map(e => {
-      if (e.id !== edgeId) return e
-      const currentWaypoints = (e.data as EditorEdgeData)?.waypoints || []
-      
-      // 소스와 타겟 사이 중간점 계산 (대략적인 위치)
-      let newX = 0, newY = 0
-      if (currentWaypoints.length === 0) {
-        // 첫 웨이포인트: 대략 중간 위치 (정확한 값은 알 수 없으므로 0,0)
-        newX = 0
-        newY = 0
-      } else {
-        // 마지막 웨이포인트 근처에 추가
-        const lastWp = currentWaypoints[currentWaypoints.length - 1]
-        newX = lastWp.x + 50
-        newY = lastWp.y
-      }
+    // 소스와 타겟 사이 중간점 계산 (대략적인 위치)
+    let newX = 0, newY = 0
+    if (waypoints.length === 0) {
+      // 첫 웨이포인트: 대략 중간 위치 (정확한 값은 알 수 없으므로 0,0)
+      newX = 0
+      newY = 0
+    } else {
+      // 마지막 웨이포인트 근처에 추가
+      const lastWp = waypoints[waypoints.length - 1]
+      newX = lastWp.x + 50
+      newY = lastWp.y
+    }
 
-      const newWaypoint: EdgeWaypoint = {
-        id: `wp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-        x: newX,
-        y: newY,
-      }
+    const newWaypoint: EdgeWaypoint = {
+      id: `wp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      x: newX,
+      y: newY,
+    }
 
-      return {
-        ...e,
-        data: { ...e.data, waypoints: [...currentWaypoints, newWaypoint] },
-      }
-    }))
+    requestEdgeUpdate(edgeId, { waypoints: [...waypoints, newWaypoint] })
   }
 
   return (
