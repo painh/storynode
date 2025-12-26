@@ -11,7 +11,9 @@ export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
   const { edges, requestEdgeUpdate, snapToGrid, setSnapToGrid, snapGrid, setSnapGrid } = useCanvasStore()
 
   const edge = edges.find(e => e.id === edgeId)
-  const waypoints = (edge?.data as EditorEdgeData)?.waypoints || []
+  const edgeData = edge?.data as EditorEdgeData | undefined
+  const waypoints = edgeData?.waypoints || []
+  const curveMode = edgeData?.curveMode ?? false
 
   // 현재 웨이포인트들을 그리드에 스냅
   const handleSnapCurrentWaypoints = () => {
@@ -105,34 +107,46 @@ export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
 
         {/* 웨이포인트 목록 */}
         {waypoints.length > 0 && (
-          <div className={styles.waypointList}>
-            {waypoints.map((wp, index) => (
-              <div key={wp.id} className={styles.waypointItem}>
-                <span className={styles.waypointIndex}>#{index + 1}</span>
-                <input
-                  type="number"
-                  className={styles.waypointInput}
-                  value={Math.round(wp.x)}
-                  onChange={(e) => handleWaypointChange(index, 'x', Number(e.target.value))}
-                  title="X"
-                />
-                <input
-                  type="number"
-                  className={styles.waypointInput}
-                  value={Math.round(wp.y)}
-                  onChange={(e) => handleWaypointChange(index, 'y', Number(e.target.value))}
-                  title="Y"
-                />
-                <button
-                  className={styles.removeBtn}
-                  onClick={() => handleDeleteWaypoint(index)}
-                  title="삭제"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className={styles.waypointList}>
+              {waypoints.map((wp, index) => (
+                <div key={wp.id} className={styles.waypointItem}>
+                  <span className={styles.waypointIndex}>#{index + 1}</span>
+                  <input
+                    type="number"
+                    className={styles.waypointInput}
+                    value={Math.round(wp.x)}
+                    onChange={(e) => handleWaypointChange(index, 'x', Number(e.target.value))}
+                    title="X"
+                  />
+                  <input
+                    type="number"
+                    className={styles.waypointInput}
+                    value={Math.round(wp.y)}
+                    onChange={(e) => handleWaypointChange(index, 'y', Number(e.target.value))}
+                    title="Y"
+                  />
+                  <button
+                    className={styles.removeBtn}
+                    onClick={() => handleDeleteWaypoint(index)}
+                    title="삭제"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* 곡선 모드 체크박스 */}
+            <label className={styles.checkboxLabel} style={{ marginTop: '8px' }}>
+              <input
+                type="checkbox"
+                checked={curveMode}
+                onChange={(e) => requestEdgeUpdate(edgeId, { curveMode: e.target.checked })}
+              />
+              Smooth Curve (Spline)
+            </label>
+          </>
         )}
 
         <div className={styles.divider} />

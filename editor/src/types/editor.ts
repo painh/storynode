@@ -36,6 +36,7 @@ export type EditorNode = Node<EditorNodeData>
 // 엣지 데이터 (waypoints 포함)
 export interface EditorEdgeData extends Record<string, unknown> {
   waypoints?: EdgeWaypoint[]
+  curveMode?: boolean  // true: 웨이포인트를 스플라인 곡선으로 연결
 }
 
 // React Flow 엣지 타입

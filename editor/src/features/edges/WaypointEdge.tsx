@@ -5,7 +5,7 @@ import type { EditorEdgeData, EdgeWaypoint } from '../../types/editor'
 import styles from './WaypointEdge.module.css'
 
 // 웨이포인트를 포함한 경로 생성 (직선 연결)
-const createPathWithWaypoints = (
+const createLinearPath = (
   sourceX: number,
   sourceY: number,
   targetX: number,
@@ -25,6 +25,47 @@ const createPathWithWaypoints = (
   })
 
   return pathParts.join(' ')
+}
+
+// Catmull-Rom 스플라인을 이용한 부드러운 곡선 생성
+const createCurvePath = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  waypoints: EdgeWaypoint[]
+): string => {
+  const points = [
+    { x: sourceX, y: sourceY },
+    ...waypoints,
+    { x: targetX, y: targetY },
+  ]
+
+  if (points.length < 2) return ''
+  if (points.length === 2) {
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`
+  }
+
+  // Catmull-Rom to Bezier 변환
+  const tension = 0.5
+  let path = `M ${points[0].x} ${points[0].y}`
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)]
+    const p1 = points[i]
+    const p2 = points[i + 1]
+    const p3 = points[Math.min(points.length - 1, i + 2)]
+
+    // 컨트롤 포인트 계산
+    const cp1x = p1.x + (p2.x - p0.x) * tension / 3
+    const cp1y = p1.y + (p2.y - p0.y) * tension / 3
+    const cp2x = p2.x - (p3.x - p1.x) * tension / 3
+    const cp2y = p2.y - (p3.y - p1.y) * tension / 3
+
+    path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
+  }
+
+  return path
 }
 
 interface WaypointHandleProps {
@@ -144,17 +185,27 @@ export function WaypointEdge({
     )
   }, [id, setEdges])
 
-  // 경로 생성: 웨이포인트가 없으면 베지어 곡선, 있으면 직선 연결
-  const edgePath = waypoints.length === 0
-    ? getBezierPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition: Position.Right,
-        targetPosition: Position.Left,
-      })[0]
-    : createPathWithWaypoints(sourceX, sourceY, targetX, targetY, waypoints)
+  const curveMode = edgeData?.curveMode ?? false
+
+  // 경로 생성
+  let edgePath: string
+  if (waypoints.length === 0) {
+    // 웨이포인트 없으면 기본 베지어 곡선
+    edgePath = getBezierPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+    })[0]
+  } else if (curveMode) {
+    // 곡선 모드: 스플라인 곡선
+    edgePath = createCurvePath(sourceX, sourceY, targetX, targetY, waypoints)
+  } else {
+    // 직선 모드
+    edgePath = createLinearPath(sourceX, sourceY, targetX, targetY, waypoints)
+  }
 
   // 선택 시 하이라이트 스타일
   const edgeStyle = selected
