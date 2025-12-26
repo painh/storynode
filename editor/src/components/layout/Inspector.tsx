@@ -144,22 +144,12 @@ export function Inspector() {
           />
         )}
 
-        {/* JavaScript: code */}
+        {/* JavaScript: code (CodeMirror Editor) */}
         {selectedNode.type === 'javascript' && (
-          <div className={styles.field}>
-            <div className={styles.labelWithHelp}>
-              <label className={styles.label}>JavaScript Code</label>
-              <HelpTooltip content={t.help.javascript} />
-            </div>
-            <textarea
-              className={`${styles.textarea} ${styles.codeEditor}`}
-              value={selectedNode.javascriptCode || ''}
-              onChange={(e) => handleChange('javascriptCode', e.target.value)}
-              placeholder="// Enter JavaScript code here...&#10;// Available: gameState, setFlag, getFlag, etc."
-              rows={10}
-              spellCheck={false}
-            />
-          </div>
+          <JavaScriptNodeInspector
+            node={selectedNode}
+            onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+          />
         )}
 
         {/* Custom: customData */}
