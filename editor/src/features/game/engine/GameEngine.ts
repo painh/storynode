@@ -85,6 +85,13 @@ export class GameEngine {
       }
     }
 
+    // 챕터 로컬 변수들의 초기값 적용
+    if (chapter.variables) {
+      for (const varDef of chapter.variables) {
+        this.state.variables.variables[varDef.id] = varDef.defaultValue
+      }
+    }
+
     const currentNode = this.getCurrentNode()
     if (currentNode) {
       this.processNodeEntry(currentNode)
@@ -720,7 +727,7 @@ export class GameEngine {
         return Array.isArray(value) ? value.join(', ') : String(value)
       }
       
-      // 2. 변수 이름으로 찾기 (프로젝트 변수 정의에서)
+      // 2. 변수 이름으로 찾기 (전역 변수에서)
       if (this.project.variables) {
         const varDef = this.project.variables.find(v => v.name === trimmed)
         if (varDef && vars[varDef.id] !== undefined) {
@@ -729,7 +736,17 @@ export class GameEngine {
         }
       }
       
-      // 3. 찾지 못하면 원본 유지
+      // 3. 변수 이름으로 찾기 (현재 챕터 변수에서)
+      const chapter = this.getCurrentChapter()
+      if (chapter?.variables) {
+        const varDef = chapter.variables.find(v => v.name === trimmed)
+        if (varDef && vars[varDef.id] !== undefined) {
+          const value = vars[varDef.id]
+          return Array.isArray(value) ? value.join(', ') : String(value)
+        }
+      }
+      
+      // 4. 찾지 못하면 원본 유지
       return match
     })
   }

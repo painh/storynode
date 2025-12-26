@@ -285,6 +285,8 @@ export interface StoryChapter {
   }
   // 에디터용 코멘트 노드
   commentNodes?: CommentNode[]
+  // 챕터 로컬 변수 (챕터 시작 시 초기화됨)
+  variables?: VariableDefinition[]
 }
 
 // 스토리 스테이지 (챕터 묶음)

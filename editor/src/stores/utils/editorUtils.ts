@@ -376,6 +376,24 @@ export const defaultVariables: VariableDefinition[] = [
   },
 ]
 
+// 챕터 로컬 변수 예시 (Chapter 1용)
+export const defaultChapterVariables: VariableDefinition[] = [
+  {
+    id: 'chapter_visits',
+    name: 'Chapter Visits',
+    type: 'number',
+    defaultValue: 0,
+    description: '이 챕터 방문 횟수 (챕터 로컬)',
+  },
+  {
+    id: 'local_flag',
+    name: 'Local Flag',
+    type: 'boolean',
+    defaultValue: false,
+    description: '챕터 내에서만 유효한 플래그',
+  },
+]
+
 // 기본 프로젝트 생성
 export const createDefaultProject = (): StoryProject => {
   const { nodes, startNodeId } = createDefaultChapterNodes()
@@ -396,6 +414,7 @@ export const createDefaultProject = (): StoryProject => {
             description: 'First chapter',
             nodes,
             startNodeId,
+            variables: [...defaultChapterVariables], // 챕터 로컬 변수 추가
           }
         ]
       }

@@ -523,3 +523,74 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* Variable Sections (Global/Chapter) */
+.variableSection {
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-canvas);
+}
+
+.variableSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.variableSectionHeader:hover {
+  background: var(--bg-hover);
+}
+
+.collapseIcon {
+  font-size: 8px;
+  color: var(--text-muted);
+  width: 10px;
+  text-align: center;
+}
+
+.variableSectionTitle {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.variableSectionContent {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Chapter Variable Section */
+.chapterVariableSection {
+  border-color: var(--node-event, #e67e22);
+}
+
+.chapterVariableSection .variableSectionHeader {
+  border-bottom: 2px solid var(--node-event, #e67e22);
+}
+
+.chapterVariableSection .variableSectionTitle {
+  color: var(--node-event, #e67e22);
+}
+
+/* Chapter Variable Item */
+.chapterVariable {
+  border-left-color: var(--node-event, #e67e22);
+}
+
+.chapterVariable:hover {
+  border-left-color: var(--node-event, #e67e22);
+}

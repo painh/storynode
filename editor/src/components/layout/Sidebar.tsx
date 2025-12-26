@@ -50,12 +50,17 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
     deleteChapter,
     setCurrentChapter,
     getCurrentStage,
+    getCurrentChapter,
     getTemplates,
     createNodeFromTemplate,
     getVariables,
     createVariable,
     updateVariable,
     deleteVariable,
+    getChapterVariables,
+    createChapterVariable,
+    updateChapterVariable,
+    deleteChapterVariable,
   } = useEditorStore()
 
   const { settings } = useSettingsStore()
@@ -69,8 +74,11 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const [nodeFilter, setNodeFilter] = useState('')
   const [resourceFilter, setResourceFilter] = useState('')
   const [variableFilter, setVariableFilter] = useState('')
+  const [globalVarsCollapsed, setGlobalVarsCollapsed] = useState(false)
+  const [chapterVarsCollapsed, setChapterVarsCollapsed] = useState(false)
 
   const currentStage = getCurrentStage()
+  const currentChapter = getCurrentChapter()
 
   // 리소스 분류 (새로운 구조: 모든 이미지는 'image' 타입)
   const images = (project.resources || []).filter(r => r.type === 'image')
@@ -165,40 +173,124 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   }
 
   // Variable 관리
-  const variables = getVariables()
+  const globalVariables = getVariables()
+  const chapterVariables = getChapterVariables()
+  const allVariables = [...globalVariables, ...chapterVariables]
 
-  const handleAddVariable = () => {
-    createVariable()
-  }
-
-  const handleVariableNameChange = (variableId: string, name: string) => {
-    updateVariable(variableId, { name })
-  }
-
-  const handleVariableTypeChange = (variableId: string, type: VariableType) => {
-    updateVariable(variableId, { type })
-  }
-
-  const handleArrayItemTypeChange = (variableId: string, arrayItemType: ArrayItemType) => {
-    updateVariable(variableId, { arrayItemType, defaultValue: [] })
-  }
-
-  const handleVariableDefaultValueChange = (variableId: string, type: VariableType, value: string) => {
-    let parsedValue: boolean | number | string = value
-    if (type === 'boolean') {
-      parsedValue = value === 'true'
-    } else if (type === 'number') {
-      parsedValue = Number(value) || 0
-    }
-    updateVariable(variableId, { defaultValue: parsedValue })
-  }
-
-  const handleDeleteVariable = (e: React.MouseEvent, variableId: string) => {
-    e.stopPropagation()
-    if (confirm('Delete this variable?')) {
-      deleteVariable(variableId)
-    }
-  }
+  // 변수 항목 렌더링 함수
+  const renderVariableItem = (
+    variable: typeof globalVariables[0],
+    isChapter: boolean,
+    updateFn: typeof updateVariable,
+    deleteFn: typeof deleteVariable
+  ) => (
+    <div
+      key={variable.id}
+      className={`${styles.variableItem} ${isChapter ? styles.chapterVariable : ''}`}
+      draggable
+      onDragStart={(e) => handleVariableDragStart(e, variable.id)}
+      title="Drag to canvas to create Variable node"
+    >
+      {editingVariableId === variable.id ? (
+        <input
+          type="text"
+          value={editingTitle}
+          onChange={(e) => setEditingTitle(e.target.value)}
+          onBlur={() => {
+            updateFn(variable.id, { name: editingTitle })
+            setEditingVariableId(null)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              updateFn(variable.id, { name: editingTitle })
+              setEditingVariableId(null)
+            }
+            if (e.key === 'Escape') setEditingVariableId(null)
+          }}
+          className={styles.editInput}
+          autoFocus
+        />
+      ) : (
+        <>
+          <div className={styles.variableHeader}>
+            <span
+              className={styles.variableName}
+              onDoubleClick={() => {
+                setEditingVariableId(variable.id)
+                setEditingTitle(variable.name)
+              }}
+            >
+              {variable.name}
+            </span>
+            <button
+              className={styles.deleteButton}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (confirm('Delete this variable?')) {
+                  deleteFn(variable.id)
+                }
+              }}
+              title="Delete Variable"
+            >
+              ×
+            </button>
+          </div>
+          <div className={styles.variableControls}>
+            <select
+              className={styles.variableTypeSelect}
+              value={variable.type}
+              onChange={(e) => updateFn(variable.id, { type: e.target.value as VariableType })}
+            >
+              <option value="boolean">Boolean</option>
+              <option value="number">Number</option>
+              <option value="string">String</option>
+              <option value="array">Array</option>
+            </select>
+            {variable.type === 'array' ? (
+              <select
+                className={styles.variableValueInput}
+                value={variable.arrayItemType || 'string'}
+                onChange={(e) => updateFn(variable.id, { arrayItemType: e.target.value as ArrayItemType, defaultValue: [] })}
+                title="Array item type"
+              >
+                <option value="boolean">Boolean[]</option>
+                <option value="number">Number[]</option>
+                <option value="string">String[]</option>
+              </select>
+            ) : variable.type === 'boolean' ? (
+              <select
+                className={styles.variableValueInput}
+                value={String(variable.defaultValue)}
+                onChange={(e) => {
+                  const val = e.target.value === 'true'
+                  updateFn(variable.id, { defaultValue: val })
+                }}
+              >
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            ) : (
+              <input
+                type={variable.type === 'number' ? 'number' : 'text'}
+                className={styles.variableValueInput}
+                value={String(variable.defaultValue)}
+                onChange={(e) => {
+                  const val = variable.type === 'number' ? Number(e.target.value) || 0 : e.target.value
+                  updateFn(variable.id, { defaultValue: val })
+                }}
+                placeholder="Default value"
+              />
+            )}
+          </div>
+          {variable.type === 'array' && (
+            <div className={styles.arrayInfo}>
+              초기값: [] (빈 배열)
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
 
   const renderNodeCategory = (title: string, nodeTypes: AllNodeType[]) => {
     const filteredTypes = nodeTypes.filter(type => {
@@ -332,9 +424,8 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <span className={styles.sectionTitle}>Variables</span>
-          <button className={styles.addButton} onClick={handleAddVariable} title="Add Variable">+</button>
         </div>
-        {variables.length > 3 && (
+        {allVariables.length > 3 && (
           <input
             type="text"
             className={styles.filterInput}
@@ -344,113 +435,69 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
           />
         )}
         <div className={styles.variableList}>
-          {variables.filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter)).map((variable) => (
-            <div
-              key={variable.id}
-              className={styles.variableItem}
-              draggable
-              onDragStart={(e) => handleVariableDragStart(e, variable.id)}
-              title="Drag to canvas to create Variable node"
+          {/* 전역 변수 섹션 */}
+          <div className={styles.variableSection}>
+            <div 
+              className={styles.variableSectionHeader}
+              onClick={() => setGlobalVarsCollapsed(!globalVarsCollapsed)}
             >
-              {editingVariableId === variable.id ? (
-                <input
-                  type="text"
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                  onBlur={() => {
-                    handleVariableNameChange(variable.id, editingTitle)
-                    setEditingVariableId(null)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleVariableNameChange(variable.id, editingTitle)
-                      setEditingVariableId(null)
-                    }
-                    if (e.key === 'Escape') setEditingVariableId(null)
-                  }}
-                  className={styles.editInput}
-                  autoFocus
-                />
-              ) : (
-                <>
-                  <div className={styles.variableHeader}>
-                    <span
-                      className={styles.variableName}
-                      onDoubleClick={() => {
-                        setEditingVariableId(variable.id)
-                        setEditingTitle(variable.name)
-                      }}
-                    >
-                      {variable.name}
-                    </span>
-                    <button
-                      className={styles.deleteButton}
-                      onClick={(e) => handleDeleteVariable(e, variable.id)}
-                      title="Delete Variable"
-                    >
-                      ×
-                    </button>
+              <span className={styles.collapseIcon}>{globalVarsCollapsed ? '▶' : '▼'}</span>
+              <span className={styles.variableSectionTitle}>Global Variables</span>
+              <button 
+                className={styles.addButton} 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  createVariable({ name: `global_${globalVariables.length + 1}` })
+                }}
+                title="Add Global Variable"
+              >+</button>
+            </div>
+            {!globalVarsCollapsed && (
+              <div className={styles.variableSectionContent}>
+                {globalVariables
+                  .filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter))
+                  .map((variable) => renderVariableItem(variable, false, updateVariable, deleteVariable))}
+                {globalVariables.length === 0 && (
+                  <div className={styles.emptyState}>
+                    <div className={styles.emptyText}>No global variables</div>
                   </div>
-                  <div className={styles.variableControls}>
-                    <select
-                      className={styles.variableTypeSelect}
-                      value={variable.type}
-                      onChange={(e) => handleVariableTypeChange(variable.id, e.target.value as VariableType)}
-                    >
-                      <option value="boolean">Boolean</option>
-                      <option value="number">Number</option>
-                      <option value="string">String</option>
-                      <option value="array">Array</option>
-                    </select>
-                    {variable.type === 'array' ? (
-                      <select
-                        className={styles.variableValueInput}
-                        value={variable.arrayItemType || 'string'}
-                        onChange={(e) => handleArrayItemTypeChange(variable.id, e.target.value as ArrayItemType)}
-                        title="Array item type"
-                      >
-                        <option value="boolean">Boolean[]</option>
-                        <option value="number">Number[]</option>
-                        <option value="string">String[]</option>
-                      </select>
-                    ) : variable.type === 'boolean' ? (
-                      <select
-                        className={styles.variableValueInput}
-                        value={String(variable.defaultValue)}
-                        onChange={(e) => handleVariableDefaultValueChange(variable.id, variable.type, e.target.value)}
-                      >
-                        <option value="false">false</option>
-                        <option value="true">true</option>
-                      </select>
-                    ) : (
-                      <input
-                        type={variable.type === 'number' ? 'number' : 'text'}
-                        className={styles.variableValueInput}
-                        value={String(variable.defaultValue)}
-                        onChange={(e) => handleVariableDefaultValueChange(variable.id, variable.type, e.target.value)}
-                        placeholder="Default value"
-                      />
-                    )}
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 챕터 변수 섹션 */}
+          <div className={`${styles.variableSection} ${styles.chapterVariableSection}`}>
+            <div 
+              className={styles.variableSectionHeader}
+              onClick={() => setChapterVarsCollapsed(!chapterVarsCollapsed)}
+            >
+              <span className={styles.collapseIcon}>{chapterVarsCollapsed ? '▶' : '▼'}</span>
+              <span className={styles.variableSectionTitle}>
+                Chapter: {currentChapter?.title || 'None'}
+              </span>
+              <button 
+                className={styles.addButton} 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  createChapterVariable({ name: `local_${chapterVariables.length + 1}` })
+                }}
+                title="Add Chapter Variable"
+              >+</button>
+            </div>
+            {!chapterVarsCollapsed && (
+              <div className={styles.variableSectionContent}>
+                {chapterVariables
+                  .filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter))
+                  .map((variable) => renderVariableItem(variable, true, updateChapterVariable, deleteChapterVariable))}
+                {chapterVariables.length === 0 && (
+                  <div className={styles.emptyState}>
+                    <div className={styles.emptyText}>No chapter variables</div>
                   </div>
-                  {variable.type === 'array' && (
-                    <div className={styles.arrayInfo}>
-                      초기값: [] (빈 배열)
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
-          {variables.length === 0 && (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyText}>No variables defined</div>
-            </div>
-          )}
-          {variables.length > 0 && variables.filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter)).length === 0 && (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyText}>No matches</div>
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

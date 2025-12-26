@@ -79,12 +79,19 @@ export interface EditorState {
   syncNodeWithTemplate: (nodeId: string) => void
   detachNodeFromTemplate: (nodeId: string) => void
 
-  // Variable Definitions (챕터별 변수 선언)
+  // Variable Definitions (전역 변수)
   createVariable: (variable?: Partial<VariableDefinition>) => VariableDefinition | null
   updateVariable: (variableId: string, updates: Partial<VariableDefinition>) => void
   deleteVariable: (variableId: string) => void
   getVariables: () => VariableDefinition[]
   getVariableById: (variableId: string) => VariableDefinition | undefined
+  
+  // Chapter Variables (챕터 로컬 변수)
+  createChapterVariable: (variable?: Partial<VariableDefinition>) => VariableDefinition | null
+  updateChapterVariable: (variableId: string, updates: Partial<VariableDefinition>) => void
+  deleteChapterVariable: (variableId: string) => void
+  getChapterVariables: () => VariableDefinition[]
+  getAllVariables: () => VariableDefinition[]
 }
 
 // Immer의 set 함수 타입
