@@ -76,8 +76,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const [showExportModal, setShowExportModal] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
-  const [buildTime, setBuildTime] = useState<string | null>(null)
+  const [buildTime, setBuildTime] = useState<string>(__BUILD_TIME__)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const appVersion = __APP_VERSION__
 
   // Undo/Redo
   const { undo, redo, pastStates, futureStates } = useEditorStore.temporal.getState()
@@ -98,13 +99,14 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         } catch (e) {
           console.error('Failed to load Tauri dialog plugin:', e)
         }
-        // 빌드 시간 가져오기
+        // Tauri 빌드 시간 가져오기 (Rust 컴파일 시간)
         try {
           const { invoke } = await import('@tauri-apps/api/core')
           const time = await invoke<string>('get_build_time')
           setBuildTime(time)
         } catch (e) {
-          console.error('Failed to get build time:', e)
+          // Vite 빌드 시간 사용 (이미 기본값으로 설정됨)
+          console.log('Using Vite build time')
         }
       } else {
         // 웹 환경에서 File System Access API 지원 확인
@@ -430,7 +432,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
       <div className={styles.left}>
         <div className={styles.logo}>
           StoryNode
-          {buildTime && <span className={styles.version}>{buildTime}</span>}
+          <span className={styles.version}>v{appVersion} ({buildTime})</span>
         </div>
         <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}
