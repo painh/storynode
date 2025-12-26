@@ -218,14 +218,15 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
       javascriptCode: `// 복잡한 수식 계산 예시
 // 비밀 거래 보너스: HP의 2배 + 현재 골드의 50% + 100
 
-const bonus = (variables.HP * 2) + (variables.Gold * 0.5) + 100;
-variables.Gold = Math.floor(bonus);
+// 변수는 ID로 접근 (gold, hp 등)
+const bonus = (variables.hp * 2) + (variables.gold * 0.5) + 100;
+variables.gold = Math.floor(bonus);
 
-// 상인과 만난 플래그 설정
-variables['Met Merchant'] = true;
+// 챕터 변수도 ID로 접근 (met_merchant)
+variables.met_merchant = true;
 
 // 콘솔에 결과 출력 (디버그용)
-console.log('비밀 거래 완료! 새 골드:', variables.Gold);`,
+console.log('비밀 거래 완료! 새 골드:', variables.gold);`,
     },
     // 조건 노드 - 여러 조건 타입 활용
     {
