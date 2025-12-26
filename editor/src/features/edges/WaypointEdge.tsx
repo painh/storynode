@@ -173,9 +173,9 @@ export function WaypointEdge({
     )
   }, [id, setEdges])
 
-  // 엣지 클릭으로 웨이포인트 추가
-  const handleEdgeClick = useCallback((e: React.MouseEvent<SVGPathElement>) => {
-    if (!selected) return
+  // 엣지 더블클릭으로 웨이포인트 추가
+  const handleEdgeDoubleClick = useCallback((e: React.MouseEvent<SVGPathElement>) => {
+    e.stopPropagation()
 
     const svg = e.currentTarget.closest('svg')
     if (!svg) return
@@ -235,7 +235,7 @@ export function WaypointEdge({
         }
       })
     )
-  }, [id, selected, sourceX, sourceY, targetX, targetY, waypoints, setEdges])
+  }, [id, sourceX, sourceY, targetX, targetY, waypoints, setEdges])
 
   // 엣지 삭제 핸들러
   const handleDelete = useCallback(() => {
@@ -268,8 +268,8 @@ export function WaypointEdge({
         fill="none"
         stroke="transparent"
         strokeWidth={20}
-        style={{ cursor: selected ? 'crosshair' : 'pointer', pointerEvents: 'stroke' }}
-        onClick={handleEdgeClick}
+        style={{ cursor: 'pointer', pointerEvents: 'stroke' }}
+        onDoubleClick={handleEdgeDoubleClick}
       />
       {/* 실제 보이는 엣지 */}
       <BaseEdge
