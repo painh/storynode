@@ -31,6 +31,7 @@ const NODE_WIDTHS: Record<StoryNodeType, number> = {
 const DEFAULT_NODE_WIDTH = 260
 const NODE_HEIGHT = 150  // 노드 높이 (내용에 따라 다름)
 const VERTICAL_GAP = 80  // 노드 사이 세로 간격
+const BRANCH_EXTRA_GAP = 60 // 분기당 추가 간격 (엣지 겹침 방지)
 const SNAP_GRID = 1
 const MIN_NODE_GAP = 120 // 노드 사이 최소 간격 (연결선 표시용)
 
@@ -251,7 +252,17 @@ export function autoLayoutNodes(
 
     // 자식 노드들 큐에 추가
     const nextIds = getNextNodeIds(node)
-    let childY = y
+    const branchCount = nextIds.length
+    
+    // 분기가 많을수록 자식들 사이 간격을 넓힘 (엣지 겹침 방지)
+    // 2개 분기: 기본 간격, 3개 이상: 추가 간격
+    const branchGap = branchCount > 2 
+      ? NODE_HEIGHT + VERTICAL_GAP + BRANCH_EXTRA_GAP * (branchCount - 2)
+      : NODE_HEIGHT + VERTICAL_GAP
+    
+    // 분기가 있으면 첫 번째 자식을 현재 노드보다 위에 배치해서 중앙 정렬 효과
+    const totalBranchHeight = branchCount > 1 ? (branchCount - 1) * branchGap : 0
+    let childY = branchCount > 1 ? y - totalBranchHeight / 2 : y
 
     for (let i = 0; i < nextIds.length; i++) {
       const nextId = nextIds[i]
@@ -261,9 +272,9 @@ export function autoLayoutNodes(
           level: level + 1,
           preferredY: childY
         })
-        // 분기일 경우 다음 분기는 현재 노드 아래에 배치 시도
-        if (nextIds.length > 1) {
-          childY += NODE_HEIGHT + VERTICAL_GAP
+        // 분기일 경우 다음 분기는 간격을 두고 배치
+        if (branchCount > 1) {
+          childY += branchGap
         }
       }
     }
