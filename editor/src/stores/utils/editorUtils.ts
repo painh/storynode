@@ -95,22 +95,22 @@ export const createDefaultChapterNodes = (): { nodes: StoryNode[]; startNodeId: 
         { target: 'variable', action: 'set', variableId: 'bought_item', value: false },
       ],
     },
-    // 대사 1
+    // 대사 1 - 변수 출력 예시 ({{변수명}} 형식)
     {
       id: dialogue1Id,
       type: 'dialogue',
       position: { x: 1100, y: 200 },
       speaker: '상인',
-      text: '어서오세요! 무엇을 도와드릴까요?',
+      text: '{{Player Name}}님, 어서오세요! 무엇을 도와드릴까요?',
       nextNodeId: dialogue2Id,
     },
-    // 대사 2
+    // 대사 2 - 변수 출력 예시
     {
       id: dialogue2Id,
       type: 'dialogue',
       position: { x: 1350, y: 200 },
       speaker: '상인',
-      text: '좋은 물건이 많이 있답니다. 골드가 충분하신가요?',
+      text: '현재 {{Gold}} 골드를 가지고 계시네요. 좋은 물건이 많답니다!',
       nextNodeId: choiceId,
     },
     // 선택지 노드 - 모든 입력값 활용
@@ -248,22 +248,22 @@ console.log('비밀 거래 완료! 새 골드:', variables.Gold);`,
       ],
       defaultNextNodeId: defaultBranchId,
     },
-    // 골드 분기 결과
+    // 골드 분기 결과 - 변수 출력 예시
     {
       id: goldBranchId,
       type: 'dialogue',
       position: { x: 2350, y: 50 },
       speaker: '시스템',
-      text: '당신은 부자군요! (골드 100 이상)',
+      text: '{{Gold}} 골드나 가지고 계시다니, 부자시군요!',
       nextNodeId: chapterEndId,
     },
-    // 플래그 분기 결과
+    // 플래그 분기 결과 - 변수 출력 예시
     {
       id: flagBranchId,
       type: 'dialogue',
       position: { x: 2350, y: 200 },
       speaker: '시스템',
-      text: '물건을 구매하셨군요!',
+      text: '물건을 구매하셨군요! 남은 골드: {{Gold}}',
       nextNodeId: chapterEndId,
     },
     // 기본 분기 결과
@@ -272,7 +272,7 @@ console.log('비밀 거래 완료! 새 골드:', variables.Gold);`,
       type: 'dialogue',
       position: { x: 2350, y: 350 },
       speaker: '시스템',
-      text: '특별한 조건을 만족하지 않았습니다.',
+      text: '{{Player Name}}님, 다음에 또 오세요!',
       nextNodeId: chapterEndId,
     },
     // 챕터 종료
