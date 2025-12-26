@@ -1,9 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { oneDark } from '@codemirror/theme-one-dark'
 import type { StoryNode } from '../../../types/story'
 import { HelpTooltip } from './HelpTooltip'
+import { CodeEditorModal } from '../../common/CodeEditorModal'
 import styles from '../Inspector.module.css'
 
 interface JavaScriptNodeInspectorProps {
@@ -35,34 +36,53 @@ if (variables.Gold > 50) {
 }`
 
 export function JavaScriptNodeInspector({ node, onUpdate }: JavaScriptNodeInspectorProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   const handleChange = useCallback((value: string) => {
     onUpdate({ javascriptCode: value })
   }, [onUpdate])
 
   return (
-    <div className={styles.field}>
-      <div className={styles.labelWithHelp}>
-        <label className={styles.label}>JavaScript Code</label>
-        <HelpTooltip content={HELP_TEXT} />
+    <>
+      <div className={styles.field}>
+        <div className={styles.labelWithHelp}>
+          <label className={styles.label}>JavaScript Code</label>
+          <button 
+            className={styles.expandBtn}
+            onClick={() => setIsModalOpen(true)}
+            title="전체 화면으로 열기"
+          >
+            ⛶
+          </button>
+          <HelpTooltip content={HELP_TEXT} />
+        </div>
+        <div className={styles.codeEditorWrapper}>
+          <CodeMirror
+            value={node.javascriptCode || ''}
+            height="250px"
+            theme={oneDark}
+            extensions={[javascript()]}
+            onChange={handleChange}
+            basicSetup={{
+              lineNumbers: true,
+              foldGutter: true,
+              bracketMatching: true,
+              closeBrackets: true,
+              autocompletion: true,
+              highlightActiveLine: true,
+              indentOnInput: true,
+            }}
+          />
+        </div>
       </div>
-      <div className={styles.codeEditorWrapper}>
-        <CodeMirror
-          value={node.javascriptCode || ''}
-          height="250px"
-          theme={oneDark}
-          extensions={[javascript()]}
-          onChange={handleChange}
-          basicSetup={{
-            lineNumbers: true,
-            foldGutter: true,
-            bracketMatching: true,
-            closeBrackets: true,
-            autocompletion: true,
-            highlightActiveLine: true,
-            indentOnInput: true,
-          }}
-        />
-      </div>
-    </div>
+
+      <CodeEditorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        value={node.javascriptCode || ''}
+        onChange={handleChange}
+        title="JavaScript Code"
+      />
+    </>
   )
 }
