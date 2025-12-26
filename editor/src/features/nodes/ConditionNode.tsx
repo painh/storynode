@@ -2,17 +2,30 @@ import { memo } from 'react'
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react'
 import { BaseNode } from './BaseNode'
 import type { EditorNodeData } from '../../types/editor'
-import type { ConditionBranch } from '../../types/story'
+import type { ConditionBranch, VariableDefinition } from '../../types/story'
+import { useEditorStore } from '../../stores/editorStore'
 import { useTranslation } from '../../i18n'
 import styles from './ConditionNode.module.css'
 
-function formatCondition(branch: ConditionBranch): string {
+function formatCondition(branch: ConditionBranch, variables: VariableDefinition[]): string {
   const { condition } = branch
+  
+  // 변수 ID로 이름 찾기
+  const getVarName = (varId?: string) => {
+    if (!varId) return '?'
+    const found = variables.find(v => v.id === varId)
+    return found?.name || varId
+  }
+  
   switch (condition.type) {
+    case 'variable':
+      const varName = getVarName(condition.variableId)
+      const op = condition.operator || '=='
+      return `${varName} ${op} ${condition.value}`
     case 'gold':
-      return `gold ${condition.min !== undefined ? `>= ${condition.min}` : `<= ${condition.max}`}`
+      return `Gold ${condition.min !== undefined ? `>= ${condition.min}` : `<= ${condition.max}`}`
     case 'hp':
-      return `hp ${condition.min !== undefined ? `>= ${condition.min}` : `<= ${condition.max}`}`
+      return `HP ${condition.min !== undefined ? `>= ${condition.min}` : `<= ${condition.max}`}`
     case 'flag':
       return `${condition.flagKey} = ${condition.flagValue}`
     case 'has_relic':
@@ -37,6 +50,7 @@ export const ConditionNode = memo(function ConditionNode({
 }: NodeProps<Node<EditorNodeData>>) {
   const { storyNode } = data
   const { common } = useTranslation()
+  const variables = useEditorStore((state) => state.project.variables) || []
 
   if (!storyNode) return null
 
@@ -59,7 +73,7 @@ export const ConditionNode = memo(function ConditionNode({
             {branches.map((branch, index) => (
               <div key={branch.id} className={styles.branch}>
                 <span className={styles.conditionText}>
-                  {formatCondition(branch)}
+                  {formatCondition(branch, variables)}
                 </span>
                 <div className={styles.handleWrapper}>
                   <Handle
