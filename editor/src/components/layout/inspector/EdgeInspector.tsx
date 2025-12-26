@@ -144,8 +144,48 @@ export function EdgeInspector({ edgeId, onDelete }: EdgeInspectorProps) {
                 checked={curveMode}
                 onChange={(e) => requestEdgeUpdate(edgeId, { curveMode: e.target.checked })}
               />
-              Smooth Curve (Spline)
+              Curve Mode
             </label>
+
+            {/* 곡선 모드 설명 및 핸들 버튼 */}
+            {curveMode && (
+              <div style={{ marginTop: '8px' }}>
+                <p style={{ color: '#888', fontSize: '11px', marginBottom: '8px' }}>
+                  핸들을 추가하면 베지어 곡선을 수동 조절할 수 있습니다.
+                </p>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button 
+                    className={styles.snapButton}
+                    onClick={() => {
+                      // 모든 웨이포인트에 기본 핸들 추가
+                      const handleLength = 50
+                      const newWaypoints = waypoints.map((wp) => ({
+                        ...wp,
+                        handleIn: wp.handleIn || { x: -handleLength, y: 0 },
+                        handleOut: wp.handleOut || { x: handleLength, y: 0 },
+                      }))
+                      requestEdgeUpdate(edgeId, { waypoints: newWaypoints })
+                    }}
+                  >
+                    + Add Handles
+                  </button>
+                  <button 
+                    className={styles.clearButton}
+                    onClick={() => {
+                      // 모든 핸들 제거
+                      const newWaypoints = waypoints.map(wp => ({
+                        ...wp,
+                        handleIn: undefined,
+                        handleOut: undefined,
+                      }))
+                      requestEdgeUpdate(edgeId, { waypoints: newWaypoints })
+                    }}
+                  >
+                    Clear Handles
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
 

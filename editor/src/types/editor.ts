@@ -4,6 +4,9 @@ import type { StoryNode, StoryNodeType } from './story'
 // 엣지 웨이포인트 (경로 조절용 중간점)
 export interface EdgeWaypoint extends XYPosition {
   id: string
+  // 베지어 핸들 (웨이포인트 기준 상대 좌표)
+  handleIn?: { x: number; y: number }   // 들어오는 방향 핸들
+  handleOut?: { x: number; y: number }  // 나가는 방향 핸들
 }
 
 // 에디터 전용 노드 타입 (게임 데이터에 포함 안됨)
