@@ -331,6 +331,22 @@ export class GamePlayer {
     return styles.join('; ');
   }
 
+  private getImageStyle(img: ActiveImage): string {
+    const styles: string[] = [];
+    
+    // flipHorizontal
+    if (img.flipHorizontal) {
+      styles.push('transform: scaleX(-1)');
+    }
+    
+    // objectFit
+    if (img.objectFit) {
+      styles.push('object-fit: ' + img.objectFit);
+    }
+    
+    return styles.join('; ');
+  }
+
   private renderVisualNovel(): string {
     if (!this.project) return '';
 
@@ -366,7 +382,8 @@ export class GamePlayer {
             <div class="image-layer background ${img.effects && img.effects.length > 0 ? 'multi-effect' : ''} ${this.getEffectClasses(img)}"
                  style="${this.getEffectStyle(img)}"
                  data-instance="${img.instanceId}">
-              <img src="${this.getImagePath(img.resourcePath)}" alt="">
+              <img src="${this.getImagePath(img.resourcePath)}" alt=""
+                   style="${this.getImageStyle(img)}">
             </div>
           `
             )
@@ -378,7 +395,7 @@ export class GamePlayer {
                  style="${this.getEffectStyle(img)}"
                  data-instance="${img.instanceId}">
               <img src="${this.getImagePath(img.resourcePath)}" alt=""
-                   style="${img.flipHorizontal ? 'transform: scaleX(-1)' : ''}">
+                   style="${this.getImageStyle(img)}">
             </div>
           `
             )

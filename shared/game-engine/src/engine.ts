@@ -180,7 +180,7 @@ export class GameEngine {
   private processImageNode(node: ImageNode): void {
     if (!node.imageData) return;
 
-    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, effect, effects, effectDuration } =
+    const { resourcePath, layer, layerOrder, alignment, x, y, flipHorizontal, objectFit, effect, effects, effectDuration } =
       node.imageData;
 
     if (!resourcePath) {
@@ -201,6 +201,7 @@ export class GameEngine {
       x,
       y,
       flipHorizontal,
+      objectFit,
       effect,
       effects,
       effectDuration,

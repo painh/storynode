@@ -125,6 +125,13 @@ body {
   object-fit: cover;
 }
 
+/* Object-fit utility classes */
+.image-layer img[style*="object-fit: contain"] { object-fit: contain !important; }
+.image-layer img[style*="object-fit: cover"] { object-fit: cover !important; }
+.image-layer img[style*="object-fit: fill"] { object-fit: fill !important; }
+.image-layer img[style*="object-fit: none"] { object-fit: none !important; }
+.image-layer img[style*="object-fit: scale-down"] { object-fit: scale-down !important; }
+
 .image-layer.character {
   display: flex;
   align-items: flex-end;

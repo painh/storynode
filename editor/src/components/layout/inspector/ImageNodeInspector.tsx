@@ -1,4 +1,4 @@
-import type { StoryNode, ImageNodeData, ImageAlignment, ImageEffectType, ImageExitEffectType, ImageTransitionTiming, ProjectResource } from '../../../types/story'
+import type { StoryNode, ImageNodeData, ImageAlignment, ImageEffectType, ImageExitEffectType, ImageTransitionTiming, ImageObjectFit, ProjectResource } from '../../../types/story'
 import { IMAGE_EFFECT_GROUPS, COMBINABLE_EFFECTS } from '../../../types/story'
 import { HelpTooltip } from './HelpTooltip'
 import { useTranslation } from '../../../i18n'
@@ -35,6 +35,15 @@ const EXIT_EFFECT_LABELS: Record<ImageExitEffectType, string> = {
 const TRANSITION_TIMING_LABELS: Record<ImageTransitionTiming, string> = {
   sequential: '순차 (퇴장 후 등장)',
   crossfade: '동시 (크로스페이드)',
+}
+
+// 이미지 채우기 방식 표시 이름
+const OBJECT_FIT_LABELS: Record<ImageObjectFit, string> = {
+  contain: 'Contain (비율 유지, 전체 표시)',
+  cover: 'Cover (비율 유지, 영역 채움)',
+  fill: 'Fill (비율 무시, 영역 채움)',
+  none: 'None (원본 크기)',
+  'scale-down': 'Scale Down (축소만)',
 }
 
 interface ImageNodeInspectorProps {
@@ -210,6 +219,25 @@ export function ImageNodeInspector({ node, imageResources, onUpdate }: ImageNode
           />
           <span>Flip Horizontal</span>
         </label>
+      </div>
+
+      {/* 이미지 채우기 방식 */}
+      <div className={styles.field}>
+        <div className={styles.labelWithHelp}>
+          <label className={styles.label}>Object Fit</label>
+          <HelpTooltip content={t.help.objectFit} />
+        </div>
+        <select
+          className={styles.select}
+          value={node.imageData?.objectFit || 'contain'}
+          onChange={(e) => handleImageDataChange('objectFit', e.target.value as ImageObjectFit)}
+        >
+          {(Object.keys(OBJECT_FIT_LABELS) as ImageObjectFit[]).map(fit => (
+            <option key={fit} value={fit}>
+              {OBJECT_FIT_LABELS[fit]}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* 효과 - 조합 가능한 효과들 */}

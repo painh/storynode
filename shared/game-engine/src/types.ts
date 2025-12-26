@@ -140,6 +140,7 @@ export interface ImageData {
   x?: number;
   y?: number;
   flipHorizontal?: boolean;
+  objectFit?: ImageObjectFit;
   effect?: ImageEffect;
   effects?: ImageEffect[];
   effectDuration?: number;
@@ -158,6 +159,8 @@ export type ImageEffect =
   | 'bounce'
   | 'flash'
   | 'pulse';
+
+export type ImageObjectFit = 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
 
 export interface ChapterEndNode extends BaseNode {
   type: 'chapter_end';
@@ -251,6 +254,7 @@ export interface ActiveImage {
   x?: number;
   y?: number;
   flipHorizontal?: boolean;
+  objectFit?: ImageObjectFit;
   effect?: ImageEffect;
   effects?: ImageEffect[];
   effectDuration?: number;
