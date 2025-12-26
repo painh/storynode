@@ -108,9 +108,11 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
     // 유효성 검사
     const validationResult = validateChapterById(project, targetStageId, targetChapterId)
+    console.log('[GameStore] Validation result:', validationResult)
     
     // 오류 또는 경고가 있으면 경고 모달 표시
     if (!validationResult.isValid || validationResult.warnings.length > 0) {
+      console.log('[GameStore] Validation failed, showing warning modal')
       set({
         validationResult,
         showValidationWarning: true,
@@ -118,6 +120,8 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       })
       return
     }
+    
+    console.log('[GameStore] Validation passed, starting game')
 
     // 유효성 검사 통과 - 게임 시작
     await get()._startGame(targetStageId, targetChapterId)

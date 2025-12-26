@@ -121,7 +121,7 @@
 .nodeType.battle { background: rgba(198, 40, 40, 0.3); color: #EF5350; }
 .nodeType.shop { background: rgba(46, 125, 50, 0.3); color: #81C784; }
 .nodeType.event { background: rgba(249, 168, 37, 0.3); color: #FFD54F; }
-.nodeType.chapter_end { background: rgba(55, 71, 79, 0.3); color: #90A4AE; }
+.nodeType.chapter_end { background: rgba(76, 175, 80, 0.3); color: #81C784; }
 .nodeType.variable { background: rgba(156, 39, 176, 0.3); color: #CE93D8; }
 .nodeType.condition { background: rgba(0, 188, 212, 0.3); color: #4DD0E1; }
 

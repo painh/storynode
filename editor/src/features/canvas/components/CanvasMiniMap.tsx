@@ -8,7 +8,7 @@ const NODE_COLORS: Record<string, string> = {
   battle: '#C62828',
   shop: '#2E7D32',
   event: '#F9A825',
-  chapter_end: '#37474F',
+  chapter_end: '#4CAF50',
   variable: '#7B1FA2',
   condition: '#00796B',
   image: '#00BCD4',

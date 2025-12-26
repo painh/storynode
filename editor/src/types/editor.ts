@@ -39,7 +39,7 @@ export const NODE_COLORS: Record<AllNodeType, string> = {
   battle: '#C62828',      // 빨강
   shop: '#2E7D32',        // 초록
   event: '#F9A825',       // 노랑
-  chapter_end: '#37474F', // 회색
+  chapter_end: '#4CAF50', // 초록 (시작과 동일)
   variable: '#7B1FA2',    // 보라 (진함)
   condition: '#00796B',   // 청록
   image: '#00BCD4',       // 시안 (이미지)

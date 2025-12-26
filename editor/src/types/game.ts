@@ -65,6 +65,9 @@ export interface GameState {
   activeImages: ActiveImage[]  // 현재 표시 중인 이미지들
   startedAt: number
   playTime: number
+  // 마지막 선택 정보 (JavaScript 노드에서 Game.lastChoiceIndex로 접근)
+  lastChoiceIndex?: number     // 마지막 선택한 선택지 인덱스 (0부터 시작)
+  lastChoiceText?: string      // 마지막 선택한 선택지 텍스트
 }
 
 // 디버그 정보

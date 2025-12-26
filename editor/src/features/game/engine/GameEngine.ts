@@ -403,6 +403,10 @@ export class GameEngine {
       return // 조건 불만족
     }
 
+    // 마지막 선택 정보 저장 (JavaScript에서 Game.lastChoiceIndex로 접근 가능)
+    this.state.lastChoiceIndex = choiceIndex
+    this.state.lastChoiceText = choice.text
+
     // 선택 기록
     this.state.variables.choicesMade.push(choice.id)
 
@@ -705,6 +709,19 @@ export class GameEngine {
       // 챕터 변수 프록시: chapters.별칭.변수ID 로 접근
       const chapters = this.createChaptersProxy()
 
+      // Game 객체: 게임 상태 정보 접근
+      const Game = {
+        // 마지막 선택 정보
+        lastChoiceIndex: this.state.lastChoiceIndex,
+        lastChoiceText: this.state.lastChoiceText,
+        // 현재 노드 정보
+        currentNodeId: this.state.currentNodeId,
+        currentStageId: this.state.currentStageId,
+        currentChapterId: this.state.currentChapterId,
+        // 플레이 시간 (ms)
+        playTime: Date.now() - this.state.startedAt,
+      }
+
       // 사용 가능한 함수들
       const setFlag = (key: string, value: boolean | number | string) => {
         this.state.variables.flags[key] = value
@@ -716,13 +733,14 @@ export class GameEngine {
       const fn = new Function(
         'variables',
         'chapters',
+        'Game',
         'setFlag',
         'getFlag',
         'console',
         node.javascriptCode
       )
 
-      fn(variables, chapters, setFlag, getFlag, { log, warn: console.warn, error: console.error })
+      fn(variables, chapters, Game, setFlag, getFlag, { log, warn: console.warn, error: console.error })
     } catch (error) {
       console.error('[GameEngine] JavaScript execution error:', error)
     }

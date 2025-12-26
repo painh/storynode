@@ -435,10 +435,7 @@ export const createChapter2Nodes = (): { nodes: StoryNode[]; startNodeId: string
   const notEnoughGoldId = generateId()
   const showGoldId = generateId()
   const choiceId = generateId()
-  const scissorsId = generateId()
-  const rockId = generateId()
-  const paperId = generateId()
-  const randomNpcId = generateId()
+  const randomNpcId = generateId()  // 선택지에서 바로 JavaScript 노드로 연결
   const checkResultId = generateId()
   const winBranchId = generateId()
   const loseBranchId = generateId()
@@ -513,7 +510,7 @@ export const createChapter2Nodes = (): { nodes: StoryNode[]; startNodeId: string
       text: '10골드를 걸고 가위바위보를 하지. 이기면 20골드를 받고, 지면 10골드를 잃네!',
       nextNodeId: choiceId,
     },
-    // 가위바위보 선택
+    // 가위바위보 선택 - Game.lastChoiceIndex 사용으로 변수 노드 제거
     {
       id: choiceId,
       type: 'choice',
@@ -523,17 +520,17 @@ export const createChapter2Nodes = (): { nodes: StoryNode[]; startNodeId: string
         {
           id: generateId(),
           text: '✌️ 가위',
-          nextNodeId: scissorsId,
+          nextNodeId: randomNpcId,  // 바로 JavaScript 노드로 연결
         },
         {
           id: generateId(),
           text: '✊ 바위',
-          nextNodeId: rockId,
+          nextNodeId: randomNpcId,
         },
         {
           id: generateId(),
           text: '🖐️ 보',
-          nextNodeId: paperId,
+          nextNodeId: randomNpcId,
         },
         {
           id: generateId(),
@@ -542,51 +539,22 @@ export const createChapter2Nodes = (): { nodes: StoryNode[]; startNodeId: string
         },
       ],
     },
-    // 가위 선택
-    {
-      id: scissorsId,
-      type: 'variable',
-      position: { x: 1300, y: 50 },
-      nextNodeId: randomNpcId,
-      variableOperations: [
-        { target: 'variable', action: 'set', variableId: 'player_choice', value: 0 },
-      ],
-    },
-    // 바위 선택
-    {
-      id: rockId,
-      type: 'variable',
-      position: { x: 1300, y: 200 },
-      nextNodeId: randomNpcId,
-      variableOperations: [
-        { target: 'variable', action: 'set', variableId: 'player_choice', value: 1 },
-      ],
-    },
-    // 보 선택
-    {
-      id: paperId,
-      type: 'variable',
-      position: { x: 1300, y: 350 },
-      nextNodeId: randomNpcId,
-      variableOperations: [
-        { target: 'variable', action: 'set', variableId: 'player_choice', value: 2 },
-      ],
-    },
-    // JavaScript로 NPC 랜덤 선택 및 결과 계산
+    // JavaScript로 NPC 랜덤 선택 및 결과 계산 (Game.lastChoiceIndex 활용)
     {
       id: randomNpcId,
       type: 'javascript',
-      position: { x: 1500, y: 200 },
+      position: { x: 1300, y: 200 },
       nextNodeId: checkResultId,
-      javascriptCode: `// 가위바위보 로직
+      javascriptCode: `// 가위바위보 로직 (Game.lastChoiceIndex 활용)
 // 0=가위, 1=바위, 2=보
+
+// 플레이어 선택 - Game.lastChoiceIndex로 선택한 인덱스 가져오기
+const playerChoice = Game.lastChoiceIndex;
+chapters.rps.player_choice = playerChoice;
 
 // NPC 랜덤 선택 (0~2)
 const npcChoice = Math.floor(Math.random() * 3);
 chapters.rps.npc_choice = npcChoice;
-
-// 플레이어 선택
-const playerChoice = chapters.rps.player_choice;
 
 // 승패 판정
 // (player - npc + 3) % 3 => 0:무승부, 1:패배, 2:승리
