@@ -231,6 +231,24 @@ export interface Translations {
     actionEnd: string
     actionEndDesc: string
   }
+
+  // 유효성 검사
+  validation: {
+    title: string
+    noStartNode: string
+    multipleStartNodes: string
+    noChapterEndNode: string
+    noStages: string
+    noChapters: string
+    stageNotFound: string
+    chapterNotFound: string
+    errorCount: string
+    warningCount: string
+    validationPassed: string
+    continueAnyway: string
+    cancel: string
+    validationFailed: string
+  }
 }
 
 export const translations: Record<Language, Translations> = {
@@ -436,6 +454,22 @@ export const translations: Record<Language, Translations> = {
       actionEnd: '게임 종료',
       actionEndDesc: '게임을 완전히 종료하고 엔딩 화면을 표시합니다. 스토리가 완결되는 지점에서 사용합니다.',
     },
+    validation: {
+      title: '유효성 검사',
+      noStartNode: '시작 노드가 없습니다',
+      multipleStartNodes: '시작 노드가 {count}개 있습니다 (1개만 권장)',
+      noChapterEndNode: '챕터 종료 노드가 없습니다',
+      noStages: '스테이지가 없습니다',
+      noChapters: '챕터가 없습니다',
+      stageNotFound: '스테이지를 찾을 수 없습니다',
+      chapterNotFound: '챕터를 찾을 수 없습니다',
+      errorCount: '오류 {count}개',
+      warningCount: '경고 {count}개',
+      validationPassed: '유효성 검사 통과',
+      continueAnyway: '계속 진행',
+      cancel: '취소',
+      validationFailed: '유효성 검사 실패',
+    },
   },
   en: {
     nodes: {
@@ -638,6 +672,22 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: 'Display a screen where the player can choose which chapter to play next.',
       actionEnd: 'End Game',
       actionEndDesc: 'Completely end the game and display the ending screen. Use this at the conclusion of the story.',
+    },
+    validation: {
+      title: 'Validation',
+      noStartNode: 'No start node found',
+      multipleStartNodes: '{count} start nodes found (only 1 recommended)',
+      noChapterEndNode: 'No chapter end node found',
+      noStages: 'No stages found',
+      noChapters: 'No chapters found',
+      stageNotFound: 'Stage not found',
+      chapterNotFound: 'Chapter not found',
+      errorCount: '{count} error(s)',
+      warningCount: '{count} warning(s)',
+      validationPassed: 'Validation passed',
+      continueAnyway: 'Continue Anyway',
+      cancel: 'Cancel',
+      validationFailed: 'Validation failed',
     },
   },
 
@@ -844,6 +894,22 @@ export const translations: Record<Language, Translations> = {
       actionEnd: '结束游戏',
       actionEndDesc: '完全结束游戏并显示结局画面。用于故事的结尾处。',
     },
+    validation: {
+      title: '有效性检查',
+      noStartNode: '没有找到开始节点',
+      multipleStartNodes: '找到{count}个开始节点（建议只有1个）',
+      noChapterEndNode: '没有找到章节结束节点',
+      noStages: '没有找到阶段',
+      noChapters: '没有找到章节',
+      stageNotFound: '找不到阶段',
+      chapterNotFound: '找不到章节',
+      errorCount: '{count}个错误',
+      warningCount: '{count}个警告',
+      validationPassed: '有效性检查通过',
+      continueAnyway: '仍然继续',
+      cancel: '取消',
+      validationFailed: '有效性检查失败',
+    },
   },
 
   // 중국어 번체 (Traditional Chinese)
@@ -1048,6 +1114,22 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: '顯示一個介面，讓玩家選擇接下來要玩的章節。',
       actionEnd: '結束遊戲',
       actionEndDesc: '完全結束遊戲並顯示結局畫面。用於故事的結尾處。',
+    },
+    validation: {
+      title: '有效性檢查',
+      noStartNode: '沒有找到開始節點',
+      multipleStartNodes: '找到{count}個開始節點（建議只有1個）',
+      noChapterEndNode: '沒有找到章節結束節點',
+      noStages: '沒有找到階段',
+      noChapters: '沒有找到章節',
+      stageNotFound: '找不到階段',
+      chapterNotFound: '找不到章節',
+      errorCount: '{count}個錯誤',
+      warningCount: '{count}個警告',
+      validationPassed: '有效性檢查通過',
+      continueAnyway: '仍然繼續',
+      cancel: '取消',
+      validationFailed: '有效性檢查失敗',
     },
   },
 
@@ -1254,6 +1336,22 @@ export const translations: Record<Language, Translations> = {
       actionEnd: 'Fin del Juego',
       actionEndDesc: 'Terminar completamente el juego y mostrar la pantalla de final. Usar esto en la conclusión de la historia.',
     },
+    validation: {
+      title: 'Validación',
+      noStartNode: 'No se encontró nodo de inicio',
+      multipleStartNodes: 'Se encontraron {count} nodos de inicio (solo se recomienda 1)',
+      noChapterEndNode: 'No se encontró nodo de fin de capítulo',
+      noStages: 'No se encontraron etapas',
+      noChapters: 'No se encontraron capítulos',
+      stageNotFound: 'Etapa no encontrada',
+      chapterNotFound: 'Capítulo no encontrado',
+      errorCount: '{count} error(es)',
+      warningCount: '{count} advertencia(s)',
+      validationPassed: 'Validación aprobada',
+      continueAnyway: 'Continuar de todos modos',
+      cancel: 'Cancelar',
+      validationFailed: 'Validación fallida',
+    },
   },
 
   // 일본어 (Japanese)
@@ -1458,6 +1556,22 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: 'プレイヤーが次にプレイするチャプターを選択できる画面を表示します。',
       actionEnd: 'ゲーム終了',
       actionEndDesc: 'ゲームを完全に終了してエンディング画面を表示します。ストーリーの結末で使用します。',
+    },
+    validation: {
+      title: 'バリデーション',
+      noStartNode: '開始ノードが見つかりません',
+      multipleStartNodes: '開始ノードが{count}個見つかりました（1個のみ推奨）',
+      noChapterEndNode: 'チャプター終了ノードが見つかりません',
+      noStages: 'ステージが見つかりません',
+      noChapters: 'チャプターが見つかりません',
+      stageNotFound: 'ステージが見つかりません',
+      chapterNotFound: 'チャプターが見つかりません',
+      errorCount: '{count}件のエラー',
+      warningCount: '{count}件の警告',
+      validationPassed: 'バリデーション通過',
+      continueAnyway: '続行する',
+      cancel: 'キャンセル',
+      validationFailed: 'バリデーション失敗',
     },
   },
 }

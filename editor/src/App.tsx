@@ -4,6 +4,7 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { SearchModal } from './components/common/SearchModal'
+import { ValidationWarningModal } from './components/common/ValidationWarningModal'
 import { GameModal } from './features/game/components'
 import { TemplateEditor } from './features/templateEditor/TemplateEditor'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -28,7 +29,14 @@ function App() {
   const { loadSettings, settings, isLoaded, setPanelWidths } = useSettingsStore()
   const { setProject } = useEditorStore()
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
-  const { isModalOpen: isGameModalOpen, closeGame } = useGameStore()
+  const { 
+    isModalOpen: isGameModalOpen, 
+    closeGame,
+    showValidationWarning,
+    validationResult,
+    dismissValidationWarning,
+    proceedAfterValidation,
+  } = useGameStore()
 
   // 패널 너비는 설정에서 가져오되, 리사이즈 중에는 로컬 상태 사용 (성능)
   const [localLeftWidth, setLocalLeftWidth] = useState(settings.leftPanelWidth)
@@ -176,6 +184,15 @@ function App() {
       </div>
       <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
       <GameModal isOpen={isGameModalOpen} onClose={closeGame} />
+      {validationResult && (
+        <ValidationWarningModal
+          isOpen={showValidationWarning}
+          result={validationResult}
+          onContinue={proceedAfterValidation}
+          onCancel={dismissValidationWarning}
+          allowContinueWithErrors={false}
+        />
+      )}
     </div>
   )
 }

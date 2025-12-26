@@ -7,6 +7,7 @@ import { GameEngine, type ChapterTransition } from '../features/game/engine/Game
 import { useEditorStore } from './editorStore'
 import { useSettingsStore } from './settingsStore'
 import { isTauri, saveProjectToFolder } from '../utils/fileUtils'
+import { validateChapterById, type ValidationResult } from '../utils/validation'
 
 interface GameStoreState {
   // 게임 상태
@@ -17,6 +18,11 @@ interface GameStoreState {
 
   // 모달 상태
   isModalOpen: boolean
+
+  // 유효성 검사 상태
+  validationResult: ValidationResult | null
+  showValidationWarning: boolean
+  pendingGameStart: { stageId: string; chapterId: string } | null
 
   // 디버그 상태
   debug: DebugInfo
@@ -30,6 +36,13 @@ interface GameStoreState {
   // 액션
   openGame: (stageId?: string, chapterId?: string) => void
   closeGame: () => void
+  
+  // 유효성 검사 관련
+  dismissValidationWarning: () => void
+  proceedAfterValidation: () => void
+
+  // 내부 함수
+  _startGame: (stageId: string, chapterId: string) => Promise<void>
 
   advance: () => void
   selectChoice: (index: number) => void
@@ -62,6 +75,11 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   engine: null,
   isModalOpen: false,
 
+  // 유효성 검사 상태
+  validationResult: null,
+  showValidationWarning: false,
+  pendingGameStart: null,
+
   debug: {
     enabled: false,
     showVariables: true,
@@ -77,7 +95,6 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
   openGame: async (stageId, chapterId) => {
     const editorState = useEditorStore.getState()
-    const settingsState = useSettingsStore.getState()
     const project = editorState.project
 
     // 스테이지/챕터 ID가 없으면 현재 에디터 상태 사용
@@ -88,6 +105,29 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       console.error('No stage or chapter selected')
       return
     }
+
+    // 유효성 검사
+    const validationResult = validateChapterById(project, targetStageId, targetChapterId)
+    
+    // 오류 또는 경고가 있으면 경고 모달 표시
+    if (!validationResult.isValid || validationResult.warnings.length > 0) {
+      set({
+        validationResult,
+        showValidationWarning: true,
+        pendingGameStart: { stageId: targetStageId, chapterId: targetChapterId },
+      })
+      return
+    }
+
+    // 유효성 검사 통과 - 게임 시작
+    await get()._startGame(targetStageId, targetChapterId)
+  },
+
+  // 실제 게임 시작 내부 함수
+  _startGame: async (targetStageId: string, targetChapterId: string) => {
+    const editorState = useEditorStore.getState()
+    const settingsState = useSettingsStore.getState()
+    const project = editorState.project
 
     // 게임 실행 전 자동 저장
     if (settingsState.settings.saveBeforeGameRun && isTauri() && settingsState.settings.lastProjectPath) {
@@ -150,6 +190,10 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       isModalOpen: true,
       currentThemeId: themeId,
       gameMode: mode,
+      // 유효성 검사 상태 초기화
+      validationResult: null,
+      showValidationWarning: false,
+      pendingGameStart: null,
     })
   },
 
@@ -257,6 +301,26 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
   setGameMode: (mode) => {
     set({ gameMode: mode })
+  },
+
+  // 유효성 검사 경고 닫기
+  dismissValidationWarning: () => {
+    set({
+      validationResult: null,
+      showValidationWarning: false,
+      pendingGameStart: null,
+    })
+  },
+
+  // 유효성 검사 경고 후 계속 진행
+  proceedAfterValidation: async () => {
+    const { pendingGameStart } = get()
+    if (pendingGameStart) {
+      set({
+        showValidationWarning: false,
+      })
+      await get()._startGame(pendingGameStart.stageId, pendingGameStart.chapterId)
+    }
   },
 
   _setCurrentNode: (node) => {

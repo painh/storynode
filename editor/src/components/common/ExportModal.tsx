@@ -9,6 +9,8 @@ import {
   downloadGameBuildAsZip,
 } from '../../utils/fileUtils'
 import { generateGamePlayerHtml } from '../../utils/gamePlayerTemplate'
+import { validateProject, type ValidationResult } from '../../utils/validation'
+import { ValidationWarningModal } from './ValidationWarningModal'
 import styles from './ExportModal.module.css'
 
 interface ExportModalProps {
@@ -29,6 +31,10 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
   const [isExporting, setIsExporting] = useState(false)
   const [availableBinaries, setAvailableBinaries] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
+  
+  // 유효성 검사 상태
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
+  const [showValidationWarning, setShowValidationWarning] = useState(false)
 
   // Load available player binaries
   useEffect(() => {
@@ -78,6 +84,23 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
   const handleExport = async () => {
     if (!project) return
 
+    // 유효성 검사
+    const result = validateProject(project)
+    
+    // 오류 또는 경고가 있으면 경고 모달 표시
+    if (!result.isValid || result.warnings.length > 0) {
+      setValidationResult(result)
+      setShowValidationWarning(true)
+      return
+    }
+
+    // 유효성 검사 통과 - 내보내기 진행
+    await performExport()
+  }
+
+  const performExport = async () => {
+    if (!project) return
+
     setIsExporting(true)
     setError(null)
 
@@ -109,6 +132,16 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
     } finally {
       setIsExporting(false)
     }
+  }
+
+  const handleValidationContinue = async () => {
+    setShowValidationWarning(false)
+    await performExport()
+  }
+
+  const handleValidationCancel = () => {
+    setShowValidationWarning(false)
+    setValidationResult(null)
   }
 
   if (!isOpen) return null
@@ -246,6 +279,17 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
           </button>
         </div>
       </div>
+
+      {/* 유효성 검사 경고 모달 */}
+      {validationResult && (
+        <ValidationWarningModal
+          isOpen={showValidationWarning}
+          result={validationResult}
+          onContinue={handleValidationContinue}
+          onCancel={handleValidationCancel}
+          allowContinueWithErrors={false}
+        />
+      )}
     </div>
   )
 }
