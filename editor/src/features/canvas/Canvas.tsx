@@ -50,6 +50,7 @@ function CanvasInner() {
     createCommentNode,
     updateCommentPosition,
     createNodeFromTemplate,
+    getVariableById,
   } = useEditorStore()
 
   const { snapGrid, showGrid, setSnapGrid, setShowGrid, setNodes: setCanvasNodes } = useCanvasStore()
@@ -204,6 +205,26 @@ function CanvasInner() {
                 layerOrder: 0,
                 alignment: 'center',
               }
+            })
+          }
+        }
+
+        // 변수 드래그로 노드 생성 시 해당 변수 연산 자동 추가
+        if (nodeType === 'variable') {
+          const variableId = e.dataTransfer.getData('application/storynode-variable-id')
+          if (variableId) {
+            const variable = getVariableById(variableId)
+            // 변수의 defaultValue 사용 (array는 push용 빈 문자열)
+            const value = variable?.type === 'array' 
+              ? '' 
+              : (variable?.defaultValue ?? 0)
+            updateNode(newNode.id, {
+              variableOperations: [{
+                target: 'variable',
+                action: variable?.type === 'array' ? 'push' : 'set',
+                variableId: variableId,
+                value: value as number | string | boolean,
+              }]
             })
           }
         }

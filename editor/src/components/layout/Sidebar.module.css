@@ -436,11 +436,19 @@
   background: var(--bg-tertiary);
   border-radius: 6px;
   border: 1px solid transparent;
+  border-left: 3px solid var(--node-variable, #9b59b6);
   transition: all 0.15s;
+  cursor: grab;
 }
 
 .variableItem:hover {
   border-color: var(--border-default);
+  border-left-color: var(--node-variable, #9b59b6);
+  transform: translateX(2px);
+}
+
+.variableItem:active {
+  cursor: grabbing;
 }
 
 .variableItem:hover .deleteButton {

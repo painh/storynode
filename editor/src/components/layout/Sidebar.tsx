@@ -99,6 +99,13 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
     e.dataTransfer.effectAllowed = 'move'
   }
 
+  // 변수 드래그 시작
+  const handleVariableDragStart = (e: React.DragEvent, variableId: string) => {
+    e.dataTransfer.setData('application/storynode-type', 'variable')
+    e.dataTransfer.setData('application/storynode-variable-id', variableId)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
   const handleClick = (nodeType: AllNodeType) => {
     // Comment 노드는 클릭으로 생성 불가 (드래그로만 생성)
     if (nodeType === 'comment') return
@@ -338,7 +345,13 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
         )}
         <div className={styles.variableList}>
           {variables.filter(v => fuzzyMatch(v.name, variableFilter) || fuzzyMatch(v.id, variableFilter)).map((variable) => (
-            <div key={variable.id} className={styles.variableItem}>
+            <div
+              key={variable.id}
+              className={styles.variableItem}
+              draggable
+              onDragStart={(e) => handleVariableDragStart(e, variable.id)}
+              title="Drag to canvas to create Variable node"
+            >
               {editingVariableId === variable.id ? (
                 <input
                   type="text"
