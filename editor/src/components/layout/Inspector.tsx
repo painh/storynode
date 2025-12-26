@@ -1,5 +1,6 @@
 import { useEditorStore } from '../../stores/editorStore'
 import { useCanvasStore } from '../../stores/canvasStore'
+import { EdgeInspector } from './inspector/EdgeInspector'
 import { NODE_COLORS, NODE_ICONS, NODE_LABELS } from '../../types/editor'
 import type { StoryNode, StoryChoice } from '../../types/story'
 import { CommentNodeInspector } from './inspector/CommentNodeInspector'
@@ -45,37 +46,7 @@ export function Inspector() {
 
   // 엣지가 선택된 경우
   if (selectedEdgeId && selectedNodeIds.length === 0) {
-    return (
-      <aside className={styles.inspector}>
-        <div className={styles.header} style={{ borderColor: '#ff6b00' }}>
-          <span className={styles.icon}>🔗</span>
-          <span className={styles.type}>Edge</span>
-        </div>
-        <div className={styles.content}>
-          <div className={styles.field}>
-            <label className={styles.label}>Edge ID</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={selectedEdgeId}
-              readOnly
-            />
-          </div>
-          <div className={styles.field}>
-            <p style={{ color: '#888', fontSize: '12px', marginBottom: '8px' }}>
-              엣지를 더블클릭하면 웨이포인트(중간점)가 추가됩니다.
-              웨이포인트를 드래그하여 경로를 조절하세요.
-            </p>
-          </div>
-          <button
-            className={styles.deleteButton}
-            onClick={handleDeleteEdge}
-          >
-            Delete Edge
-          </button>
-        </div>
-      </aside>
-    )
+    return <EdgeInspector edgeId={selectedEdgeId} onDelete={handleDeleteEdge} />
   }
 
   if (!selectedNode) {
