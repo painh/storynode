@@ -209,6 +209,7 @@ export interface Translations {
     duration: string
     exitEffect: string
     transitionTiming: string
+    objectFit: string
   }
 }
 
@@ -397,6 +398,7 @@ export const translations: Record<Language, Translations> = {
       duration: '효과 애니메이션의 지속 시간입니다.\n밀리초(ms) 단위로 설정합니다.\n예: 500 = 0.5초',
       exitEffect: '같은 레이어+순서에 있는 기존 이미지의 퇴장 효과입니다.\n새 이미지로 교체될 때 적용됩니다.',
       transitionTiming: '퇴장과 등장 효과의 타이밍입니다.\n• 순차: 기존 이미지가 사라진 후 새 이미지 등장\n• 동시: 기존 이미지가 사라지면서 새 이미지 등장',
+      objectFit: '이미지가 영역에 맞춰지는 방식입니다.\n• Contain: 비율 유지, 전체 표시\n• Cover: 비율 유지, 영역 채움 (잘릴 수 있음)\n• Fill: 비율 무시, 영역 채움\n• None: 원본 크기\n• Scale Down: 필요시에만 축소',
     },
   },
   en: {
@@ -583,6 +585,7 @@ export const translations: Record<Language, Translations> = {
       duration: 'Duration of the effect animation.\nSet in milliseconds (ms).\nExample: 500 = 0.5 seconds',
       exitEffect: 'Exit effect for existing image at same layer+order.\nApplied when replaced with new image.',
       transitionTiming: 'Timing of exit and entrance effects.\n• Sequential: New image appears after old one exits\n• Crossfade: New image appears while old one exits',
+      objectFit: 'How the image fits within its container.\n• Contain: Preserve ratio, show entire image\n• Cover: Preserve ratio, fill area (may crop)\n• Fill: Ignore ratio, fill area\n• None: Original size\n• Scale Down: Only shrink if needed',
     },
   },
 
@@ -771,6 +774,7 @@ export const translations: Record<Language, Translations> = {
       duration: '效果动画的持续时间。\n以毫秒（ms）为单位设置。\n例如：500 = 0.5秒',
       exitEffect: '同一图层+顺序的现有图像的退出效果。\n被新图像替换时应用。',
       transitionTiming: '退出和进入效果的时机。\n• 顺序：旧图像退出后新图像出现\n• 交叉淡入淡出：新图像出现的同时旧图像退出',
+      objectFit: '图像如何适应其容器。\n• Contain：保持比例，显示整个图像\n• Cover：保持比例，填充区域（可能裁剪）\n• Fill：忽略比例，填充区域\n• None：原始尺寸\n• Scale Down：仅在需要时缩小',
     },
   },
 
@@ -959,6 +963,7 @@ export const translations: Record<Language, Translations> = {
       duration: '效果動畫的持續時間。\n以毫秒（ms）為單位設定。\n例如：500 = 0.5秒',
       exitEffect: '同一圖層+順序的現有圖像的退出效果。\n被新圖像取代時套用。',
       transitionTiming: '退出和進入效果的時機。\n• 順序：舊圖像退出後新圖像出現\n• 交叉淡入淡出：新圖像出現的同時舊圖像退出',
+      objectFit: '圖像如何適應其容器。\n• Contain：保持比例，顯示整個圖像\n• Cover：保持比例，填充區域（可能裁剪）\n• Fill：忽略比例，填充區域\n• None：原始尺寸\n• Scale Down：僅在需要時縮小',
     },
   },
 
@@ -1147,6 +1152,7 @@ export const translations: Record<Language, Translations> = {
       duration: 'Duración de la animación del efecto.\nEstablecer en milisegundos (ms).\nEjemplo: 500 = 0.5 segundos',
       exitEffect: 'Efecto de salida para imagen existente en misma capa+orden.\nAplicado al ser reemplazada por nueva imagen.',
       transitionTiming: 'Momento de efectos de salida y entrada.\n• Secuencial: Nueva imagen aparece después de que sale la anterior\n• Cruzado: Nueva imagen aparece mientras sale la anterior',
+      objectFit: 'Cómo la imagen se ajusta a su contenedor.\n• Contain: Preservar proporción, mostrar imagen completa\n• Cover: Preservar proporción, llenar área (puede recortar)\n• Fill: Ignorar proporción, llenar área\n• None: Tamaño original\n• Scale Down: Solo reducir si es necesario',
     },
   },
 
@@ -1335,6 +1341,7 @@ export const translations: Record<Language, Translations> = {
       duration: 'エフェクトアニメーションの持続時間です。\nミリ秒（ms）単位で設定します。\n例：500 = 0.5秒',
       exitEffect: '同じレイヤー+順序にある既存画像の退出エフェクトです。\n新しい画像に置き換えられる時に適用されます。',
       transitionTiming: '退出と登場エフェクトのタイミングです。\n• 順次：古い画像が退出後に新しい画像が登場\n• クロスフェード：古い画像が退出しながら新しい画像が登場',
+      objectFit: '画像がコンテナにどのように収まるかを指定します。\n• Contain：比率を維持、画像全体を表示\n• Cover：比率を維持、エリアを埋める（トリミングされる場合あり）\n• Fill：比率を無視、エリアを埋める\n• None：元のサイズ\n• Scale Down：必要な場合のみ縮小',
     },
   },
 }

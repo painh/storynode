@@ -4,10 +4,14 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
 
 const MAGIC_BYTES: &[u8; 4] = b"SNPK";
 
-// --dev 옵션으로 실행되었는지 저장
+// 개발 모드 여부 (debug 빌드 = 개발 모드)
+#[cfg(debug_assertions)]
+static DEV_MODE: AtomicBool = AtomicBool::new(true);
+#[cfg(not(debug_assertions))]
 static DEV_MODE: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -229,6 +233,13 @@ fn check_dev_mode() -> bool {
     DEV_MODE.load(Ordering::Relaxed)
 }
 
+// 빌드 시간 반환
+#[tauri::command]
+fn get_build_time() -> String {
+    // 컴파일 타임에 설정됨
+    env!("BUILD_TIME").to_string()
+}
+
 // Get resource directory path (for player binaries)
 #[tauri::command]
 fn get_resource_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
@@ -239,16 +250,57 @@ fn get_resource_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to get resource dir: {}", e))
 }
 
-// List available player binaries
-#[tauri::command]
-fn list_player_binaries(app_handle: tauri::AppHandle) -> Result<Vec<String>, String> {
+// Get player directory path (handles dev mode)
+fn get_player_dir(app_handle: &tauri::AppHandle) -> Result<std::path::PathBuf, String> {
+    // In dev mode, use the src-tauri/resources/player folder
+    if DEV_MODE.load(Ordering::Relaxed) {
+        println!("[get_player_dir] Dev mode detected");
+
+        // Try multiple possible paths
+        let candidates = vec![
+            // From current working directory (npm run tauri dev runs from editor/)
+            std::env::current_dir().ok().map(|p| p.join("src-tauri").join("resources").join("player")),
+            // From executable path
+            std::env::current_exe().ok().and_then(|exe| {
+                // exe is in target/debug/storynode-editor
+                exe.parent()
+                    .and_then(|p| p.parent())
+                    .and_then(|p| p.parent())
+                    .map(|p| p.join("resources").join("player"))
+            }),
+        ];
+
+        for candidate in candidates.into_iter().flatten() {
+            println!("[get_player_dir] Checking: {:?}", candidate);
+            if candidate.exists() {
+                println!("[get_player_dir] Found: {:?}", candidate);
+                return Ok(candidate);
+            }
+        }
+
+        println!("[get_player_dir] No dev mode paths found, falling back to resource_dir");
+    }
+
+    // Production: use resource_dir
     let resource_dir = app_handle
         .path()
         .resource_dir()
         .map_err(|e| format!("Failed to get resource dir: {}", e))?;
 
     let player_dir = resource_dir.join("player");
+    println!("[get_player_dir] Using resource_dir: {:?}", player_dir);
+    Ok(player_dir)
+}
+
+// List available player binaries
+#[tauri::command]
+fn list_player_binaries(app_handle: tauri::AppHandle) -> Result<Vec<String>, String> {
+    let player_dir = get_player_dir(&app_handle)?;
+
+    println!("[list_player_binaries] Looking for binaries in: {:?}", player_dir);
+
     if !player_dir.exists() {
+        println!("[list_player_binaries] Player directory does not exist");
         return Ok(vec![]);
     }
 
@@ -258,12 +310,14 @@ fn list_player_binaries(app_handle: tauri::AppHandle) -> Result<Vec<String>, Str
     let mut binaries = Vec::new();
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().to_string();
-        // Filter for executable files
-        if name.starts_with("storynode-player") {
+        println!("[list_player_binaries] Found file: {}", name);
+        // Filter for executable files (skip .gitkeep)
+        if name.starts_with("storynode-player") && !name.ends_with(".gitkeep") {
             binaries.push(name);
         }
     }
 
+    println!("[list_player_binaries] Found binaries: {:?}", binaries);
     Ok(binaries)
 }
 
@@ -276,12 +330,8 @@ fn export_standalone_game(
     game_zip_data: Vec<u8>,
     output_path: String,
 ) -> Result<(), String> {
-    let resource_dir = app_handle
-        .path()
-        .resource_dir()
-        .map_err(|e| format!("Failed to get resource dir: {}", e))?;
-
-    let player_path = resource_dir.join("player").join(&player_binary_name);
+    let player_dir = get_player_dir(&app_handle)?;
+    let player_path = player_dir.join(&player_binary_name);
 
     if !player_path.exists() {
         return Err(format!("Player binary not found: {}", player_binary_name));
@@ -343,12 +393,7 @@ fn write_binary_file(path: String, data: Vec<u8>) -> Result<(), String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // 커맨드라인 인자에서 --dev 옵션 확인
-    let args: Vec<String> = std::env::args().collect();
-    if args.iter().any(|arg| arg == "--dev" || arg == "-d") {
-        DEV_MODE.store(true, Ordering::Relaxed);
-        println!("[Tauri] Dev mode enabled via command line argument");
-    }
+    println!("[Tauri] Dev mode: {}", DEV_MODE.load(Ordering::Relaxed));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -366,12 +411,14 @@ pub fn run() {
             get_config_dir,
             toggle_devtools,
             check_dev_mode,
+            get_build_time,
             get_resource_dir,
             list_player_binaries,
             export_standalone_game,
             read_binary_file,
             write_binary_file
         ])
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             println!("[Tauri] App started");
 
@@ -382,6 +429,24 @@ pub fn run() {
                     println!("[Tauri] DevTools opened (dev mode)");
                 }
             }
+
+            // F12 글로벌 단축키 등록 (JS가 터져도 동작)
+            let app_handle = app.handle().clone();
+            let shortcut = Shortcut::new(Some(Modifiers::empty()), Code::F12);
+
+            app.global_shortcut().on_shortcut(shortcut, move |_app, _shortcut, _event| {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    if window.is_devtools_open() {
+                        window.close_devtools();
+                        println!("[Tauri] DevTools closed via F12");
+                    } else {
+                        window.open_devtools();
+                        println!("[Tauri] DevTools opened via F12");
+                    }
+                }
+            }).expect("Failed to register F12 shortcut");
+
+            println!("[Tauri] F12 shortcut registered");
 
             Ok(())
         })

@@ -409,16 +409,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       const target = e.target as HTMLElement
       const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
 
-      // F12: 개발자 도구 (개발 모드에서만)
-      if (e.key === 'F12' && import.meta.env.DEV) {
-        e.preventDefault()
-        if (isTauri()) {
-          import('@tauri-apps/api/core').then(({ invoke }) => {
-            invoke('toggle_devtools')
-          })
-        }
-        return
-      }
+      // F12: 개발자 도구 토글은 Rust 레벨에서 처리 (JS 크래시 시에도 동작)
 
       // Cmd+Shift+S: 다른 이름으로 저장
       if (isMod && isShift && e.key === 's') {

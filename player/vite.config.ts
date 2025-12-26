@@ -11,7 +11,7 @@ export default defineConfig({
     strictPort: true,
     // if the host Tauri is expecting is set, use it
     host: host || false,
-    port: 1421,
+    port: 9422,
   },
   // Env variables starting with the item of `envPrefix` will be exposed in tauri's source code through `import.meta.env`.
   envPrefix: ['VITE_', 'TAURI_ENV_*'],

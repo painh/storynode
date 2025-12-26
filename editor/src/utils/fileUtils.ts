@@ -650,7 +650,9 @@ export async function downloadGameBuildAsZip(
   const url = URL.createObjectURL(content)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${project.name.toLowerCase().replace(/\s+/g, '_')}_game.zip`
+  // 프로젝트 이름을 안전한 파일명으로 변환 (공백 -> 언더스코어, 특수문자 제거)
+  const safeName = project.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '') || 'game'
+  a.download = `${safeName}.zip`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

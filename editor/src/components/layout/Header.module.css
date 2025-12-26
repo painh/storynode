@@ -20,6 +20,16 @@
   font-weight: 600;
   color: var(--text-accent);
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.version {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 .menu {

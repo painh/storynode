@@ -76,6 +76,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const [showExportModal, setShowExportModal] = useState(false)
   const [showHelpModal, setShowHelpModal] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+  const [buildTime, setBuildTime] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Undo/Redo
@@ -96,6 +97,14 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
           openDialog = mod.open
         } catch (e) {
           console.error('Failed to load Tauri dialog plugin:', e)
+        }
+        // 빌드 시간 가져오기
+        try {
+          const { invoke } = await import('@tauri-apps/api/core')
+          const time = await invoke<string>('get_build_time')
+          setBuildTime(time)
+        } catch (e) {
+          console.error('Failed to get build time:', e)
         }
       } else {
         // 웹 환경에서 File System Access API 지원 확인
@@ -419,7 +428,10 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   return (
     <header className={styles.header}>
       <div className={styles.left}>
-        <div className={styles.logo}>StoryNode</div>
+        <div className={styles.logo}>
+          StoryNode
+          {buildTime && <span className={styles.version}>{buildTime}</span>}
+        </div>
         <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}
           <div className={styles.menuWrapper}>

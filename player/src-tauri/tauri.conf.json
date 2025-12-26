@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1421",
+    "devUrl": "http://localhost:9422",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -34,7 +34,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": []
+    "resources": [],
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "10.13"
+    }
   },
   "plugins": {
     "opener": {

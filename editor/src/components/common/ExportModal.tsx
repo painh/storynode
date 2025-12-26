@@ -53,15 +53,18 @@ export function ExportModal({ isOpen, onClose }: ExportModalProps) {
     if (!isTauri()) return
 
     try {
-      const defaultName = project?.name
-        ? `${project.name.toLowerCase().replace(/\s+/g, '_')}${platform === 'windows' ? '.exe' : ''}`
-        : `game${platform === 'windows' ? '.exe' : ''}`
+      // 프로젝트 이름을 파일명으로 변환 (공백 -> 언더스코어, 특수문자 제거)
+      const safeName = project?.name
+        ? project.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '')
+        : ''
+      const defaultName = safeName || 'game'
+      const fileName = `${defaultName}${platform === 'windows' ? '.exe' : ''}`
 
       const result = await save({
-        defaultPath: defaultName,
+        defaultPath: fileName,
         filters: platform === 'windows'
           ? [{ name: 'Executable', extensions: ['exe'] }]
-          : [{ name: 'Application', extensions: ['*'] }],
+          : undefined,  // macOS/Linux에서는 필터 없이 저장
       })
 
       if (result) {
