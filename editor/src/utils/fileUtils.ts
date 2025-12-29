@@ -517,24 +517,63 @@ export function exportForGame(project: StoryProject): string {
 // 웹 환경 폴백
 // ============================================
 
-// Download file in web environment (fallback)
-export function downloadJson(content: string, filename: string): void {
+// Download file in web environment (with File System Access API support)
+export async function downloadJson(content: string, filename: string): Promise<void> {
   const blob = new Blob([content], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+
+  // Tauri 환경에서는 저장 다이얼로그 표시
+  if (isTauri()) {
+    try {
+      const savePath = await save({
+        defaultPath: filename,
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+      })
+
+      if (savePath) {
+        await invoke('write_story_file', { path: savePath, content })
+      }
+    } catch (error) {
+      console.error('Failed to save JSON file:', error)
+      throw error
+    }
+  } else if (isFileSystemAccessSupported()) {
+    // 웹 환경에서 File System Access API 지원 시 저장 다이얼로그 표시
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: 'JSON',
+          accept: { 'application/json': ['.json'] },
+        }],
+      })
+      const writable = await fileHandle.createWritable()
+      await writable.write(blob)
+      await writable.close()
+    } catch (error) {
+      // 사용자가 취소한 경우 (AbortError) 무시
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Failed to save JSON file:', error)
+        throw error
+      }
+    }
+  } else {
+    // File System Access API 미지원 시 기존 다운로드 방식
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 }
 
-// Download project as ZIP (for web environment)
+// Download project as JSON (legacy function name kept for compatibility)
 export async function downloadProjectAsZip(project: StoryProject): Promise<void> {
-  // 웹에서는 JSZip 라이브러리가 필요하므로, 단일 JSON으로 폴백
   const json = JSON.stringify(project, null, 2)
-  downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
+  await downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
 }
 
 // ============================================

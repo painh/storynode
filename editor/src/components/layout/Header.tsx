@@ -298,9 +298,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
     setShowRecentSubmenu(false)
   }
 
-  const handleExportJson = () => {
+  const handleExportJson = async () => {
     const json = JSON.stringify(project, null, 2)
-    downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
+    await downloadJson(json, `${project.name.toLowerCase().replace(/\s+/g, '_')}.story.json`)
     closeAllMenus()
   }
 
