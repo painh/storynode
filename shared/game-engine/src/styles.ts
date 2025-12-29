@@ -402,13 +402,13 @@ body {
 }
 
 @keyframes slideLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { transform: translateX(calc(-50% + 100%)); opacity: 0; }
+  to { transform: translateX(-50%); opacity: 1; }
 }
 
 @keyframes slideRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { transform: translateX(calc(-50% - 100%)); opacity: 0; }
+  to { transform: translateX(-50%); opacity: 1; }
 }
 
 @keyframes slideUp {

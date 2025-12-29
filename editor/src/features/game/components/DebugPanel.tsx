@@ -5,7 +5,7 @@ import { useGameStore } from '../../../stores/gameStore'
 import styles from '../styles/DebugPanel.module.css'
 
 export function DebugPanel() {
-  const { debug, setDebugOption, gameState, currentNode, toggleImageVisibility, toggleImageBorder } = useGameStore()
+  const { debug, setDebugOption, gameState, currentNode, toggleImageVisibility, toggleImageBorder, toggleImageOrigin } = useGameStore()
 
   // 활성 이미지 목록
   const activeImages = gameState?.activeImages || []
@@ -194,6 +194,7 @@ export function DebugPanel() {
               {activeImages.map((img) => {
                 const isHidden = debug.hiddenImageIds.has(img.id)
                 const hasBorder = debug.borderedImageIds.has(img.id)
+                const hasOrigin = debug.originImageIds.has(img.id)
                 return (
                   <div 
                     key={`${img.id}-${img.instanceId}`} 
@@ -209,6 +210,13 @@ export function DebugPanel() {
                       <span className={styles.imageAlign}>{img.alignment}</span>
                     </div>
                     <div className={styles.imageActions}>
+                      <button
+                        className={`${styles.imageActionBtn} ${hasOrigin ? styles.active : ''}`}
+                        onClick={() => toggleImageOrigin(img.id)}
+                        title="Toggle origin point"
+                      >
+                        +
+                      </button>
                       <button
                         className={`${styles.imageActionBtn} ${hasBorder ? styles.active : ''}`}
                         onClick={() => toggleImageBorder(img.id)}

@@ -41,13 +41,31 @@
   z-index: 1;
 }
 
+/* 이미지 래퍼 (정렬 및 애니메이션용) */
+.imageWrapper {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  max-height: 100%;
+}
+
 /* 개별 이미지 */
 .layerImage {
-  position: absolute;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   transition: opacity 0.3s ease;
+}
+
+/* 배경 이미지 래퍼 스타일 */
+.imageWrapper.alignLeft.background,
+.imageWrapper.alignCenter.background,
+.imageWrapper.alignRight.background {
+  width: 100%;
+  height: 100%;
+  left: 0;
+  transform: none;
 }
 
 /* 배경 이미지 스타일 */
@@ -57,26 +75,26 @@
   object-fit: cover;
 }
 
-/* 정렬 스타일 */
-.layerImage.alignLeft {
-  left: 10%;
+/* 정렬 스타일 - 이미지 중심 기준 배치 */
+.alignLeft {
+  left: 33.33%;
   bottom: 0;
-  transform: translateX(0);
+  transform: translateX(-50%);
 }
 
-.layerImage.alignCenter {
+.alignCenter {
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
 }
 
-.layerImage.alignRight {
-  right: 10%;
+.alignRight {
+  left: 66.67%;
   bottom: 0;
-  transform: translateX(0);
+  transform: translateX(-50%);
 }
 
-.layerImage.alignCustom {
+.alignCustom {
   /* x, y는 인라인 스타일로 적용 */
 }
 
@@ -353,13 +371,13 @@
 }
 
 @keyframes slideLeft {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { transform: translateX(calc(-50% + 100%)); opacity: 0; }
+  to { transform: translateX(-50%); opacity: 1; }
 }
 
 @keyframes slideRight {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from { transform: translateX(calc(-50% - 100%)); opacity: 0; }
+  to { transform: translateX(-50%); opacity: 1; }
 }
 
 @keyframes slideUp {
@@ -434,13 +452,13 @@
 }
 
 @keyframes exitSlideOutLeft {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(-100%); opacity: 0; }
+  from { transform: translateX(-50%); opacity: 1; }
+  to { transform: translateX(calc(-50% - 100%)); opacity: 0; }
 }
 
 @keyframes exitSlideOutRight {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
+  from { transform: translateX(-50%); opacity: 1; }
+  to { transform: translateX(calc(-50% + 100%)); opacity: 0; }
 }
 
 @keyframes exitSlideOutUp {
@@ -695,4 +713,24 @@
   outline: 2px solid #ff00ff;
   outline-offset: -2px;
   box-shadow: 0 0 0 1px rgba(255, 0, 255, 0.3);
+}
+
+/* 디버그용 원점(중심점) 표시 */
+.debugOrigin {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, 50%);
+  pointer-events: none;
+  z-index: 9999;
+  /* 십자선 */
+  background: 
+    linear-gradient(to right, transparent 40%, #ff0000 40%, #ff0000 60%, transparent 60%),
+    linear-gradient(to bottom, transparent 40%, #ff0000 40%, #ff0000 60%, transparent 60%);
+  /* 원 */
+  border: 3px solid #ff0000;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.5);
 }

@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { save } from '@tauri-apps/plugin-dialog'
 import JSZip from 'jszip'
 import type { StoryProject, StoryStage, StoryChapter, GameSettings, ProjectResource, CustomNodeTemplate } from '../types/story'
 
@@ -645,18 +646,48 @@ export async function downloadGameBuildAsZip(
     }
   }
 
-  // 5. ZIP 생성 및 다운로드
+  // 5. ZIP 생성
   const content = await zip.generateAsync({ type: 'blob' })
-  const url = URL.createObjectURL(content)
-  const a = document.createElement('a')
-  a.href = url
+
   // 프로젝트 이름을 안전한 파일명으로 변환 (공백 -> 언더스코어, 특수문자 제거)
   const safeName = project.name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '') || 'game'
-  a.download = `${safeName}.zip`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  const defaultFileName = `${safeName}.zip`
+
+  // Tauri 환경에서는 저장 다이얼로그 표시
+  if (isTauri()) {
+    try {
+      const savePath = await save({
+        defaultPath: defaultFileName,
+        filters: [{ name: 'ZIP Archive', extensions: ['zip'] }],
+      })
+
+      if (savePath) {
+        // Blob을 ArrayBuffer로 변환 후 Uint8Array로 변환
+        const arrayBuffer = await content.arrayBuffer()
+        const uint8Array = new Uint8Array(arrayBuffer)
+
+        // Rust 백엔드로 파일 저장
+        await invoke('write_binary_file', {
+          path: savePath,
+          data: Array.from(uint8Array),
+        })
+      }
+      // 사용자가 취소한 경우 아무것도 하지 않음
+    } catch (error) {
+      console.error('Failed to save ZIP file:', error)
+      throw error
+    }
+  } else {
+    // 웹 환경에서는 기존처럼 다운로드
+    const url = URL.createObjectURL(content)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = defaultFileName
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 }
 
 /**

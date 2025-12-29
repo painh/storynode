@@ -78,6 +78,7 @@ export interface DebugInfo {
   showNodeInfo: boolean
   hiddenImageIds: Set<string>  // 숨긴 이미지 ID 목록
   borderedImageIds: Set<string>  // 경계선 표시할 이미지 ID 목록
+  originImageIds: Set<string>  // 원점 표시할 이미지 ID 목록
 }
 
 // 테마 색상 설정

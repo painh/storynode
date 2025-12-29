@@ -115,10 +115,11 @@ const getExitEffectClass = (effect?: string): string => {
 }
 
 // 이미지 레이어 컴포넌트
-function ImageLayers({ images, hiddenImageIds, borderedImageIds }: { 
+function ImageLayers({ images, hiddenImageIds, borderedImageIds, originImageIds }: { 
   images: ActiveImage[]
   hiddenImageIds: Set<string>
   borderedImageIds: Set<string>
+  originImageIds: Set<string>
 }) {
   // 레이어 순서로 정렬 (background가 가장 뒤, 그 다음 character)
   const sortedImages = useMemo(() => {
@@ -167,14 +168,19 @@ function ImageLayers({ images, hiddenImageIds, borderedImageIds }: {
     <div className={styles.imageLayerContainer}>
       {sortedImages.map((img) => 
         hiddenImageIds.has(img.id) ? null : (
-          <img
+          <div
             // instanceId로 키를 설정하여 매번 새 애니메이션 재생
             key={`${img.layer}-${img.layerOrder}-${img.instanceId}`}
-            src={img.resourcePath}
-            alt=""
-            className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClasses(img.effects, img.effect)} ${borderedImageIds.has(img.id) ? styles.debugBorder : ''}`}
+            className={`${styles.imageWrapper} ${getAlignmentClass(img.alignment)} ${img.isExiting ? getExitEffectClass(img.exitEffect) : getEffectClasses(img.effects, img.effect)}`}
             style={getImageStyle(img)}
-          />
+          >
+            <img
+              src={img.resourcePath}
+              alt=""
+              className={`${styles.layerImage} ${img.layer === 'background' ? styles.background : ''} ${borderedImageIds.has(img.id) ? styles.debugBorder : ''}`}
+            />
+            {originImageIds.has(img.id) && <div className={styles.debugOrigin} />}
+          </div>
         )
       )}
     </div>
@@ -366,6 +372,7 @@ export function GameScreen({ theme }: GameScreenProps) {
         images={activeImages} 
         hiddenImageIds={debug.hiddenImageIds}
         borderedImageIds={debug.borderedImageIds}
+        originImageIds={debug.originImageIds}
       />
 
       <div className={styles.characterArea}>

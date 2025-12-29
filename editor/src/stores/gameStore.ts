@@ -56,6 +56,7 @@ interface GameStoreState {
   setDebugOption: (option: keyof DebugInfo, value: boolean) => void
   toggleImageVisibility: (imageId: string) => void
   toggleImageBorder: (imageId: string) => void
+  toggleImageOrigin: (imageId: string) => void
 
   // 테마
   setTheme: (themeId: string) => void
@@ -87,6 +88,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     showNodeInfo: true,
     hiddenImageIds: new Set<string>(),
     borderedImageIds: new Set<string>(),
+    originImageIds: new Set<string>(),
   },
 
   currentThemeId: 'dark',
@@ -294,6 +296,23 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
         debug: {
           ...state.debug,
           borderedImageIds: newBorderedIds,
+        },
+      }
+    })
+  },
+
+  toggleImageOrigin: (imageId) => {
+    set((state) => {
+      const newOriginIds = new Set(state.debug.originImageIds)
+      if (newOriginIds.has(imageId)) {
+        newOriginIds.delete(imageId)
+      } else {
+        newOriginIds.add(imageId)
+      }
+      return {
+        debug: {
+          ...state.debug,
+          originImageIds: newOriginIds,
         },
       }
     })
