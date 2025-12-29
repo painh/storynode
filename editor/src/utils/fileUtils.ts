@@ -677,8 +677,29 @@ export async function downloadGameBuildAsZip(
       console.error('Failed to save ZIP file:', error)
       throw error
     }
+  } else if (isFileSystemAccessSupported()) {
+    // 웹 환경에서 File System Access API 지원 시 저장 다이얼로그 표시
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: defaultFileName,
+        types: [{
+          description: 'ZIP Archive',
+          accept: { 'application/zip': ['.zip'] },
+        }],
+      })
+      const writable = await fileHandle.createWritable()
+      await writable.write(content)
+      await writable.close()
+    } catch (error) {
+      // 사용자가 취소한 경우 (AbortError) 무시
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Failed to save ZIP file:', error)
+        throw error
+      }
+    }
   } else {
-    // 웹 환경에서는 기존처럼 다운로드
+    // File System Access API 미지원 시 기존 다운로드 방식
     const url = URL.createObjectURL(content)
     const a = document.createElement('a')
     a.href = url
