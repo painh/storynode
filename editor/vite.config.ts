@@ -13,6 +13,8 @@ const appVersion = process.env.npm_package_version || '0.1.0';
 const isTauriBuild = !!process.env.TAURI_ENV_PLATFORM;
 // @ts-expect-error process is a nodejs global
 const isGitHubActions = !!process.env.GITHUB_ACTIONS;
+// @ts-expect-error process is a nodejs global
+const isEmbedBuild = !!process.env.EMBED_BUILD;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -24,8 +26,11 @@ export default defineConfig(async () => ({
     __BUILD_TIME__: JSON.stringify(buildTime),
   },
 
-  // GitHub Pages 배포 시 base path 설정 (Tauri 빌드 시에는 항상 '/' 사용)
-  base: isGitHubActions && !isTauriBuild ? '/storynode/' : '/',
+  // base path 설정:
+  // - EMBED_BUILD: 상대 경로 (다른 앱에 임베드 시)
+  // - GitHub Actions: /storynode/
+  // - Tauri/기본: /
+  base: isEmbedBuild ? './' : (isGitHubActions && !isTauriBuild ? '/storynode/' : '/'),
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
