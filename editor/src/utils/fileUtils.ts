@@ -797,3 +797,133 @@ export async function exportStandaloneGame(
     outputPath,
   })
 }
+
+// ============================================
+// 서버 API 저장/로드 (임베드 모드용)
+// ============================================
+
+/**
+ * 서버 API로 프로젝트 저장
+ * Wizardry editor-server의 /api/events 엔드포인트 사용
+ */
+export async function saveProjectToServer(
+  serverUrl: string,
+  projectId: string,
+  project: StoryProject
+): Promise<void> {
+  // 프로젝트 데이터 변환 (API 형식에 맞게)
+  const apiProject = {
+    id: projectId,
+    name: project.name,
+    version: project.version,
+    stages: project.stages.map(stage => ({
+      ...stage,
+      chapters: stage.chapters.map(chapter => ({
+        id: chapter.id,
+        title: chapter.title,
+        description: chapter.description,
+        nodes: chapter.nodes,
+        commentNodes: chapter.commentNodes,
+        startNodeId: chapter.startNodeId,
+      }))
+    })),
+    gameSettings: project.gameSettings,
+    customNodeTemplates: project.customNodeTemplates,
+  }
+
+  const response = await fetch(`${serverUrl}/api/events/${projectId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiProject),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(`Failed to save project: ${error.error || response.statusText}`)
+  }
+
+  console.log('[saveProjectToServer] Project saved successfully:', projectId)
+}
+
+/**
+ * 서버 API에서 프로젝트 로드
+ */
+export async function loadProjectFromServer(
+  serverUrl: string,
+  projectId: string
+): Promise<StoryProject | null> {
+  try {
+    // 정적 파일에서 로드 (editor-server는 저장만 담당)
+    const response = await fetch(`${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/project.json`)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log('[loadProjectFromServer] Project not found:', projectId)
+        return null
+      }
+      throw new Error(`Failed to load project: ${response.statusText}`)
+    }
+
+    const projectMeta = await response.json()
+
+    // 각 스테이지/챕터 로드
+    const stages: StoryStage[] = []
+    for (const stageId of projectMeta.stages) {
+      const stageResponse = await fetch(
+        `${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/stages/${stageId}/stage.json`
+      )
+
+      if (!stageResponse.ok) continue
+
+      const stageMeta = await stageResponse.json()
+      const chapters: StoryChapter[] = []
+
+      for (const chapterId of stageMeta.chapters) {
+        const chapterResponse = await fetch(
+          `${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/stages/${stageId}/chapters/${chapterId}.json`
+        )
+
+        if (chapterResponse.ok) {
+          const chapter = await chapterResponse.json()
+          chapters.push(chapter)
+        }
+      }
+
+      stages.push({
+        id: stageMeta.id,
+        title: stageMeta.title,
+        description: stageMeta.description,
+        partyCharacters: stageMeta.partyCharacters || [],
+        chapters,
+      })
+    }
+
+    return {
+      name: projectMeta.name,
+      version: projectMeta.version,
+      stages,
+      gameSettings: projectMeta.gameSettings,
+      customNodeTemplates: projectMeta.customNodeTemplates,
+      resources: [],
+    }
+  } catch (error) {
+    console.error('[loadProjectFromServer] Failed to load project:', error)
+    return null
+  }
+}
+
+/**
+ * 서버가 온라인인지 확인
+ */
+export async function checkServerOnline(serverUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${serverUrl}/api/events`, {
+      method: 'HEAD',
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}

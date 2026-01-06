@@ -3,6 +3,7 @@ import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSearchStore } from '../../stores/searchStore'
 import { useGameStore } from '../../stores/gameStore'
+import { useEmbedStore } from '../../stores/embedStore'
 import {
   downloadJson,
   isTauri,
@@ -11,6 +12,7 @@ import {
   isFileSystemAccessSupported,
   pickWebDirectory,
   getWebDirectoryHandle,
+  saveProjectToServer,
 } from '../../utils/fileUtils'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
@@ -53,6 +55,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
   const { openGame, status: gameStatus } = useGameStore()
+  const { isEmbedMode, projectId: embedProjectId, serverUrl } = useEmbedStore()
   const { menu, search: searchT } = useTranslation()
   const currentStage = getCurrentStage()
 
@@ -176,6 +179,18 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
 
   const handleSave = async () => {
     closeAllMenus()
+
+    // 임베드 모드: 서버 API로 저장
+    if (isEmbedMode && embedProjectId && serverUrl) {
+      try {
+        await saveProjectToServer(serverUrl, embedProjectId, project)
+        markClean()
+        console.log('[Header] Project saved to server:', embedProjectId)
+      } catch (error) {
+        alert('Failed to save project: ' + (error as Error).message)
+      }
+      return
+    }
 
     // 웹 환경에서 File System Access API 사용
     if (!isTauri() && isWebFsSupported) {
