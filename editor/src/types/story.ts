@@ -56,6 +56,61 @@ export const IMAGE_EFFECT_GROUPS: Record<string, ImageEffectType[]> = {
 // 그룹에 속하지 않는 효과들 (다른 효과와 자유롭게 조합 가능)
 export const COMBINABLE_EFFECTS: ImageEffectType[] = ['fadeIn', 'shake', 'bounce', 'flash', 'pulse']
 
+// ===== 텍스트 효과 타입 =====
+
+// 출력 방식 (하나만 선택 가능)
+export type TextOutputMode = 'typewriter' | 'instant' | 'fadeIn'
+
+// 연출 효과 (동시 적용 가능)
+export type TextDisplayEffect = 'shake' | 'wave' | 'glitch' | 'rainbow'
+
+// 강조 효과 (동시 적용 가능)
+export type TextEmphasisEffect = 'pulse' | 'flicker' | 'zoom' | 'scramble' | 'bounce' | 'blur'
+
+// 텍스트 효과 설정
+export interface TextEffectSettings {
+  outputMode?: TextOutputMode            // 출력 방식 (기본: typewriter)
+  outputSpeed?: number                   // 출력 속도 - 글자당 ms (기본: 30)
+  displayEffects?: TextDisplayEffect[]   // 연출 효과 (복수 선택 가능)
+  emphasisEffects?: TextEmphasisEffect[] // 강조 효과 (복수 선택 가능)
+  effectDuration?: number                // 효과 지속 시간 ms (기본: 500)
+}
+
+// 텍스트 효과 그룹 정의 (UI용)
+export const TEXT_EFFECT_GROUPS = {
+  outputMode: {
+    label: '출력 방식',
+    exclusive: true, // 하나만 선택
+    options: [
+      { value: 'typewriter', label: '타자기', description: '한 글자씩 순차 출력' },
+      { value: 'instant', label: '즉시', description: '텍스트 전체를 바로 표시' },
+      { value: 'fadeIn', label: '페이드 인', description: '텍스트가 서서히 나타남' },
+    ] as const,
+  },
+  displayEffects: {
+    label: '연출 효과',
+    exclusive: false, // 복수 선택 가능
+    options: [
+      { value: 'shake', label: '흔들림', description: '텍스트가 좌우로 떨림' },
+      { value: 'wave', label: '물결', description: '글자들이 출렁임' },
+      { value: 'glitch', label: '글리치', description: '텍스트가 깜빡이며 어긋남' },
+      { value: 'rainbow', label: '무지개', description: '글자 색상이 변화' },
+    ] as const,
+  },
+  emphasisEffects: {
+    label: '강조 효과',
+    exclusive: false, // 복수 선택 가능
+    options: [
+      { value: 'pulse', label: '펄스', description: '부드럽게 커졌다 작아짐' },
+      { value: 'flicker', label: '깜빡임', description: '불규칙하게 깜빡거림' },
+      { value: 'zoom', label: '확대 등장', description: '작은 크기에서 커지며 등장' },
+      { value: 'scramble', label: '스크램블', description: '임의 문자가 원래 글자로 변환' },
+      { value: 'bounce', label: '통통', description: '글자가 튀어오르며 등장' },
+      { value: 'blur', label: '흐림', description: '흐릿하다가 선명해짐' },
+    ] as const,
+  },
+} as const
+
 // 이미지 노드 데이터
 export interface ImageNodeData {
   resourcePath: string      // 리소스 경로 또는 base64
@@ -267,6 +322,9 @@ export interface StoryNode {
 
   // 데이터 바인딩 (다른 노드에서 값 주입)
   dataBindings?: DataBinding[]
+
+  // 텍스트 효과 설정
+  textEffects?: TextEffectSettings
 }
 
 // 코멘트 노드 (에디터용)
