@@ -191,6 +191,14 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         markClean()
         console.log('[Header] Project saved to server:', embedProjectId)
         toast.success('저장 완료', `public/data/events/${embedProjectId}/`)
+
+        // 부모 윈도우에 저장 완료 알림 (Wizardry에서 이벤트 데이터 재로딩용)
+        if (window.parent !== window) {
+          window.parent.postMessage({
+            type: 'storynode:saved',
+            projectId: embedProjectId,
+          }, '*')
+        }
       } catch (error) {
         console.error('[Header] Save to server failed:', error)
         toast.error('저장 실패', (error as Error).message)
