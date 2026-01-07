@@ -850,6 +850,7 @@ export async function saveProjectToServer(
 /**
  * 서버 API에서 프로젝트 로드
  * 정적 파일은 상대 경로로 로드 (같은 origin에서 서빙됨)
+ * Wizardry 구조 지원: stages/stage_id/chapters/chapter_id.json
  */
 export async function loadProjectFromServer(
   _serverUrl: string,
@@ -857,7 +858,8 @@ export async function loadProjectFromServer(
 ): Promise<StoryProject | null> {
   try {
     // 정적 파일에서 로드 (상대 경로 사용 - 같은 origin)
-    const baseUrl = `/data/events/${projectId}`
+    const baseUrl = `./data/events/${projectId}`
+    console.log('[loadProjectFromServer] Loading from:', baseUrl)
     const response = await fetch(`${baseUrl}/project.json`)
 
     if (!response.ok) {
@@ -869,41 +871,74 @@ export async function loadProjectFromServer(
     }
 
     const projectMeta = await response.json()
+    console.log('[loadProjectFromServer] Project meta loaded:', projectMeta)
 
     // 각 스테이지/챕터 로드
     const stages: StoryStage[] = []
-    for (const stageId of projectMeta.stages) {
-      const stageResponse = await fetch(`${baseUrl}/stages/${stageId}/stage.json`)
 
-      if (!stageResponse.ok) continue
+    // stages가 배열인 경우 처리 (Wizardry 형식: stages는 전체 객체 배열)
+    for (const stageMeta of projectMeta.stages) {
+      // stageMeta가 문자열(ID)인 경우 (기존 StoryNode 형식)
+      if (typeof stageMeta === 'string') {
+        const stageResponse = await fetch(`${baseUrl}/stages/${stageMeta}/stage.json`)
+        if (!stageResponse.ok) continue
 
-      const stageMeta = await stageResponse.json()
-      const chapters: StoryChapter[] = []
+        const stageData = await stageResponse.json()
+        const chapters: StoryChapter[] = []
 
-      for (const chapterId of stageMeta.chapters) {
-        const chapterResponse = await fetch(
-          `${baseUrl}/stages/${stageId}/chapters/${chapterId}.json`
-        )
-
-        if (chapterResponse.ok) {
-          const chapter = await chapterResponse.json()
-          chapters.push(chapter)
+        for (const chapterId of stageData.chapters) {
+          const chapterResponse = await fetch(
+            `${baseUrl}/stages/${stageMeta}/chapters/${chapterId}.json`
+          )
+          if (chapterResponse.ok) {
+            chapters.push(await chapterResponse.json())
+          }
         }
-      }
 
-      stages.push({
-        id: stageMeta.id,
-        title: stageMeta.title,
-        description: stageMeta.description,
-        partyCharacters: stageMeta.partyCharacters || [],
-        chapters,
-      })
+        stages.push({
+          id: stageData.id,
+          title: stageData.title,
+          description: stageData.description,
+          partyCharacters: stageData.partyCharacters || [],
+          chapters,
+        })
+      } else {
+        // stageMeta가 객체인 경우 (Wizardry 형식)
+        const stageId = stageMeta.id
+        const chapters: StoryChapter[] = []
+
+        // chapters 배열에서 각 챕터 로드
+        for (const chapterMeta of stageMeta.chapters || []) {
+          const chapterId = typeof chapterMeta === 'string' ? chapterMeta : chapterMeta.id
+          const chapterResponse = await fetch(
+            `${baseUrl}/stages/${stageId}/chapters/${chapterId}.json`
+          )
+          if (chapterResponse.ok) {
+            const chapter = await chapterResponse.json()
+            console.log(`[loadProjectFromServer] Loaded chapter: ${chapterId}`, chapter.title)
+            chapters.push(chapter)
+          } else {
+            console.warn(`[loadProjectFromServer] Failed to load chapter: ${chapterId}`)
+          }
+        }
+
+        stages.push({
+          id: stageId,
+          title: stageMeta.title,
+          description: stageMeta.description || '',
+          partyCharacters: stageMeta.partyCharacters || [],
+          chapters,
+        })
+      }
     }
+
+    console.log('[loadProjectFromServer] Loaded stages:', stages.map(s => `${s.id} (${s.chapters.length} chapters)`))
 
     return {
       name: projectMeta.name,
       version: projectMeta.version,
       stages,
+      variables: projectMeta.variables,
       gameSettings: projectMeta.gameSettings,
       customNodeTemplates: projectMeta.customNodeTemplates,
       resources: [],
