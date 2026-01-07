@@ -228,6 +228,7 @@ export interface ChapterEndData {
   action: ChapterEndAction
   nextChapterId?: string    // 'goto' 액션일 때 이동할 챕터 ID
   nextStageId?: string      // 다른 스테이지의 챕터로 이동할 때
+  clearVisuals?: boolean    // 비주얼 요소 정리 여부 (기본: true)
 }
 
 // 스토리 노드

@@ -230,6 +230,9 @@ export interface Translations {
     actionSelectDesc: string
     actionEnd: string
     actionEndDesc: string
+    // 비주얼 정리
+    clearVisualsLabel: string
+    clearVisualsDesc: string
   }
 
   // 유효성 검사
@@ -453,6 +456,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: '플레이어에게 다음에 진행할 챕터를 선택할 수 있는 화면을 표시합니다.',
       actionEnd: '게임 종료',
       actionEndDesc: '게임을 완전히 종료하고 엔딩 화면을 표시합니다. 스토리가 완결되는 지점에서 사용합니다.',
+      clearVisualsLabel: '비주얼 정리',
+      clearVisualsDesc: '챕터 종료 시 화면의 이미지, 대화창 등 비주얼 요소를 모두 제거합니다.',
     },
     validation: {
       title: '유효성 검사',
@@ -672,6 +677,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: 'Display a screen where the player can choose which chapter to play next.',
       actionEnd: 'End Game',
       actionEndDesc: 'Completely end the game and display the ending screen. Use this at the conclusion of the story.',
+      clearVisualsLabel: 'Clear Visuals',
+      clearVisualsDesc: 'Remove all visual elements (images, dialogues, etc.) from the screen when the chapter ends.',
     },
     validation: {
       title: 'Validation',
@@ -893,6 +900,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: '显示一个界面，让玩家选择接下来要玩的章节。',
       actionEnd: '结束游戏',
       actionEndDesc: '完全结束游戏并显示结局画面。用于故事的结尾处。',
+      clearVisualsLabel: '清除视觉元素',
+      clearVisualsDesc: '章节结束时清除屏幕上的所有视觉元素（图片、对话框等）。',
     },
     validation: {
       title: '有效性检查',
@@ -1114,6 +1123,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: '顯示一個介面，讓玩家選擇接下來要玩的章節。',
       actionEnd: '結束遊戲',
       actionEndDesc: '完全結束遊戲並顯示結局畫面。用於故事的結尾處。',
+      clearVisualsLabel: '清除視覺元素',
+      clearVisualsDesc: '章節結束時清除螢幕上的所有視覺元素（圖片、對話框等）。',
     },
     validation: {
       title: '有效性檢查',
@@ -1335,6 +1346,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: 'Mostrar una pantalla donde el jugador puede elegir qué capítulo jugar a continuación.',
       actionEnd: 'Fin del Juego',
       actionEndDesc: 'Terminar completamente el juego y mostrar la pantalla de final. Usar esto en la conclusión de la historia.',
+      clearVisualsLabel: 'Limpiar Visuales',
+      clearVisualsDesc: 'Eliminar todos los elementos visuales (imágenes, diálogos, etc.) de la pantalla cuando termine el capítulo.',
     },
     validation: {
       title: 'Validación',
@@ -1556,6 +1569,8 @@ export const translations: Record<Language, Translations> = {
       actionSelectDesc: 'プレイヤーが次にプレイするチャプターを選択できる画面を表示します。',
       actionEnd: 'ゲーム終了',
       actionEndDesc: 'ゲームを完全に終了してエンディング画面を表示します。ストーリーの結末で使用します。',
+      clearVisualsLabel: 'ビジュアルをクリア',
+      clearVisualsDesc: 'チャプター終了時に画面上のすべてのビジュアル要素（画像、ダイアログなど）を削除します。',
     },
     validation: {
       title: 'バリデーション',

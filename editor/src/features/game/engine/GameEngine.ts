@@ -18,6 +18,7 @@ export interface ChapterTransition {
   action: ChapterEndAction
   nextStageId?: string
   nextChapterId?: string
+  clearVisuals?: boolean  // 비주얼 요소 정리 여부 (기본: true)
 }
 
 export interface GameEngineOptions {
@@ -968,6 +969,7 @@ export class GameEngine {
       action,
       nextStageId,
       nextChapterId,
+      clearVisuals: chapterEndData.clearVisuals !== false, // 기본 true
     }
 
     // onChapterEnd 콜백이 있으면 호출
