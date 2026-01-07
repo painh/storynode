@@ -458,6 +458,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         <div className={styles.logo}>
           StoryNode
           <span className={styles.version}>v{appVersion} ({buildTime})</span>
+          {isEmbedMode && (
+            <span className={styles.embedBadge}>Embedded</span>
+          )}
         </div>
         <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}
