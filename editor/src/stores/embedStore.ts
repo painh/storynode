@@ -6,6 +6,14 @@ import { create } from 'zustand'
  * URL 파라미터: ?embed=true&projectId=main&serverUrl=http://localhost:3001
  */
 
+// 외부 변수 정의 (읽기 전용 참조용)
+export interface ExternalVariableDefinition {
+  path: string        // dot notation 경로 (예: "gold", "party.0.hp")
+  type: 'number' | 'string' | 'boolean' | 'array' | 'object'
+  description?: string
+  example?: string    // 예시 값
+}
+
 export interface EmbedConfig {
   // 임베드 모드 활성화 여부
   isEmbedMode: boolean
@@ -13,17 +21,22 @@ export interface EmbedConfig {
   projectId: string | null
   // 서버 API URL
   serverUrl: string | null
+  // 외부 변수 정의 (Wizardry gameStore 등)
+  externalVariables: ExternalVariableDefinition[]
 }
 
 interface EmbedState extends EmbedConfig {
   // 초기화 (URL 파라미터에서 설정 읽기)
   initialize: () => void
+  // 외부 변수 설정
+  setExternalVariables: (variables: ExternalVariableDefinition[]) => void
 }
 
 const defaultConfig: EmbedConfig = {
   isEmbedMode: false,
   projectId: null,
   serverUrl: null,
+  externalVariables: [],
 }
 
 export const useEmbedStore = create<EmbedState>((set) => ({
@@ -46,5 +59,22 @@ export const useEmbedStore = create<EmbedState>((set) => ({
       projectId,
       serverUrl,
     })
+
+    // 임베드 모드일 때 부모 윈도우로부터 메시지 수신 설정
+    if (isEmbedMode && window.parent !== window) {
+      window.addEventListener('message', (event) => {
+        if (event.data?.type === 'storynode:setExternalVariables') {
+          console.log('[EmbedStore] Received external variables:', event.data.variables)
+          set({ externalVariables: event.data.variables || [] })
+        }
+      })
+
+      // 부모에게 준비 완료 알림
+      window.parent.postMessage({ type: 'storynode:ready' }, '*')
+    }
+  },
+
+  setExternalVariables: (variables) => {
+    set({ externalVariables: variables })
   },
 }))

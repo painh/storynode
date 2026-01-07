@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
+import { useEmbedStore } from '../../stores/embedStore'
 import { NODE_COLORS, NODE_ICONS, type AllNodeType } from '../../types/editor'
 import type { StoryNodeType, VariableType, ArrayItemType } from '../../types/story'
 import { useTranslation } from '../../i18n'
@@ -76,6 +77,10 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
   const [variableFilter, setVariableFilter] = useState('')
   const [globalVarsCollapsed, setGlobalVarsCollapsed] = useState(false)
   const [chapterVarsCollapsed, setChapterVarsCollapsed] = useState(false)
+  const [externalVarsCollapsed, setExternalVarsCollapsed] = useState(false)
+
+  // 임베드 모드에서 외부 변수
+  const { isEmbedMode, externalVariables } = useEmbedStore()
 
   const currentStage = getCurrentStage()
   const currentChapter = getCurrentChapter()
@@ -468,7 +473,7 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
 
           {/* 챕터 변수 섹션 */}
           <div className={`${styles.variableSection} ${styles.chapterVariableSection}`}>
-            <div 
+            <div
               className={styles.variableSectionHeader}
               onClick={() => setChapterVarsCollapsed(!chapterVarsCollapsed)}
             >
@@ -476,8 +481,8 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
               <span className={styles.variableSectionTitle}>
                 Chapter: {currentChapter?.title || 'None'}
               </span>
-              <button 
-                className={styles.addButton} 
+              <button
+                className={styles.addButton}
                 onClick={(e) => {
                   e.stopPropagation()
                   createChapterVariable({ name: `local_${chapterVariables.length + 1}` })
@@ -503,7 +508,7 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
                       title="JavaScript 노드에서 chapters.별칭.변수명 으로 접근 가능"
                     />
                     <span className={styles.aliasHint}>
-                      {currentChapter.alias 
+                      {currentChapter.alias
                         ? `JS: chapters.${currentChapter.alias}.변수ID`
                         : 'JS에서 챕터 변수 접근용'}
                     </span>
@@ -520,6 +525,49 @@ export function Sidebar({ onOpenTemplateEditor }: SidebarProps) {
               </div>
             )}
           </div>
+
+          {/* 외부 변수 섹션 (임베드 모드에서만 표시) */}
+          {isEmbedMode && externalVariables.length > 0 && (
+            <div className={`${styles.variableSection} ${styles.externalVariableSection}`}>
+              <div
+                className={styles.variableSectionHeader}
+                onClick={() => setExternalVarsCollapsed(!externalVarsCollapsed)}
+              >
+                <span className={styles.collapseIcon}>{externalVarsCollapsed ? '▶' : '▼'}</span>
+                <span className={styles.variableSectionTitle}>
+                  🎮 Game Variables
+                </span>
+              </div>
+              {!externalVarsCollapsed && (
+                <div className={styles.variableSectionContent}>
+                  <div className={styles.externalVarsHint}>
+                    조건/텍스트에서 {`{{변수명}}`} 형식으로 사용
+                  </div>
+                  {externalVariables
+                    .filter(v => fuzzyMatch(v.path, variableFilter) || fuzzyMatch(v.description || '', variableFilter))
+                    .map((variable) => (
+                      <div
+                        key={variable.path}
+                        className={`${styles.variableItem} ${styles.externalVariable}`}
+                        title={`Type: ${variable.type}${variable.example ? `\nExample: ${variable.example}` : ''}`}
+                      >
+                        <div className={styles.variableHeader}>
+                          <span className={styles.variableName}>
+                            {variable.path}
+                          </span>
+                          <span className={styles.variableType}>{variable.type}</span>
+                        </div>
+                        {variable.description && (
+                          <div className={styles.variableDescription}>
+                            {variable.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>

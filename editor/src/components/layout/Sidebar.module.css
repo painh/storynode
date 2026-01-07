@@ -641,3 +641,54 @@
   font-family: monospace;
   font-style: italic;
 }
+
+/* External Variable Section (Game Variables) */
+.externalVariableSection {
+  border-color: var(--node-battle, #9b59b6);
+}
+
+.externalVariableSection .variableSectionHeader {
+  border-bottom: 2px solid var(--node-battle, #9b59b6);
+}
+
+.externalVariableSection .variableSectionTitle {
+  color: var(--node-battle, #9b59b6);
+}
+
+.externalVarsHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 6px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.externalVariable {
+  border-left-color: var(--node-battle, #9b59b6);
+  cursor: default;
+  background: var(--bg-tertiary);
+}
+
+.externalVariable:hover {
+  border-left-color: var(--node-battle, #9b59b6);
+  background: var(--bg-hover);
+}
+
+.variableType {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: var(--bg-canvas);
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-left: auto;
+}
+
+.variableDescription {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding-left: 2px;
+}
