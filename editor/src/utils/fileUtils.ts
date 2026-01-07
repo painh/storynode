@@ -853,13 +853,17 @@ export async function saveProjectToServer(
  * Wizardry 구조 지원: stages/stage_id/chapters/chapter_id.json
  */
 export async function loadProjectFromServer(
-  _serverUrl: string,
+  serverUrl: string,
   projectId: string
 ): Promise<StoryProject | null> {
   try {
-    // 정적 파일에서 로드 (iframe이 ./storynode/ 안에 있으므로 상위로 이동)
-    const baseUrl = `../data/events/${projectId}`
-    console.log('[loadProjectFromServer] Loading from:', baseUrl)
+    // 개발 모드에서는 Wizardry dev 서버(5183)에서 데이터 로드
+    // serverUrl이 editor-server(3001)를 가리키면, data는 같은 호스트의 5183에서 가져옴
+    const isDev = serverUrl.includes('localhost:3001')
+    const baseUrl = isDev
+      ? `http://localhost:5183/data/events/${projectId}`
+      : `../data/events/${projectId}`
+    console.log('[loadProjectFromServer] Loading from:', baseUrl, isDev ? '(dev mode)' : '')
     const response = await fetch(`${baseUrl}/project.json`)
 
     if (!response.ok) {
