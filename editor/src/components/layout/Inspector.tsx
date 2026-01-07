@@ -11,6 +11,7 @@ import { ConditionNodeInspector } from './inspector/ConditionNodeInspector'
 import { VariableNodeInspector } from './inspector/VariableNodeInspector'
 import { JavaScriptNodeInspector } from './inspector/JavaScriptNodeInspector'
 import { ChapterEndNodeInspector } from './inspector/ChapterEndNodeInspector'
+import { TextEffectInspector } from './inspector/TextEffectInspector'
 import { HelpTooltip } from './inspector/HelpTooltip'
 import { useTranslation } from '../../i18n'
 import styles from './Inspector.module.css'
@@ -139,6 +140,14 @@ export function Inspector() {
               rows={4}
             />
           </div>
+        )}
+
+        {/* Text Effects (dialogue, choice, chapter_end) */}
+        {(selectedNode.type === 'dialogue' || selectedNode.type === 'choice' || selectedNode.type === 'chapter_end') && (
+          <TextEffectInspector
+            node={selectedNode}
+            onUpdate={(updates) => updateNode(selectedNode.id, updates)}
+          />
         )}
 
         {/* Choice: choices array */}
