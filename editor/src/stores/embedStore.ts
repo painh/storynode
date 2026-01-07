@@ -62,14 +62,18 @@ export const useEmbedStore = create<EmbedState>((set) => ({
 
     // 임베드 모드일 때 부모 윈도우로부터 메시지 수신 설정
     if (isEmbedMode && window.parent !== window) {
+      console.log('[EmbedStore] Setting up message listener for external variables')
+
       window.addEventListener('message', (event) => {
+        console.log('[EmbedStore] Received message:', event.data?.type)
         if (event.data?.type === 'storynode:setExternalVariables') {
-          console.log('[EmbedStore] Received external variables:', event.data.variables)
+          console.log('[EmbedStore] Received external variables:', event.data.variables?.length, 'items')
           set({ externalVariables: event.data.variables || [] })
         }
       })
 
       // 부모에게 준비 완료 알림
+      console.log('[EmbedStore] Sending storynode:ready to parent')
       window.parent.postMessage({ type: 'storynode:ready' }, '*')
     }
   },
