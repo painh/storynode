@@ -10,7 +10,7 @@ import type {
   VariableOperation,
   ChapterEndAction,
 } from '../../../types/story'
-import type { GameState, GameVariables, GameHistoryEntry, ActiveImage } from '../../../types/game'
+import type { GameState, GameVariables, GameHistoryEntry, ActiveImage, ExternalStoreProvider } from '../../../types/game'
 import { DEFAULT_GAME_VARIABLES } from '../../../types/game'
 
 // 챕터 전환 정보
@@ -26,6 +26,7 @@ export interface GameEngineOptions {
   onNodeChange?: (node: StoryNode | null) => void
   onGameEnd?: () => void
   onChapterEnd?: (transition: ChapterTransition) => void  // 챕터 종료 시 호출
+  externalStore?: ExternalStoreProvider  // 외부 스토어 (Wizardry gameStore 등)
 }
 
 export class GameEngine {
@@ -33,10 +34,12 @@ export class GameEngine {
   private state: GameState
   private options: GameEngineOptions
   private imageInstanceCounter = 0  // 이미지 인스턴스 카운터 (애니메이션 재생용)
+  private externalStore: ExternalStoreProvider | null = null  // 외부 스토어 참조
 
   constructor(project: StoryProject, options: GameEngineOptions = {}) {
     this.project = project
     this.options = options
+    this.externalStore = options.externalStore || null
     this.state = this.createInitialState()
   }
 
@@ -487,10 +490,17 @@ export class GameEngine {
 
       case 'variable':
         if (condition.variableId) {
-          const varValue = vars.variables[condition.variableId]
+          // 먼저 내부 변수에서 찾기
+          let varValue: unknown = vars.variables[condition.variableId]
+
+          // 내부 변수에 없으면 외부 스토어에서 찾기
+          if (varValue === undefined && this.externalStore) {
+            varValue = this.externalStore.get(condition.variableId)
+          }
+
           const compareValue = condition.value
           const operator = condition.operator || '=='
-          return this.compareValues(varValue, operator, compareValue)
+          return this.compareValues(varValue as boolean | number | string | Array<boolean | number | string> | undefined, operator, compareValue)
         }
         return false
 
@@ -596,18 +606,46 @@ export class GameEngine {
     switch (op.target) {
       case 'variable':
         if (op.variableId) {
-          const currentValue = vars.variables[op.variableId]
+          let currentValue = vars.variables[op.variableId]
+
+          // 내부 변수에 없고 외부 스토어에 있으면 외부에서 가져오기
+          if (currentValue === undefined && this.externalStore) {
+            currentValue = this.externalStore.get(op.variableId) as typeof currentValue
+          }
 
           // 배열 연산 처리
           if (Array.isArray(currentValue)) {
             this.executeArrayOperation(op.variableId, op.action, operandValue, op.index)
           } else if (op.action === 'set') {
+            // 내부 변수에 저장
             vars.variables[op.variableId] = operandValue
+            // 외부 스토어에도 동기화
+            if (this.externalStore) {
+              this.externalStore.set(op.variableId, operandValue)
+            }
           } else if (typeof currentValue === 'number') {
-            vars.variables[op.variableId] = this.applyAction(currentValue, op.action, numValue)
+            const newValue = this.applyAction(currentValue, op.action, numValue)
+            vars.variables[op.variableId] = newValue
+            // 외부 스토어에도 동기화
+            if (this.externalStore) {
+              this.externalStore.set(op.variableId, newValue)
+            }
           } else if (typeof currentValue === 'string' && op.action === 'add') {
             // 문자열 더하기 (concatenation)
-            vars.variables[op.variableId] = currentValue + String(operandValue)
+            const newValue = currentValue + String(operandValue)
+            vars.variables[op.variableId] = newValue
+            // 외부 스토어에도 동기화
+            if (this.externalStore) {
+              this.externalStore.set(op.variableId, newValue)
+            }
+          } else if (currentValue === undefined) {
+            // 변수가 없으면 기본값으로 시작하여 연산 (add, subtract, multiply)
+            const newValue = this.applyAction(0, op.action, numValue)
+            vars.variables[op.variableId] = newValue
+            // 외부 스토어에도 동기화
+            if (this.externalStore) {
+              this.externalStore.set(op.variableId, newValue)
+            }
           }
         }
         break
@@ -835,17 +873,17 @@ export class GameEngine {
   // 텍스트 내 변수 치환 ({{변수명}} 또는 {{변수ID}} 형식)
   interpolateText(text: string): string {
     if (!text) return text
-    
+
     return text.replace(/\{\{([^}]+)\}\}/g, (match, varNameOrId) => {
       const trimmed = varNameOrId.trim()
       const vars = this.state.variables.variables
-      
+
       // 1. 변수 ID로 먼저 찾기
       if (vars[trimmed] !== undefined) {
         const value = vars[trimmed]
         return Array.isArray(value) ? value.join(', ') : String(value)
       }
-      
+
       // 2. 변수 이름으로 찾기 (전역 변수에서)
       if (this.project.variables) {
         const varDef = this.project.variables.find(v => v.name === trimmed)
@@ -854,7 +892,7 @@ export class GameEngine {
           return Array.isArray(value) ? value.join(', ') : String(value)
         }
       }
-      
+
       // 3. 변수 이름으로 찾기 (현재 챕터 변수에서)
       const chapter = this.getCurrentChapter()
       if (chapter?.variables) {
@@ -864,8 +902,19 @@ export class GameEngine {
           return Array.isArray(value) ? value.join(', ') : String(value)
         }
       }
-      
-      // 4. 찾지 못하면 원본 유지
+
+      // 4. 외부 스토어에서 찾기 (dot notation 지원: party.0.name 등)
+      if (this.externalStore) {
+        const externalValue = this.externalStore.get(trimmed)
+        if (externalValue !== undefined) {
+          if (Array.isArray(externalValue)) {
+            return String(externalValue.length)  // 배열은 길이 반환
+          }
+          return String(externalValue)
+        }
+      }
+
+      // 5. 찾지 못하면 원본 유지
       return match
     })
   }
