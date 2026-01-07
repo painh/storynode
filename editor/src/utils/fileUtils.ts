@@ -857,8 +857,8 @@ export async function loadProjectFromServer(
   projectId: string
 ): Promise<StoryProject | null> {
   try {
-    // 정적 파일에서 로드 (상대 경로 사용 - 같은 origin)
-    const baseUrl = `./data/events/${projectId}`
+    // 정적 파일에서 로드 (iframe이 ./storynode/ 안에 있으므로 상위로 이동)
+    const baseUrl = `../data/events/${projectId}`
     console.log('[loadProjectFromServer] Loading from:', baseUrl)
     const response = await fetch(`${baseUrl}/project.json`)
 
