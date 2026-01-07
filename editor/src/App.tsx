@@ -5,6 +5,7 @@ import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { SearchModal } from './components/common/SearchModal'
 import { ValidationWarningModal } from './components/common/ValidationWarningModal'
+import { ToastContainer } from './components/common/Toast'
 import { GameModal } from './features/game/components'
 import { TemplateEditor } from './features/templateEditor/TemplateEditor'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -215,6 +216,7 @@ function App() {
           allowContinueWithErrors={false}
         />
       )}
+      <ToastContainer />
     </div>
   )
 }

@@ -849,14 +849,16 @@ export async function saveProjectToServer(
 
 /**
  * 서버 API에서 프로젝트 로드
+ * 정적 파일은 상대 경로로 로드 (같은 origin에서 서빙됨)
  */
 export async function loadProjectFromServer(
-  serverUrl: string,
+  _serverUrl: string,
   projectId: string
 ): Promise<StoryProject | null> {
   try {
-    // 정적 파일에서 로드 (editor-server는 저장만 담당)
-    const response = await fetch(`${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/project.json`)
+    // 정적 파일에서 로드 (상대 경로 사용 - 같은 origin)
+    const baseUrl = `/data/events/${projectId}`
+    const response = await fetch(`${baseUrl}/project.json`)
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -871,9 +873,7 @@ export async function loadProjectFromServer(
     // 각 스테이지/챕터 로드
     const stages: StoryStage[] = []
     for (const stageId of projectMeta.stages) {
-      const stageResponse = await fetch(
-        `${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/stages/${stageId}/stage.json`
-      )
+      const stageResponse = await fetch(`${baseUrl}/stages/${stageId}/stage.json`)
 
       if (!stageResponse.ok) continue
 
@@ -882,7 +882,7 @@ export async function loadProjectFromServer(
 
       for (const chapterId of stageMeta.chapters) {
         const chapterResponse = await fetch(
-          `${serverUrl.replace(':3001', ':5173')}/data/events/${projectId}/stages/${stageId}/chapters/${chapterId}.json`
+          `${baseUrl}/stages/${stageId}/chapters/${chapterId}.json`
         )
 
         if (chapterResponse.ok) {

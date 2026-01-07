@@ -36,9 +36,10 @@ export const useEmbedStore = create<EmbedState>((set) => ({
     const projectId = params.get('projectId')
     const serverUrl = params.get('serverUrl')
 
-    if (isEmbedMode) {
-      console.log('[EmbedStore] Embed mode detected:', { projectId, serverUrl })
-    }
+    console.log('[EmbedStore] URL:', window.location.href)
+    console.log('[EmbedStore] Search:', window.location.search)
+    console.log('[EmbedStore] Params:', { embed: params.get('embed'), projectId, serverUrl })
+    console.log('[EmbedStore] isEmbedMode:', isEmbedMode)
 
     set({
       isEmbedMode,
