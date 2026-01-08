@@ -64,11 +64,30 @@ export const useEmbedStore = create<EmbedState>((set) => ({
     if (isEmbedMode && window.parent !== window) {
       console.log('[EmbedStore] Setting up message listener for external variables')
 
-      window.addEventListener('message', (event) => {
+      window.addEventListener('message', async (event) => {
         console.log('[EmbedStore] Received message:', event.data?.type)
         if (event.data?.type === 'storynode:setExternalVariables') {
           console.log('[EmbedStore] Received external variables:', event.data.variables?.length, 'items')
           set({ externalVariables: event.data.variables || [] })
+        } else if (event.data?.type === 'storynode:navigateToChapter') {
+          const { stageId, chapterId } = event.data
+          console.log('[EmbedStore] Navigate to chapter:', stageId, chapterId)
+
+          // editorStore를 동적으로 import하여 순환 의존성 방지
+          const { useEditorStore } = await import('./editorStore')
+          const editorStore = useEditorStore.getState()
+
+          // 먼저 stage 선택, 그 다음 chapter 선택
+          if (stageId) {
+            editorStore.setCurrentStage(stageId)
+          }
+          if (chapterId) {
+            // stage 변경 후 약간의 딜레이를 주고 chapter 선택
+            setTimeout(() => {
+              useEditorStore.getState().setCurrentChapter(chapterId)
+              console.log('[EmbedStore] Chapter selected:', chapterId)
+            }, 100)
+          }
         }
       })
 
