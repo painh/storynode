@@ -69,9 +69,7 @@ export const dataHandleConfigs: Partial<Record<StoryNodeType, DataHandleDefiniti
     { id: 'imageData.y', label: 'Y', type: 'number', path: 'imageData.y', direction: 'both' },
   ],
 
-  javascript: [
-    { id: 'javascriptCode', label: 'Code', type: 'string', path: 'javascriptCode', direction: 'both' },
-  ],
+  javascript: [], // 동적 생성 - JavaScriptNode.tsx에서 customDataHandles로 처리
 
   custom: [
     { id: 'customData.title', label: 'Title', type: 'string', path: 'customData.title', direction: 'both' },

@@ -228,6 +228,22 @@ export interface StoryBattleReward {
   goldRange?: { min: number; max: number }
 }
 
+// JavaScript 함수 노드용 타입
+export type JavaScriptArgType = 'string' | 'number' | 'boolean' | 'any'
+
+export interface JavaScriptFunctionArg {
+  id: string
+  name: string
+  type: JavaScriptArgType
+  defaultValue?: string | number | boolean
+}
+
+export interface JavaScriptFunction {
+  name: string
+  arguments: JavaScriptFunctionArg[]
+  body: string
+}
+
 // Variable 노드용 타입
 export type VariableAction = 'set' | 'add' | 'subtract' | 'multiply'
 export type ArrayAction = 'push' | 'pop' | 'removeAt' | 'setAt' | 'clear' | 'set'
@@ -312,7 +328,8 @@ export interface StoryNode {
   imageData?: ImageNodeData
 
   // javascript 노드용
-  javascriptCode?: string
+  javascriptCode?: string  // 레거시 (단순 코드)
+  javascriptFunction?: JavaScriptFunction  // 새 방식 (함수 + 인자)
 
   // custom 노드용
   customData?: CustomNodeData

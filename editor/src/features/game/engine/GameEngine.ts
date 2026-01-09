@@ -12,6 +12,7 @@ import type {
 } from '../../../types/story'
 import type { GameState, GameVariables, GameHistoryEntry, ActiveImage, ExternalStoreProvider } from '../../../types/game'
 import { DEFAULT_GAME_VARIABLES } from '../../../types/game'
+import { getNestedValue } from '../../../utils/nestedProperty'
 
 // 챕터 전환 정보
 export interface ChapterTransition {
@@ -739,6 +740,13 @@ export class GameEngine {
 
   // JavaScript 노드 실행
   private executeJavaScript(node: StoryNode): void {
+    // 새 방식: javascriptFunction 사용
+    if (node.javascriptFunction) {
+      this.executeJavaScriptFunction(node)
+      return
+    }
+
+    // 레거시: 기존 javascriptCode 사용
     if (!node.javascriptCode) return
 
     try {
@@ -782,6 +790,82 @@ export class GameEngine {
       fn(variables, chapters, Game, setFlag, getFlag, { log, warn: console.warn, error: console.error })
     } catch (error) {
       console.error('[GameEngine] JavaScript execution error:', error)
+    }
+  }
+
+  // JavaScript 함수 노드 실행 (새 방식)
+  private executeJavaScriptFunction(node: StoryNode): void {
+    const jsFunc = node.javascriptFunction!
+    const { arguments: args, body } = jsFunc
+
+    try {
+      // 인자 값 수집 (dataBindings에서 또는 기본값)
+      const argValues: unknown[] = args.map(arg => {
+        // 바인딩된 값 찾기
+        const binding = node.dataBindings?.find(
+          b => b.targetPath === `javascriptFunction.argumentValues.${arg.id}`
+        )
+
+        if (binding) {
+          // 바인딩된 소스 노드에서 값 가져오기
+          const chapter = this.getCurrentChapter()
+          const sourceNode = chapter?.nodes.find(n => n.id === binding.sourceNodeId)
+          if (sourceNode) {
+            return getNestedValue(sourceNode as unknown as Record<string, unknown>, binding.sourcePath)
+          }
+        }
+
+        // 기본값 사용
+        return arg.defaultValue
+      })
+
+      // 전역 변수 프록시
+      const variables = this.state.variables.variables
+
+      // 챕터 변수 프록시
+      const chapters = this.createChaptersProxy()
+
+      // Game 객체
+      const Game = {
+        lastChoiceIndex: this.state.lastChoiceIndex,
+        lastChoiceText: this.state.lastChoiceText,
+        currentNodeId: this.state.currentNodeId,
+        currentStageId: this.state.currentStageId,
+        currentChapterId: this.state.currentChapterId,
+        playTime: Date.now() - this.state.startedAt,
+      }
+
+      // 유틸 함수들
+      const setFlag = (key: string, value: boolean | number | string) => {
+        this.state.variables.flags[key] = value
+      }
+      const getFlag = (key: string) => this.state.variables.flags[key]
+      const log = (...args: unknown[]) => console.log('[JS Node]', ...args)
+
+      // 함수 생성 및 실행
+      const argNames = args.map(a => a.name)
+      const func = new Function(
+        ...argNames,           // 사용자 정의 인자들
+        'variables',
+        'chapters',
+        'Game',
+        'setFlag',
+        'getFlag',
+        'console',
+        body
+      )
+
+      func(
+        ...argValues,          // 인자 값들
+        variables,
+        chapters,
+        Game,
+        setFlag,
+        getFlag,
+        { log, warn: console.warn, error: console.error }
+      )
+    } catch (error) {
+      console.error('[GameEngine] JavaScript function execution error:', error)
     }
   }
 
