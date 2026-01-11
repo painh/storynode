@@ -100,8 +100,6 @@ function App() {
     }
   }, [isResizing, handleMouseMove, handleMouseUp])
 
-  console.log('[App] Render - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
-
   // 전역 단축키 활성화
   useKeyboardShortcuts()
 
