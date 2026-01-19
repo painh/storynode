@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { useEmbedStore } from './stores/embedStore'
 import './index.css'
 
 // 웹뷰 기본 컨텍스트 메뉴 비활성화
@@ -24,6 +25,9 @@ async function checkDevMode() {
 }
 
 checkDevMode()
+
+// 임베드 모드 초기화 (URL 파라미터에서 설정 읽기)
+useEmbedStore.getState().initialize()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

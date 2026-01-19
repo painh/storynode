@@ -888,3 +888,172 @@ export async function exportStandaloneGame(
     outputPath,
   })
 }
+
+// ============================================
+// 서버 API 저장/로드 (임베드 모드용)
+// ============================================
+
+/**
+ * 서버 API로 프로젝트 저장
+ * Wizardry editor-server의 /api/events 엔드포인트 사용
+ */
+export async function saveProjectToServer(
+  serverUrl: string,
+  projectId: string,
+  project: StoryProject
+): Promise<void> {
+  // 프로젝트 데이터 변환 (API 형식에 맞게)
+  const apiProject = {
+    id: projectId,
+    name: project.name,
+    version: project.version,
+    stages: project.stages.map(stage => ({
+      ...stage,
+      chapters: stage.chapters.map(chapter => ({
+        id: chapter.id,
+        title: chapter.title,
+        description: chapter.description,
+        nodes: chapter.nodes,
+        commentNodes: chapter.commentNodes,
+        startNodeId: chapter.startNodeId,
+      }))
+    })),
+    gameSettings: project.gameSettings,
+    customNodeTemplates: project.customNodeTemplates,
+  }
+
+  const response = await fetch(`${serverUrl}/api/events/${projectId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiProject),
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    throw new Error(`Failed to save project: ${error.error || response.statusText}`)
+  }
+
+  console.log('[saveProjectToServer] Project saved successfully:', projectId)
+}
+
+/**
+ * 서버 API에서 프로젝트 로드
+ * 정적 파일은 상대 경로로 로드 (같은 origin에서 서빙됨)
+ * Wizardry 구조 지원: stages/stage_id/chapters/chapter_id.json
+ */
+export async function loadProjectFromServer(
+  serverUrl: string,
+  projectId: string
+): Promise<StoryProject | null> {
+  try {
+    // 개발 모드에서는 Wizardry dev 서버(5183)에서 데이터 로드
+    // serverUrl이 editor-server(3001)를 가리키면, data는 같은 호스트의 5183에서 가져옴
+    const isDev = serverUrl.includes('localhost:3001')
+    const baseUrl = isDev
+      ? `http://localhost:5183/data/events/${projectId}`
+      : `../data/events/${projectId}`
+    console.log('[loadProjectFromServer] Loading from:', baseUrl, isDev ? '(dev mode)' : '')
+    const response = await fetch(`${baseUrl}/project.json`)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log('[loadProjectFromServer] Project not found:', projectId)
+        return null
+      }
+      throw new Error(`Failed to load project: ${response.statusText}`)
+    }
+
+    const projectMeta = await response.json()
+    console.log('[loadProjectFromServer] Project meta loaded:', projectMeta)
+
+    // 각 스테이지/챕터 로드
+    const stages: StoryStage[] = []
+
+    // stages가 배열인 경우 처리 (Wizardry 형식: stages는 전체 객체 배열)
+    for (const stageMeta of projectMeta.stages) {
+      // stageMeta가 문자열(ID)인 경우 (기존 StoryNode 형식)
+      if (typeof stageMeta === 'string') {
+        const stageResponse = await fetch(`${baseUrl}/stages/${stageMeta}/stage.json`)
+        if (!stageResponse.ok) continue
+
+        const stageData = await stageResponse.json()
+        const chapters: StoryChapter[] = []
+
+        for (const chapterId of stageData.chapters) {
+          const chapterResponse = await fetch(
+            `${baseUrl}/stages/${stageMeta}/chapters/${chapterId}.json`
+          )
+          if (chapterResponse.ok) {
+            chapters.push(await chapterResponse.json())
+          }
+        }
+
+        stages.push({
+          id: stageData.id,
+          title: stageData.title,
+          description: stageData.description,
+          partyCharacters: stageData.partyCharacters || [],
+          chapters,
+        })
+      } else {
+        // stageMeta가 객체인 경우 (Wizardry 형식)
+        const stageId = stageMeta.id
+        const chapters: StoryChapter[] = []
+
+        // chapters 배열에서 각 챕터 로드
+        for (const chapterMeta of stageMeta.chapters || []) {
+          const chapterId = typeof chapterMeta === 'string' ? chapterMeta : chapterMeta.id
+          const chapterResponse = await fetch(
+            `${baseUrl}/stages/${stageId}/chapters/${chapterId}.json`
+          )
+          if (chapterResponse.ok) {
+            const chapter = await chapterResponse.json()
+            console.log(`[loadProjectFromServer] Loaded chapter: ${chapterId}`, chapter.title)
+            chapters.push(chapter)
+          } else {
+            console.warn(`[loadProjectFromServer] Failed to load chapter: ${chapterId}`)
+          }
+        }
+
+        stages.push({
+          id: stageId,
+          title: stageMeta.title,
+          description: stageMeta.description || '',
+          partyCharacters: stageMeta.partyCharacters || [],
+          chapters,
+        })
+      }
+    }
+
+    console.log('[loadProjectFromServer] Loaded stages:', stages.map(s => `${s.id} (${s.chapters.length} chapters)`))
+
+    return {
+      name: projectMeta.name,
+      version: projectMeta.version,
+      stages,
+      variables: projectMeta.variables,
+      gameSettings: projectMeta.gameSettings,
+      customNodeTemplates: projectMeta.customNodeTemplates,
+      resources: [],
+    }
+  } catch (error) {
+    console.error('[loadProjectFromServer] Failed to load project:', error)
+    return null
+  }
+}
+
+/**
+ * 서버가 온라인인지 확인
+ */
+export async function checkServerOnline(serverUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${serverUrl}/api/events`, {
+      method: 'HEAD',
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}

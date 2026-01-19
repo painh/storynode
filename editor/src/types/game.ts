@@ -36,6 +36,16 @@ export interface GameVariables {
   variables: Record<string, boolean | number | string | Array<boolean | number | string>>
 }
 
+// 외부 스토어 접근 인터페이스 (Wizardry gameStore 등 외부 게임 상태 접근용)
+export interface ExternalStoreProvider {
+  // dot notation으로 값 읽기 (예: "party.0.name", "gold")
+  get: (path: string) => unknown
+  // dot notation으로 값 쓰기
+  set: (path: string, value: unknown) => boolean
+  // 전체 스토어 스냅샷 (디버깅용)
+  getSnapshot?: () => Record<string, unknown>
+}
+
 // 게임 히스토리 엔트리
 export interface GameHistoryEntry {
   nodeId: string

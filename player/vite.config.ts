@@ -10,7 +10,7 @@ export default defineConfig({
     // Tauri expects a fixed port, fail if that port is not available
     strictPort: true,
     // if the host Tauri is expecting is set, use it
-    host: host || false,
+    host: host || '0.0.0.0',
     port: 9422,
   },
   // Env variables starting with the item of `envPrefix` will be exposed in tauri's source code through `import.meta.env`.

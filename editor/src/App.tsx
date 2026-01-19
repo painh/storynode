@@ -5,6 +5,7 @@ import { Inspector } from './components/layout/Inspector'
 import { Canvas } from './features/canvas/Canvas'
 import { SearchModal } from './components/common/SearchModal'
 import { ValidationWarningModal } from './components/common/ValidationWarningModal'
+import { ToastContainer } from './components/common/Toast'
 import { GameModal } from './features/game/components'
 import { TemplateEditor } from './features/templateEditor/TemplateEditor'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -14,7 +15,8 @@ import { useSettingsStore } from './stores/settingsStore'
 import { useEditorStore } from './stores/editorStore'
 import { useSearchStore } from './stores/searchStore'
 import { useGameStore } from './stores/gameStore'
-import { loadProjectFromFolder, isTauri } from './utils/fileUtils'
+import { useEmbedStore } from './stores/embedStore'
+import { loadProjectFromFolder, loadProjectFromServer, isTauri } from './utils/fileUtils'
 import styles from './App.module.css'
 
 type ScreenType = 'editor' | 'templateEditor'
@@ -29,14 +31,15 @@ function App() {
   const { loadSettings, settings, isLoaded, setPanelWidths } = useSettingsStore()
   const { setProject } = useEditorStore()
   const { isOpen: isSearchOpen, closeSearch } = useSearchStore()
-  const { 
-    isModalOpen: isGameModalOpen, 
+  const {
+    isModalOpen: isGameModalOpen,
     closeGame,
     showValidationWarning,
     validationResult,
     dismissValidationWarning,
     proceedAfterValidation,
   } = useGameStore()
+  const { isEmbedMode, projectId: embedProjectId, serverUrl } = useEmbedStore()
 
   // 패널 너비는 설정에서 가져오되, 리사이즈 중에는 로컬 상태 사용 (성능)
   const [localLeftWidth, setLocalLeftWidth] = useState(settings.leftPanelWidth)
@@ -97,8 +100,6 @@ function App() {
     }
   }, [isResizing, handleMouseMove, handleMouseUp])
 
-  console.log('[App] Render - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
-
   // 전역 단축키 활성화
   useKeyboardShortcuts()
 
@@ -114,14 +115,34 @@ function App() {
     loadSettings()
   }, [loadSettings])
 
-  // 설정 로드 후 마지막 프로젝트 자동 열기
+  // 설정 로드 후 마지막 프로젝트 자동 열기 (또는 임베드 모드에서 서버 프로젝트 로드)
   useEffect(() => {
     console.log('[App] Settings effect - isLoaded:', isLoaded, 'isInitialized:', isInitialized)
     if (!isLoaded || isInitialized) return
 
     const autoOpenLastProject = async () => {
-      console.log('[App] autoOpenLastProject - isTauri:', isTauri())
+      console.log('[App] autoOpenLastProject - isTauri:', isTauri(), 'isEmbedMode:', isEmbedMode)
       console.log('[App] settings:', settings)
+
+      // 임베드 모드: 서버에서 프로젝트 로드
+      if (isEmbedMode && embedProjectId && serverUrl) {
+        try {
+          console.log('[App] Loading project from server:', embedProjectId)
+          const project = await loadProjectFromServer(serverUrl, embedProjectId)
+          if (project) {
+            setProject(project)
+            console.log('[App] Loaded project from server:', embedProjectId)
+          } else {
+            console.log('[App] Project not found on server, using default')
+          }
+        } catch (error) {
+          console.warn('[App] Failed to load project from server:', error)
+        }
+        setIsInitialized(true)
+        return
+      }
+
+      // Tauri 환경: 마지막 프로젝트 자동 열기
       if (
         isTauri() &&
         settings.openLastProjectOnStartup &&
@@ -142,7 +163,7 @@ function App() {
     }
 
     autoOpenLastProject()
-  }, [isLoaded, isInitialized, settings, setProject])
+  }, [isLoaded, isInitialized, settings, setProject, isEmbedMode, embedProjectId, serverUrl])
 
   if (currentScreen === 'templateEditor') {
     return (
@@ -193,6 +214,7 @@ function App() {
           allowContinueWithErrors={false}
         />
       )}
+      <ToastContainer />
     </div>
   )
 }

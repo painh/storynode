@@ -4,6 +4,7 @@ import { useCanvasStore } from '../stores/canvasStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useSearchStore } from '../stores/searchStore'
 import { useGameStore } from '../stores/gameStore'
+import { useEmbedStore } from '../stores/embedStore'
 import {
   isTauri,
   saveProjectToFolder,
@@ -11,7 +12,9 @@ import {
   isFileSystemAccessSupported,
   pickWebDirectory,
   getWebDirectoryHandle,
+  saveProjectToServer,
 } from '../utils/fileUtils'
+import { toast } from '../stores/toastStore'
 
 // Tauri dialog import (조건부)
 let openDialog: typeof import('@tauri-apps/plugin-dialog').open | null = null
@@ -235,6 +238,19 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
       return
     }
 
+    // 임베드 모드: 서버 API로 저장 (다이얼로그 없이 바로 저장)
+    const { isEmbedMode, projectId: embedProjectId, serverUrl } = useEmbedStore.getState()
+    if (isEmbedMode && embedProjectId && serverUrl) {
+      try {
+        await saveProjectToServer(serverUrl, embedProjectId, project)
+        useEditorStore.getState().markClean()
+        toast.success('저장 완료', `public/data/events/${embedProjectId}/`)
+      } catch (error) {
+        toast.error('저장 실패', (error as Error).message)
+      }
+      return
+    }
+
     // 웹 환경에서 File System Access API 사용
     if (!isTauri() && isFileSystemAccessSupported()) {
       const handle = getWebDirectoryHandle()
@@ -242,8 +258,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         try {
           await saveProjectToFolder('', project)
           useEditorStore.getState().markClean()
+          toast.success('저장 완료', `폴더: ${handle.name}/`)
         } catch (error) {
-          alert('Failed to save: ' + (error as Error).message)
+          toast.error('저장 실패', (error as Error).message)
         }
       } else {
         await handleSaveAs()
@@ -252,7 +269,7 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
     }
 
     if (!isTauri()) {
-      alert('Save is only available in desktop app or browsers with File System Access API')
+      toast.warning('폴더 저장은 데스크톱 앱 또는 File System Access API를 지원하는 브라우저에서만 사용 가능합니다')
       return
     }
 
@@ -265,8 +282,9 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         await saveProjectToFolder(lastPath, project)
         addRecentProject(lastPath, project.name)
         useEditorStore.getState().markClean()
+        toast.success('저장 완료', lastPath)
       } catch (error) {
-        alert('Failed to save: ' + (error as Error).message)
+        toast.error('저장 실패', (error as Error).message)
       }
     } else {
       // 경로가 없으면 Save As 동작
@@ -276,6 +294,13 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
 
   // Cmd+Shift+S: 다른 이름으로 저장
   const handleSaveAs = useCallback(async () => {
+    // 임베드 모드에서는 SaveAs 비활성화 (고정 경로에 저장)
+    const { isEmbedMode } = useEmbedStore.getState()
+    if (isEmbedMode) {
+      toast.info('임베드 모드에서는 다른 이름으로 저장을 사용할 수 없습니다')
+      return
+    }
+
     // 웹 환경에서 File System Access API 사용
     if (!isTauri() && isFileSystemAccessSupported()) {
       try {
@@ -283,15 +308,16 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         if (handle) {
           await saveProjectToFolder('', project)
           useEditorStore.getState().markClean()
+          toast.success('저장 완료', `폴더: ${handle.name}/`)
         }
       } catch (error) {
-        alert('Failed to save: ' + (error as Error).message)
+        toast.error('저장 실패', (error as Error).message)
       }
       return
     }
 
     if (!isTauri() || !openDialog) {
-      alert('Save is only available in desktop app or browsers with File System Access API')
+      toast.warning('폴더 저장은 데스크톱 앱 또는 File System Access API를 지원하는 브라우저에서만 사용 가능합니다')
       return
     }
 
@@ -306,9 +332,10 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         await saveProjectToFolder(selected, project)
         useSettingsStore.getState().addRecentProject(selected, project.name)
         useEditorStore.getState().markClean()
+        toast.success('저장 완료', selected)
       }
     } catch (error) {
-      alert('Failed to save: ' + (error as Error).message)
+      toast.error('저장 실패', (error as Error).message)
     }
   }, [project])
 

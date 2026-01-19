@@ -3,6 +3,7 @@ import { useEditorStore } from '../../stores/editorStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useSearchStore } from '../../stores/searchStore'
 import { useGameStore } from '../../stores/gameStore'
+import { useEmbedStore } from '../../stores/embedStore'
 import {
   downloadJson,
   isTauri,
@@ -11,7 +12,9 @@ import {
   isFileSystemAccessSupported,
   pickWebDirectory,
   getWebDirectoryHandle,
+  saveProjectToServer,
 } from '../../utils/fileUtils'
+import { toast } from '../../stores/toastStore'
 import { useTranslation } from '../../i18n'
 import { SettingsModal } from '../common/SettingsModal'
 import { ProjectSettingsModal } from '../common/ProjectSettingsModal'
@@ -53,6 +56,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const { settings, addRecentProject, clearRecentProjects } = useSettingsStore()
   const { openSearch } = useSearchStore()
   const { openGame, status: gameStatus } = useGameStore()
+  const { isEmbedMode, projectId: embedProjectId, serverUrl } = useEmbedStore()
   const { menu, search: searchT } = useTranslation()
   const currentStage = getCurrentStage()
 
@@ -177,6 +181,31 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
   const handleSave = async () => {
     closeAllMenus()
 
+    console.log('[Header] handleSave - isEmbedMode:', isEmbedMode, 'embedProjectId:', embedProjectId, 'serverUrl:', serverUrl)
+
+    // 임베드 모드: 서버 API로 저장
+    if (isEmbedMode && embedProjectId && serverUrl) {
+      try {
+        console.log('[Header] Saving to server...')
+        await saveProjectToServer(serverUrl, embedProjectId, project)
+        markClean()
+        console.log('[Header] Project saved to server:', embedProjectId)
+        toast.success('저장 완료', `public/data/events/${embedProjectId}/`)
+
+        // 부모 윈도우에 저장 완료 알림 (Wizardry에서 이벤트 데이터 재로딩용)
+        if (window.parent !== window) {
+          window.parent.postMessage({
+            type: 'storynode:saved',
+            projectId: embedProjectId,
+          }, '*')
+        }
+      } catch (error) {
+        console.error('[Header] Save to server failed:', error)
+        toast.error('저장 실패', (error as Error).message)
+      }
+      return
+    }
+
     // 웹 환경에서 File System Access API 사용
     if (!isTauri() && isWebFsSupported) {
       const handle = getWebDirectoryHandle()
@@ -184,8 +213,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         try {
           await saveProjectToFolder('', project)
           markClean()
+          toast.success('저장 완료', `폴더: ${handle.name}/`)
         } catch (error) {
-          alert('Failed to save project: ' + (error as Error).message)
+          toast.error('저장 실패', (error as Error).message)
         }
       } else {
         await handleSaveAs()
@@ -194,7 +224,7 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
     }
 
     if (!isTauri()) {
-      alert('Folder save is only available in desktop app or browsers with File System Access API')
+      toast.warning('폴더 저장은 데스크톱 앱 또는 File System Access API를 지원하는 브라우저에서만 사용 가능합니다')
       return
     }
 
@@ -204,8 +234,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         await saveProjectToFolder(lastPath, project)
         addRecentProject(lastPath, project.name)
         markClean()
+        toast.success('저장 완료', lastPath)
       } catch (error) {
-        alert('Failed to save project: ' + (error as Error).message)
+        toast.error('저장 실패', (error as Error).message)
       }
     } else {
       await handleSaveAs()
@@ -222,15 +253,16 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         if (handle) {
           await saveProjectToFolder('', project)
           markClean()
+          toast.success('저장 완료', `폴더: ${handle.name}/`)
         }
       } catch (error) {
-        alert('Failed to save project: ' + (error as Error).message)
+        toast.error('저장 실패', (error as Error).message)
       }
       return
     }
 
     if (!isTauri() || !openDialog) {
-      alert('Folder save is only available in desktop app or browsers with File System Access API')
+      toast.warning('폴더 저장은 데스크톱 앱 또는 File System Access API를 지원하는 브라우저에서만 사용 가능합니다')
       return
     }
 
@@ -245,9 +277,10 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         await saveProjectToFolder(selected, project)
         addRecentProject(selected, project.name)
         markClean()
+        toast.success('저장 완료', selected)
       }
     } catch (error) {
-      alert('Failed to save project: ' + (error as Error).message)
+      toast.error('저장 실패', (error as Error).message)
     }
   }
 
@@ -433,6 +466,9 @@ export function Header({ onOpenTemplateEditor }: HeaderProps) {
         <div className={styles.logo}>
           StoryNode
           <span className={styles.version}>v{appVersion} ({buildTime})</span>
+          {isEmbedMode && (
+            <span className={styles.embedBadge}>Embedded</span>
+          )}
         </div>
         <div className={styles.menu} ref={menuRef}>
           {/* File Menu */}

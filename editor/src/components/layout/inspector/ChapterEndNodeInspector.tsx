@@ -37,15 +37,27 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
   )
 
   const handleActionChange = (action: ChapterEndAction) => {
-    const newData: ChapterEndData = { action }
-    
+    const newData: ChapterEndData = {
+      action,
+      clearVisuals: chapterEndData.clearVisuals, // 기존 값 유지
+    }
+
     // goto일 때 기본 챕터 설정
     if (action === 'goto' && allChapters.length > 0) {
       newData.nextChapterId = allChapters[0].chapterId
       newData.nextStageId = allChapters[0].stageId
     }
-    
+
     onUpdate({ chapterEndData: newData })
+  }
+
+  const handleClearVisualsChange = (clearVisuals: boolean) => {
+    onUpdate({
+      chapterEndData: {
+        ...chapterEndData,
+        clearVisuals,
+      }
+    })
   }
 
   const handleChapterSelect = (chapterId: string) => {
@@ -121,24 +133,41 @@ export function ChapterEndNodeInspector({ node, onUpdate }: ChapterEndNodeInspec
                 c => c.nodes.some(n => n.id === node.id)
               )
               const nextChapter = currentStage.chapters[currentChapterIndex + 1]
-              
+
               if (nextChapter) {
                 return `→ ${nextChapter.title}`
               }
-              
+
               // 다음 스테이지의 첫 챕터 확인
               const currentStageIndex = project.stages.findIndex(s => s.id === currentStageId)
               const nextStage = project.stages[currentStageIndex + 1]
-              
+
               if (nextStage && nextStage.chapters.length > 0) {
                 return `→ [${nextStage.title}] ${nextStage.chapters[0].title}`
               }
-              
+
               return chapterEnd.lastChapter
             })()}
           </div>
         </div>
       )}
+
+      <div className={styles.divider} />
+
+      {/* 비주얼 정리 옵션 */}
+      <div className={styles.field}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={chapterEndData.clearVisuals !== false}
+            onChange={(e) => handleClearVisualsChange(e.target.checked)}
+          />
+          {chapterEnd.clearVisualsLabel}
+        </label>
+        <div className={styles.fieldHint}>
+          {chapterEnd.clearVisualsDesc}
+        </div>
+      </div>
     </>
   )
 }

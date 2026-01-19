@@ -9,6 +9,29 @@
   font-style: italic;
 }
 
+.signature {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 11px;
+  color: #f0db4f;
+  background: rgba(240, 219, 79, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.legacyBadge {
+  font-size: 9px;
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
 .codePreview {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
