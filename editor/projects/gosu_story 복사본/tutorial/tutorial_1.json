@@ -1,0 +1,103 @@
+{
+  "id": "tutorial_1",
+  "title": "첫 번째 전투",
+  "description": "카드를 사용해 적을 물리치는 방법을 배웁니다.",
+  "startNodeId": "t1_intro",
+  "nodes": [
+    {
+      "id": "t1_intro",
+      "type": "dialogue",
+      "text": "당신은 왕국의 변방을 떠도는 용병 카이런입니다. 오늘은 첫 번째 훈련 임무가 주어졌습니다.",
+      "nextNodeId": "t1_instructor_1"
+    },
+    {
+      "id": "t1_instructor_1",
+      "type": "dialogue",
+      "speaker": "교관",
+      "text": "신병! 마을 외곽에 슬라임이 출몰했다. 가서 처리하고 와라.",
+      "nextNodeId": "t1_warrior_1"
+    },
+    {
+      "id": "t1_warrior_1",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "알겠습니다! (드디어 첫 실전이다...!)",
+      "nextNodeId": "t1_tip_1"
+    },
+    {
+      "id": "t1_tip_1",
+      "type": "dialogue",
+      "text": "💡 팁: 카드를 드래그해서 적에게 놓으면 공격할 수 있습니다.\n\n에너지가 있는 만큼 카드를 사용할 수 있으며, 턴이 끝나면 에너지가 회복됩니다.",
+      "nextNodeId": "t1_battle_1"
+    },
+    {
+      "id": "t1_battle_1",
+      "type": "battle",
+      "battleGroupId": "story_slime_tutorial",
+      "battleRewards": {
+        "gold": 10
+      },
+      "nextNodeId": "t1_after_battle"
+    },
+    {
+      "id": "t1_after_battle",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "해냈다! 생각보다 어렵지 않았어.",
+      "nextNodeId": "t1_return"
+    },
+    {
+      "id": "t1_return",
+      "type": "dialogue",
+      "text": "슬라임을 처치하고 마을로 돌아왔습니다.",
+      "nextNodeId": "t1_instructor_2"
+    },
+    {
+      "id": "t1_instructor_2",
+      "type": "dialogue",
+      "speaker": "교관",
+      "text": "잘했다, 신병. 하지만 이건 시작일 뿐이야. 다음 임무가 있다. 근처 숲에서 쥐떼가 발견됐어. 처리하고 와라.",
+      "nextNodeId": "t1_tip_2"
+    },
+    {
+      "id": "t1_tip_2",
+      "type": "dialogue",
+      "text": "💡 팁: 방어 카드는 자신에게 사용합니다. 방어막은 적의 공격을 막아줍니다.",
+      "nextNodeId": "t1_battle_2"
+    },
+    {
+      "id": "t1_battle_2",
+      "type": "battle",
+      "battleGroupId": "story_rat_tutorial",
+      "battleRewards": {
+        "gold": 15,
+        "cardIds": [
+          "bash"
+        ]
+      },
+      "nextNodeId": "t1_final"
+    },
+    {
+      "id": "t1_final",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "또 해냈어! 점점 익숙해지고 있어.",
+      "nextNodeId": "t1_instructor_final"
+    },
+    {
+      "id": "t1_instructor_final",
+      "type": "dialogue",
+      "speaker": "교관",
+      "text": "훌륭하군. 이제 기본은 됐다. 다음부터는 진짜 임무가 기다리고 있을 거야.",
+      "nextNodeId": "t1_chapter_end"
+    },
+    {
+      "id": "t1_chapter_end",
+      "type": "chapter_end",
+      "text": "튜토리얼 완료!\n\n기본적인 전투 방법을 익혔습니다.\n이제 본격적인 모험이 시작됩니다."
+    }
+  ],
+  "rewards": {
+    "gold": 30
+  }
+}

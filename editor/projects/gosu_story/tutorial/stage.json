@@ -1,0 +1,11 @@
+{
+  "id": "tutorial",
+  "title": "튜토리얼",
+  "description": "카이런의 첫 모험. 기본적인 전투 방법을 배웁니다.",
+  "partyCharacters": [
+    "kairen"
+  ],
+  "chapters": [
+    "tutorial_1"
+  ]
+}

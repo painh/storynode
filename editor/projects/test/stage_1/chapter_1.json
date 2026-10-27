@@ -1,0 +1,27 @@
+{
+  "id": "chapter_1",
+  "title": "Chapter 1",
+  "description": "First chapter",
+  "nodes": [
+    {
+      "id": "node_1766507387225_g8o60c4",
+      "type": "start",
+      "position": {
+        "x": 172.039149632377,
+        "y": 58.59232711026779
+      },
+      "nextNodeId": "node_1766507392290_nadfoum"
+    },
+    {
+      "id": "node_1766507392290_nadfoum",
+      "type": "dialogue",
+      "text": "아히히히",
+      "speaker": "테스트",
+      "position": {
+        "x": 541.0414110096974,
+        "y": 57.62927884681453
+      }
+    }
+  ],
+  "startNodeId": "node_1766507387225_g8o60c4"
+}

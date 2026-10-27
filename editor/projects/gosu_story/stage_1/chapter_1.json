@@ -1,0 +1,301 @@
+{
+  "id": "chapter_1",
+  "title": "Chapter 1",
+  "description": "First chapter",
+  "nodes": [
+    {
+      "id": "node_1766583053358_4bpb0ki",
+      "type": "start",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "nextNodeId": "node_1766583053358_ajkmu8g"
+    },
+    {
+      "id": "node_1766583053358_ajkmu8g",
+      "type": "image",
+      "position": {
+        "x": 420,
+        "y": 100
+      },
+      "nextNodeId": "node_1766583053358_3cpnj02",
+      "imageData": {
+        "resourcePath": "templates/default/backgrounds/background.png",
+        "layer": "background",
+        "layerOrder": 0,
+        "alignment": "center",
+        "effect": "fadeIn",
+        "effectDuration": 500
+      }
+    },
+    {
+      "id": "node_1766583053358_3cpnj02",
+      "type": "image",
+      "position": {
+        "x": 760,
+        "y": 100
+      },
+      "nextNodeId": "node_1766583053358_taefrq5",
+      "imageData": {
+        "resourcePath": "templates/default/characters/char1.png",
+        "layer": "character",
+        "layerOrder": 0,
+        "alignment": "left",
+        "effect": "fadeIn",
+        "effectDuration": 300
+      }
+    },
+    {
+      "id": "node_1766583053358_taefrq5",
+      "type": "image",
+      "position": {
+        "x": 1100,
+        "y": 100
+      },
+      "nextNodeId": "node_1766583053358_fn694bz",
+      "imageData": {
+        "resourcePath": "templates/default/characters/char2.png",
+        "layer": "character",
+        "layerOrder": 1,
+        "alignment": "right",
+        "flipHorizontal": true,
+        "effect": "fadeIn",
+        "effectDuration": 300
+      }
+    },
+    {
+      "id": "node_1766583053358_fn694bz",
+      "type": "variable",
+      "position": {
+        "x": 1440,
+        "y": 100
+      },
+      "nextNodeId": "node_1766583053358_9m18wwi",
+      "variableOperations": [
+        {
+          "target": "variable",
+          "action": "set",
+          "variableId": "gold",
+          "value": 100
+        },
+        {
+          "target": "variable",
+          "action": "set",
+          "variableId": "met_merchant",
+          "value": false
+        },
+        {
+          "target": "variable",
+          "action": "set",
+          "variableId": "bought_item",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": "node_1766583053358_9m18wwi",
+      "type": "dialogue",
+      "position": {
+        "x": 1820,
+        "y": 100
+      },
+      "speaker": "상인",
+      "text": "어서오세요! 무엇을 도와드릴까요?",
+      "nextNodeId": "node_1766583053358_rq4w7ye"
+    },
+    {
+      "id": "node_1766583053358_rq4w7ye",
+      "type": "dialogue",
+      "position": {
+        "x": 2200,
+        "y": 100
+      },
+      "speaker": "상인",
+      "text": "좋은 물건이 많이 있답니다. 골드가 충분하신가요?",
+      "nextNodeId": "node_1766583053358_gzsgb2y"
+    },
+    {
+      "id": "node_1766583053358_gzsgb2y",
+      "type": "choice",
+      "position": {
+        "x": 2580,
+        "y": 100
+      },
+      "text": "어떻게 하시겠습니까?",
+      "choices": [
+        {
+          "id": "node_1766583053358_w6we5ql",
+          "text": "물건 구매하기 (50골드)",
+          "nextNodeId": "node_1766583053358_sqw1g9y",
+          "condition": {
+            "type": "gold",
+            "min": 50
+          },
+          "effects": {
+            "gold": -50,
+            "setFlags": {
+              "bought_item": true,
+              "met_merchant": true
+            },
+            "affection": [
+              {
+                "characterId": "kairen",
+                "delta": 5
+              }
+            ]
+          },
+          "resultText": "물건을 구매했습니다!"
+        },
+        {
+          "id": "node_1766583053358_1k2jtic",
+          "text": "그냥 구경만 하기",
+          "nextNodeId": "node_1766583053358_rjw4hwn",
+          "effects": {
+            "setFlags": {
+              "met_merchant": true
+            },
+            "reputation": [
+              {
+                "factionId": "free_cities",
+                "delta": 1
+              }
+            ]
+          },
+          "resultText": "가게를 둘러보았습니다."
+        },
+        {
+          "id": "node_1766583053358_yszlmig",
+          "text": "비밀 거래 제안하기",
+          "nextNodeId": "node_1766583053358_uoogb4d",
+          "condition": {
+            "type": "flag",
+            "flagKey": "knows_secret",
+            "flagValue": true
+          },
+          "effects": {
+            "gold": 100,
+            "setFlags": {
+              "secret_deal_done": true
+            },
+            "affection": [
+              {
+                "characterId": "zed",
+                "delta": 10
+              },
+              {
+                "characterId": "lyra",
+                "delta": -5
+              }
+            ]
+          },
+          "resultText": "비밀 거래가 성사되었습니다."
+        }
+      ]
+    },
+    {
+      "id": "node_1766583053358_sqw1g9y",
+      "type": "dialogue",
+      "position": {
+        "x": 2960,
+        "y": 100
+      },
+      "speaker": "상인",
+      "text": "좋은 선택이십니다! 감사합니다.",
+      "nextNodeId": "node_1766583053358_5phumbf"
+    },
+    {
+      "id": "node_1766583053358_rjw4hwn",
+      "type": "dialogue",
+      "position": {
+        "x": 2960,
+        "y": 260
+      },
+      "speaker": "상인",
+      "text": "천천히 구경하세요~",
+      "nextNodeId": "node_1766583053358_5phumbf"
+    },
+    {
+      "id": "node_1766583053358_uoogb4d",
+      "type": "dialogue",
+      "position": {
+        "x": 2960,
+        "y": 420
+      },
+      "speaker": "상인",
+      "text": "(소곤) 좋아요, 거래 성사!",
+      "nextNodeId": "node_1766583053358_5phumbf"
+    },
+    {
+      "id": "node_1766583053358_5phumbf",
+      "type": "condition",
+      "position": {
+        "x": 3340,
+        "y": 100
+      },
+      "conditionBranches": [
+        {
+          "id": "node_1766583053358_fv5zagr",
+          "condition": {
+            "type": "gold",
+            "min": 100,
+            "max": 999
+          },
+          "nextNodeId": "node_1766583053358_emsgls9"
+        },
+        {
+          "id": "node_1766583053358_z5l7e10",
+          "condition": {
+            "type": "flag",
+            "flagKey": "bought_item",
+            "flagValue": true
+          },
+          "nextNodeId": "node_1766583053358_zai3vte"
+        }
+      ],
+      "defaultNextNodeId": "node_1766583053358_ljq2n3t"
+    },
+    {
+      "id": "node_1766583053358_emsgls9",
+      "type": "dialogue",
+      "position": {
+        "x": 3740,
+        "y": 100
+      },
+      "speaker": "시스템",
+      "text": "당신은 부자군요! (골드 100 이상)",
+      "nextNodeId": "node_1766583053358_a0mqu2g"
+    },
+    {
+      "id": "node_1766583053358_zai3vte",
+      "type": "dialogue",
+      "position": {
+        "x": 3740,
+        "y": 260
+      },
+      "speaker": "시스템",
+      "text": "물건을 구매하셨군요!",
+      "nextNodeId": "node_1766583053358_a0mqu2g"
+    },
+    {
+      "id": "node_1766583053358_ljq2n3t",
+      "type": "dialogue",
+      "position": {
+        "x": 3740,
+        "y": 420
+      },
+      "speaker": "시스템",
+      "text": "특별한 조건을 만족하지 않았습니다.",
+      "nextNodeId": "node_1766583053358_a0mqu2g"
+    },
+    {
+      "id": "node_1766583053358_a0mqu2g",
+      "type": "chapter_end",
+      "position": {
+        "x": 4120,
+        "y": 100
+      }
+    }
+  ],
+  "startNodeId": "node_1766583053358_4bpb0ki"
+}

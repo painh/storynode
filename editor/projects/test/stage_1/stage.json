@@ -1,0 +1,11 @@
+{
+  "id": "stage_1",
+  "title": "Stage 1",
+  "description": "First stage",
+  "partyCharacters": [
+    "kairen"
+  ],
+  "chapters": [
+    "chapter_1"
+  ]
+}

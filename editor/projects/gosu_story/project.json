@@ -1,0 +1,12 @@
+{
+  "name": "New Story Project",
+  "version": "1.0.0",
+  "stages": [
+    "stage_1"
+  ],
+  "gameSettings": {
+    "defaultGameMode": "textAdventure",
+    "defaultThemeId": "classic-vn",
+    "customThemes": []
+  }
+}

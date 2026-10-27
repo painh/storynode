@@ -1,0 +1,8 @@
+{
+  "name": "Gosu Story",
+  "version": "1.0.0",
+  "stages": [
+    "tutorial",
+    "main_story"
+  ]
+}

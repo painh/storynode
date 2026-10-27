@@ -1,0 +1,1005 @@
+{
+  "id": "chapter_2",
+  "title": "제2장: 자유 도시의 그림자",
+  "description": "제드의 과거와 여동생을 찾아 자유 도시로 향한다.",
+  "startNodeId": "c2_zed_join_1",
+  "partyCharacters": ["kairen", "lyra", "zed"],
+  "nodes": [
+    {
+      "id": "c2_zed_join_1",
+      "type": "dialogue",
+      "text": "폐광에서의 사건을 해결한 후, 카이런과 리라는 다음 단서를 찾아 길을 떠났다.",
+      "nextNodeId": "c2_zed_join_2"
+    },
+    {
+      "id": "c2_zed_join_2",
+      "type": "dialogue",
+      "text": "숲길을 걷던 중, 길가에 쓰러진 사람을 발견했다.",
+      "nextNodeId": "c2_zed_join_3"
+    },
+    {
+      "id": "c2_zed_join_3",
+      "type": "dialogue",
+      "speaker": "리라",
+      "text": "저 사람... 다쳤나 봐요! 가서 확인해 봐요!",
+      "nextNodeId": "c2_zed_join_4"
+    },
+    {
+      "id": "c2_zed_join_4",
+      "type": "dialogue",
+      "text": "다가가자 젊은 남자가 눈을 떴다. 날렵한 인상에 검은 머리카락.",
+      "nextNodeId": "c2_zed_join_5"
+    },
+    {
+      "id": "c2_zed_join_5",
+      "type": "dialogue",
+      "speaker": "???",
+      "text": "...크, 걸렸군. 근데 너희... 마왕군은 아닌 것 같은데?",
+      "nextNodeId": "c2_zed_join_6"
+    },
+    {
+      "id": "c2_zed_join_6",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "마왕군? 우리는 그놈들과 싸우고 있어. 넌 누구지?",
+      "nextNodeId": "c2_zed_join_7"
+    },
+    {
+      "id": "c2_zed_join_7",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "...제드. 도적이야. 뭐, 예전엔. 지금은 그냥 떠돌이지.",
+      "nextNodeId": "c2_zed_join_8"
+    },
+    {
+      "id": "c2_zed_join_8",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "마왕군 놈들한테 쫓기다가 이 꼴이 됐어. 숲에서 세 놈이랑 싸웠는데... 제법 힘들더군.",
+      "nextNodeId": "c2_zed_join_9"
+    },
+    {
+      "id": "c2_zed_join_9",
+      "type": "dialogue",
+      "speaker": "리라",
+      "text": "마왕군이 왜 당신을 쫓은 거예요?",
+      "nextNodeId": "c2_zed_join_10"
+    },
+    {
+      "id": "c2_zed_join_10",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "...그건 말하기 싫어. 개인적인 일이야.",
+      "nextNodeId": "c2_zed_join_11"
+    },
+    {
+      "id": "c2_zed_join_11",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "근데 너희, 자유 도시로 가는 길 아냐? 나도 그쪽으로 갈 일이 있는데...",
+      "nextNodeId": "c2_zed_join_choice"
+    },
+    {
+      "id": "c2_zed_join_choice",
+      "type": "choice",
+      "text": "제드가 함께 가고 싶어하는 눈치다.",
+      "choices": [
+        {
+          "id": "choice_zed_welcome",
+          "text": "\"좋아, 같이 가자. 손이 하나 더 있으면 도움이 될 거야.\"",
+          "nextNodeId": "c2_zed_join_welcome",
+          "effects": {
+            "affection": [{ "characterId": "zed", "delta": 1 }]
+          }
+        },
+        {
+          "id": "choice_zed_reluctant",
+          "text": "\"마왕군에게 쫓기는 녀석이라... 위험하지 않을까?\"",
+          "nextNodeId": "c2_zed_join_reluctant"
+        }
+      ]
+    },
+    {
+      "id": "c2_zed_join_welcome",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "고맙군. 신세 지겠어. 내 칼솜씨, 후회 안 할 거야.",
+      "nextNodeId": "c2_zed_join_party"
+    },
+    {
+      "id": "c2_zed_join_reluctant",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "걱정 마. 오히려 내가 쫓기는 덕에 마왕군 정보를 많이 알아.",
+      "nextNodeId": "c2_zed_join_reluctant_2"
+    },
+    {
+      "id": "c2_zed_join_reluctant_2",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "서로 이용할 수 있는 관계가 되면 되잖아? 난 자유 도시까지만 같이 가면 돼.",
+      "nextNodeId": "c2_zed_join_party"
+    },
+    {
+      "id": "c2_zed_join_party",
+      "type": "dialogue",
+      "text": "★ 도적 제드가 파티에 합류했습니다! ★",
+      "nextNodeId": "c2_intro_1"
+    },
+    {
+      "id": "c2_intro_1",
+      "type": "dialogue",
+      "text": "마침내 자유 도시 '칼론'에 도착했다.\n\n왕국의 법이 미치지 않는 이 도시는, 상인과 모험가, 그리고 그림자 속의 존재들이 공존하는 곳이다.",
+      "nextNodeId": "c2_intro_2"
+    },
+    {
+      "id": "c2_intro_2",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"그래도 질서는 있어 보이는군. 생각보다 평화로운데?\"",
+      "nextNodeId": "c2_intro_3",
+      "characterReactions": [
+        {
+          "characterId": "zed",
+          "text": "\"흥, 겉만 그래. 여긴 돈이 곧 법이야.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_intro_3",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"...여기 왔으니까 말하는데.\"\n\n제드가 주변을 살피며 목소리를 낮췄다.\n\n\"내 여동생이 마지막으로 목격된 곳이 이 도시야.\"",
+      "nextNodeId": "c2_intro_4"
+    },
+    {
+      "id": "c2_intro_4",
+      "type": "dialogue",
+      "speaker": "리라",
+      "text": "\"여동생? 처음 듣는 이야기인데...\"",
+      "nextNodeId": "c2_intro_5",
+      "characterReactions": [
+        {
+          "characterId": "kairen",
+          "text": "\"그래서 자유 도시에 오고 싶었던 거군.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_intro_5",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"3년 전... 마왕군에 납치됐어. 그 뒤로 행방을 쫓고 있었지.\"\n\n제드의 눈에 드물게 진지한 빛이 어렸다.\n\n\"이 도시에 '레이븐'이라는 정보상이 있어. 그 녀석이라면 뭔가 알 거야.\"",
+      "nextNodeId": "c2_choice_destination"
+    },
+    {
+      "id": "c2_choice_destination",
+      "type": "choice",
+      "speaker": "나레이터",
+      "text": "자유 도시의 중심가에 섰다.\n활기찬 소음과 다양한 인파가 뒤섞인 거리.\n\n어디로 향할까?",
+      "choices": [
+        {
+          "id": "choice_guild",
+          "text": "도적 길드로 간다 (제드 필요)",
+          "nextNodeId": "c2_guild_1",
+          "condition": {
+            "type": "character",
+            "characterId": "zed"
+          }
+        },
+        {
+          "id": "choice_market",
+          "text": "시장 거리를 둘러본다",
+          "nextNodeId": "c2_market_1"
+        },
+        {
+          "id": "choice_tavern",
+          "text": "술집에서 정보를 모은다",
+          "nextNodeId": "c2_tavern_1"
+        },
+        {
+          "id": "choice_harbor",
+          "text": "항구로 향한다",
+          "nextNodeId": "c2_harbor_1",
+          "condition": {
+            "type": "flag",
+            "flagKey": "harbor_hint"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2_guild_1",
+      "type": "dialogue",
+      "text": "제드의 안내를 따라 뒷골목 깊숙이 들어갔다.\n\n낡은 건물 지하로 내려가자, 의외로 넓은 공간이 나타났다.",
+      "nextNodeId": "c2_guild_2"
+    },
+    {
+      "id": "c2_guild_2",
+      "type": "dialogue",
+      "speaker": "???",
+      "text": "\"이거, 이거. 제드 아니야? 살아있었구나.\"\n\n그림자 속에서 한 남자가 걸어나왔다.\n\n날카로운 눈매에 입가엔 비소가 어린 남자. 레이븐.",
+      "nextNodeId": "c2_guild_3"
+    },
+    {
+      "id": "c2_guild_3",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"...오랜만이네, 레이븐.\"",
+      "nextNodeId": "c2_guild_4"
+    },
+    {
+      "id": "c2_guild_4",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"왜 왔어? 설마 그 건으로 또 캐물으러?\"\n\n레이븐이 한숨을 쉬었다.\n\n\"네 여동생 이야기라면 이미 해줄 말 없다고 했을 텐데.\"",
+      "nextNodeId": "c2_guild_choice"
+    },
+    {
+      "id": "c2_guild_choice",
+      "type": "choice",
+      "text": "레이븐의 태도가 썩 협조적이지 않다.\n어떻게 할까?",
+      "choices": [
+        {
+          "id": "guild_confront",
+          "text": "추궁한다 (적대적)",
+          "nextNodeId": "c2_guild_confront_1",
+          "effects": {
+            "reputation": [{ "factionId": "free_cities", "delta": -1 }],
+            "setFlags": { "raven_hostile": true }
+          }
+        },
+        {
+          "id": "guild_trust",
+          "text": "제드에게 맡긴다",
+          "nextNodeId": "c2_guild_trust_1",
+          "effects": {
+            "affection": [{ "characterId": "zed", "delta": 2 }]
+          }
+        },
+        {
+          "id": "guild_bribe",
+          "text": "뇌물을 제안한다 (100G)",
+          "nextNodeId": "c2_guild_bribe_1",
+          "condition": {
+            "type": "gold",
+            "value": 100
+          },
+          "effects": {
+            "gold": -100,
+            "setFlags": { "raven_bribed": true }
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2_guild_confront_1",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"네가 뭘 숨기는지 다 알고 있어. 마왕군과 거래하는 거지?\"",
+      "nextNodeId": "c2_guild_confront_2"
+    },
+    {
+      "id": "c2_guild_confront_2",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "레이븐의 눈이 차갑게 빛났다.\n\n\"...그렇게 나오겠다? 좋아. 사정봐줄 이유가 없어졌네.\"\n\n그가 손을 들자, 주변의 도적들이 무기를 꺼냈다.",
+      "nextNodeId": "c2_guild_confront_battle"
+    },
+    {
+      "id": "c2_guild_confront_battle",
+      "type": "battle",
+      "battleGroupId": "thieves_guild",
+      "nextNodeId": "c2_guild_confront_3",
+      "battleRewards": {
+        "goldRange": { "min": 30, "max": 50 }
+      }
+    },
+    {
+      "id": "c2_guild_confront_3",
+      "type": "dialogue",
+      "text": "도적들을 쓰러뜨렸지만, 레이븐은 어둠 속으로 사라졌다.\n\n\"기억해둬. 이건 시작일 뿐이야!\"",
+      "nextNodeId": "c2_guild_confront_4",
+      "onEnterEffects": {
+        "affection": [{ "characterId": "zed", "delta": -1 }],
+        "setFlags": { "raven_escaped": true, "info_count": 0 }
+      }
+    },
+    {
+      "id": "c2_guild_confront_4",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"...젠장. 이렇게 될 줄 알았어.\"\n\n제드가 좌절한 표정을 지었다.\n\n\"레이븐은 이 도시에서 가장 정보력이 좋은 녀석이었는데...\"",
+      "nextNodeId": "c2_convergence"
+    },
+    {
+      "id": "c2_guild_trust_1",
+      "type": "dialogue",
+      "text": "제드에게 눈짓을 보냈다. 네 방식대로 해.",
+      "nextNodeId": "c2_guild_trust_2"
+    },
+    {
+      "id": "c2_guild_trust_2",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "제드가 앞으로 나섰다.\n\n\"레이븐. 너도 알잖아. 마왕군이 힘을 키우면 이 도시도 안전하지 않다는 거.\"",
+      "nextNodeId": "c2_guild_trust_3",
+      "characterReactions": [
+        {
+          "characterId": "kairen",
+          "text": "\"흠, 제드도 설득력이 있군.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_guild_trust_3",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "레이븐이 잠시 생각에 잠겼다.\n\n\"...좋아. 옛정을 봐서 하나만 알려주지.\"\n\n\"네 여동생, '모르가나'라는 마녀가 데려갔어. 마왕의 최측근 중 하나지.\"",
+      "nextNodeId": "c2_guild_trust_4",
+      "onEnterEffects": {
+        "setFlags": {
+          "morgana_known": true,
+          "raven_neutral": true,
+          "info_count": 1
+        }
+      }
+    },
+    {
+      "id": "c2_guild_trust_4",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"모르가나...! 그 이름은 처음 듣는데.\"",
+      "nextNodeId": "c2_guild_trust_5"
+    },
+    {
+      "id": "c2_guild_trust_5",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"더 알고 싶으면 다른 곳도 뒤져봐. 나도 그 이상은 몰라.\"\n\n레이븐이 뒤돌아섰다.\n\n\"그리고... 조심해. 마왕군이 이 도시에도 손을 뻗치고 있으니까.\"",
+      "nextNodeId": "c2_convergence"
+    },
+    {
+      "id": "c2_guild_bribe_1",
+      "type": "dialogue",
+      "text": "\"정보에는 대가가 필요하겠지. 100골드면 되나?\"\n\n금화 주머니를 꺼내 흔들었다.",
+      "nextNodeId": "c2_guild_bribe_2"
+    },
+    {
+      "id": "c2_guild_bribe_2",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "레이븐의 눈이 반짝였다.\n\n\"호오... 사업가 기질이 있군. 좋아, 마음에 들어.\"\n\n그가 금화를 받아들었다.",
+      "nextNodeId": "c2_guild_bribe_3"
+    },
+    {
+      "id": "c2_guild_bribe_3",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"네 여동생 말이지? 마왕의 측근 '모르가나'가 데려갔어.\"\n\n\"그리고... 최근 항구에서 수상한 배가 드나들고 있어. 마왕군 깃발을 숨기고 있지만, 난 다 알지.\"",
+      "nextNodeId": "c2_guild_bribe_4",
+      "onEnterEffects": {
+        "setFlags": {
+          "morgana_known": true,
+          "harbor_hint": true,
+          "raven_neutral": true,
+          "info_count": 2
+        }
+      }
+    },
+    {
+      "id": "c2_guild_bribe_4",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"항구라... 다음에 확인해봐야겠어.\"\n\n제드가 고개를 끄덕였다. 뭔가 단서를 잡은 것 같다.",
+      "nextNodeId": "c2_convergence"
+    },
+    {
+      "id": "c2_market_1",
+      "type": "dialogue",
+      "text": "북적이는 시장을 거닐었다.\n\n이곳저곳에서 상인들이 물건을 외치고, 모험가들이 장비를 고르고 있다.",
+      "nextNodeId": "c2_market_2"
+    },
+    {
+      "id": "c2_market_2",
+      "type": "dialogue",
+      "speaker": "상인",
+      "text": "\"어서 오세요! 최고급 물건만 취급합니다!\"\n\n한 상인이 손짓했다.\n\n\"요즘 이상한 일이 많아서요... 밤마다 뒷골목에서 이상한 짐을 나르는 사람들이...\"",
+      "nextNodeId": "c2_market_choice"
+    },
+    {
+      "id": "c2_market_choice",
+      "type": "choice",
+      "text": "상인의 말이 신경 쓰인다.\n어떻게 할까?",
+      "choices": [
+        {
+          "id": "market_buy",
+          "text": "물건을 구경한다",
+          "nextNodeId": "c2_market_shop"
+        },
+        {
+          "id": "market_investigate",
+          "text": "뒷골목을 조사한다",
+          "nextNodeId": "c2_market_alley_1"
+        },
+        {
+          "id": "market_leave",
+          "text": "그냥 지나간다",
+          "nextNodeId": "c2_convergence"
+        }
+      ]
+    },
+    {
+      "id": "c2_market_shop",
+      "type": "shop",
+      "nextNodeId": "c2_market_after_shop"
+    },
+    {
+      "id": "c2_market_after_shop",
+      "type": "dialogue",
+      "speaker": "상인",
+      "text": "\"감사합니다! 아, 그리고 혹시 정보를 원하시면...\"\n\n상인이 주위를 살피며 속삭였다.\n\n\"술집 '검은 독수리'에 가보세요. 그곳 주인이 많이 알아요.\"",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "tavern_hint": true }
+      }
+    },
+    {
+      "id": "c2_market_alley_1",
+      "type": "dialogue",
+      "text": "어둡고 좁은 뒷골목으로 들어섰다.\n\n냄새가 좋지 않고, 인기척도 드물다.",
+      "nextNodeId": "c2_market_alley_2"
+    },
+    {
+      "id": "c2_market_alley_2",
+      "type": "dialogue",
+      "speaker": "???",
+      "text": "\"거기 서라!\"\n\n갑자기 앞을 막아선 자들.\n\n\"여긴 민간인 출입금지야. 돌아가.\"",
+      "nextNodeId": "c2_market_alley_choice"
+    },
+    {
+      "id": "c2_market_alley_choice",
+      "type": "choice",
+      "text": "수상한 자들이 길을 막고 있다.",
+      "choices": [
+        {
+          "id": "alley_fight",
+          "text": "싸운다",
+          "nextNodeId": "c2_market_alley_battle"
+        },
+        {
+          "id": "alley_report",
+          "text": "왕국에 신고한다",
+          "nextNodeId": "c2_market_alley_report",
+          "effects": {
+            "reputation": [{ "factionId": "kingdom", "delta": 1 }]
+          }
+        },
+        {
+          "id": "alley_retreat",
+          "text": "물러난다",
+          "nextNodeId": "c2_convergence"
+        }
+      ]
+    },
+    {
+      "id": "c2_market_alley_battle",
+      "type": "battle",
+      "battleGroupId": "smugglers",
+      "nextNodeId": "c2_market_alley_victory",
+      "battleRewards": {
+        "goldRange": { "min": 40, "max": 60 }
+      }
+    },
+    {
+      "id": "c2_market_alley_victory",
+      "type": "dialogue",
+      "text": "밀수업자들을 제압했다.\n\n그들이 운반하던 상자를 열어보니... 마왕군 군수품이다!",
+      "nextNodeId": "c2_market_alley_discover",
+      "onEnterEffects": {
+        "setFlags": { "smuggler_goods_found": true, "info_count": 1 }
+      }
+    },
+    {
+      "id": "c2_market_alley_discover",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"마왕군이 자유 도시를 통해 물자를 조달하고 있었군.\"",
+      "nextNodeId": "c2_convergence",
+      "characterReactions": [
+        {
+          "characterId": "lyra",
+          "text": "\"이건 왕국에 알려야 해.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_market_alley_report",
+      "type": "dialogue",
+      "text": "왕국 순찰대를 불러 밀수업자들을 신고했다.\n\n\"수고하셨습니다. 왕국에서 보상이 나갈 겁니다.\"",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "kingdom_report": true, "info_count": 1 },
+        "reputation": [{ "factionId": "free_cities", "delta": -1 }]
+      }
+    },
+    {
+      "id": "c2_tavern_1",
+      "type": "dialogue",
+      "text": "'검은 독수리' 술집에 들어섰다.\n\n낮인데도 불구하고 제법 손님이 있다. 분위기가 묘하게 긴장되어 있다.",
+      "nextNodeId": "c2_tavern_2"
+    },
+    {
+      "id": "c2_tavern_2",
+      "type": "dialogue",
+      "speaker": "술집 주인",
+      "text": "\"어서 오시게. 뭘 드릴까?\"\n\n주인이 눈치를 살피며 물었다.",
+      "nextNodeId": "c2_tavern_choice"
+    },
+    {
+      "id": "c2_tavern_choice",
+      "type": "choice",
+      "text": "술집에서 어떻게 할까?",
+      "choices": [
+        {
+          "id": "tavern_gamble",
+          "text": "도박에 참여한다 (50G)",
+          "nextNodeId": "c2_tavern_gamble_1",
+          "condition": { "type": "gold", "value": 50 },
+          "effects": { "gold": -50 }
+        },
+        {
+          "id": "tavern_talk",
+          "text": "주인과 대화한다",
+          "nextNodeId": "c2_tavern_talk_1"
+        },
+        {
+          "id": "tavern_mage",
+          "text": "구석의 마법사에게 말을 건다",
+          "nextNodeId": "c2_tavern_mage_1",
+          "condition": { "type": "character", "characterId": "lyra" }
+        }
+      ]
+    },
+    {
+      "id": "c2_tavern_gamble_1",
+      "type": "dialogue",
+      "text": "도박판에 끼어들었다.\n\n\"자, 베팅 베팅!\"\n\n운을 시험해보자.",
+      "nextNodeId": "c2_tavern_gamble_result"
+    },
+    {
+      "id": "c2_tavern_gamble_result",
+      "type": "choice",
+      "text": "주사위가 굴러간다...\n\n(랜덤 결과)",
+      "choices": [
+        {
+          "id": "gamble_win",
+          "text": "승리! (100G 획득)",
+          "nextNodeId": "c2_tavern_gamble_win",
+          "effects": { "gold": 100 }
+        },
+        {
+          "id": "gamble_lose",
+          "text": "패배... (50G 손실)",
+          "nextNodeId": "c2_tavern_gamble_lose"
+        }
+      ]
+    },
+    {
+      "id": "c2_tavern_gamble_win",
+      "type": "dialogue",
+      "text": "\"이런! 대단한 운이군!\"\n\n상대가 금화를 건넸다.\n\n\"자네, 혹시 레이븐이라는 정보상 아나? 그 친구랑 어울릴 만한 타입이야.\"",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "gamble_won": true }
+      }
+    },
+    {
+      "id": "c2_tavern_gamble_lose",
+      "type": "dialogue",
+      "text": "\"허허, 오늘은 내가 운이 좋군.\"\n\n아깝지만, 뭐 어쩔 수 없다.",
+      "nextNodeId": "c2_convergence"
+    },
+    {
+      "id": "c2_tavern_talk_1",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"주인장, 이 도시 분위기가 좀 이상하던데. 무슨 일이 있나?\"",
+      "nextNodeId": "c2_tavern_talk_2"
+    },
+    {
+      "id": "c2_tavern_talk_2",
+      "type": "dialogue",
+      "speaker": "술집 주인",
+      "text": "주인이 목소리를 낮췄다.\n\n\"마왕군 놈들이 은밀히 도시에 들어오고 있어요. 항구 쪽이 특히 수상해요.\"\n\n\"그리고... '레이븐'이란 친구를 찾으시는 거라면, 도적 길드 지하에 가보세요.\"",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "harbor_hint": true, "guild_hint": true, "info_count": 1 }
+      }
+    },
+    {
+      "id": "c2_tavern_mage_1",
+      "type": "dialogue",
+      "text": "구석에 앉은 마법사가 눈에 들어왔다.\n\n리라가 알아보았다.",
+      "nextNodeId": "c2_tavern_mage_2"
+    },
+    {
+      "id": "c2_tavern_mage_2",
+      "type": "dialogue",
+      "speaker": "리라",
+      "text": "\"저 문양... 아케인 학파야. 마법사 탑의 연구원이야!\"",
+      "nextNodeId": "c2_tavern_mage_3",
+      "characterReactions": [
+        {
+          "characterId": "kairen",
+          "text": "\"마법사 탑? 왕국과 사이가 좋지 않다던데.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_tavern_mage_3",
+      "type": "dialogue",
+      "speaker": "마법사",
+      "text": "마법사가 고개를 들었다.\n\n\"오, 동료 마법사인가. 드물군. 무슨 일인가?\"",
+      "nextNodeId": "c2_tavern_mage_4"
+    },
+    {
+      "id": "c2_tavern_mage_4",
+      "type": "dialogue",
+      "speaker": "리라",
+      "text": "\"마왕군에 대해 알고 있는 게 있나요?\"",
+      "nextNodeId": "c2_tavern_mage_5"
+    },
+    {
+      "id": "c2_tavern_mage_5",
+      "type": "dialogue",
+      "speaker": "마법사",
+      "text": "마법사가 뜻밖의 이야기를 꺼냈다.\n\n\"마왕... 흥미롭지. 우리 탑에서는 그 존재의 기원을 연구하고 있네.\"\n\n\"'잊혀진 신'이라고 들어봤나? 마왕과 깊은 연관이 있다고 추측하고 있지.\"",
+      "nextNodeId": "c2_tavern_mage_6",
+      "onEnterEffects": {
+        "affection": [{ "characterId": "lyra", "delta": 1 }],
+        "reputation": [{ "factionId": "mage_tower", "delta": 1 }],
+        "setFlags": { "forgotten_god_hint": true, "info_count": 1 }
+      }
+    },
+    {
+      "id": "c2_tavern_mage_6",
+      "type": "dialogue",
+      "speaker": "마법사",
+      "text": "\"더 알고 싶다면 마법사 탑을 찾아오게. 탑주님께 말씀드리겠네.\"\n\n마법사가 자리에서 일어섰다.\n\n\"동료여, 행운을 빌지. 앞으로의 여정에 지혜가 필요할 것이야.\"",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "mage_tower_connection": true }
+      }
+    },
+    {
+      "id": "c2_harbor_1",
+      "type": "dialogue",
+      "text": "정보를 바탕으로 항구로 향했다.\n\n확실히 이상하다. 경비가 너무 삼엄하고, 특정 구역은 아예 출입이 통제되어 있다.",
+      "nextNodeId": "c2_harbor_2"
+    },
+    {
+      "id": "c2_harbor_2",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"저 배 좀 봐. 깃발이 이상해.\"\n\n제드가 가리킨 곳에는 검은 돛을 단 배가 정박해 있다.",
+      "nextNodeId": "c2_harbor_3",
+      "characterReactions": [
+        {
+          "characterId": "lyra",
+          "text": "\"마왕군 밀선이야. 확실해.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_harbor_3",
+      "type": "choice",
+      "text": "마왕군의 밀선을 발견했다.\n어떻게 접근할까?",
+      "choices": [
+        {
+          "id": "harbor_chase",
+          "text": "추적한다 (전투 가능성)",
+          "nextNodeId": "c2_harbor_chase_1"
+        },
+        {
+          "id": "harbor_sneak",
+          "text": "잠입한다 (제드 필요)",
+          "nextNodeId": "c2_harbor_sneak_1",
+          "condition": { "type": "character", "characterId": "zed" },
+          "effects": {
+            "affection": [{ "characterId": "zed", "delta": 1 }]
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2_harbor_chase_1",
+      "type": "dialogue",
+      "text": "배에 접근하자 경비병들이 반응했다.\n\n\"침입자다! 잡아라!\"",
+      "nextNodeId": "c2_harbor_chase_battle"
+    },
+    {
+      "id": "c2_harbor_chase_battle",
+      "type": "battle",
+      "battleGroupId": "dark_soldiers",
+      "nextNodeId": "c2_harbor_chase_2",
+      "battleRewards": {
+        "goldRange": { "min": 50, "max": 80 }
+      }
+    },
+    {
+      "id": "c2_harbor_chase_2",
+      "type": "dialogue",
+      "text": "적들을 물리쳤다.\n\n그런데... 배 안에서 한 여성이 모습을 드러냈다.",
+      "nextNodeId": "c2_harbor_chase_3"
+    },
+    {
+      "id": "c2_harbor_chase_3",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"아니...?!\"\n\n제드의 얼굴이 창백해졌다.\n\n\"미... 미아? 미아야?!\"",
+      "nextNodeId": "c2_harbor_chase_4",
+      "onEnterEffects": {
+        "setFlags": { "sister_sighted": true, "info_count": 2 },
+        "affection": [{ "characterId": "zed", "delta": 1 }]
+      }
+    },
+    {
+      "id": "c2_harbor_chase_4",
+      "type": "dialogue",
+      "speaker": "???",
+      "text": "여성이 차가운 눈으로 제드를 바라보았다.\n\n\"...오빠?\"\n\n하지만 그녀의 눈에는 빛이 없다. 무언가 이상하다.",
+      "nextNodeId": "c2_harbor_chase_5"
+    },
+    {
+      "id": "c2_harbor_chase_5",
+      "type": "dialogue",
+      "text": "그때, 검은 연기가 피어오르며 여성이 사라졌다.\n\n\"기다려!!!\"\n\n제드의 외침에도 그녀는 흔적도 없이 사라졌다.",
+      "nextNodeId": "c2_convergence",
+      "onEnterEffects": {
+        "setFlags": { "sister_vanished": true },
+        "reputation": [{ "factionId": "dark_lands", "delta": 1 }]
+      }
+    },
+    {
+      "id": "c2_harbor_sneak_1",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"내가 잠입할게. 너희는 여기서 기다려.\"\n\n제드가 그림자 속으로 녹아들었다.",
+      "nextNodeId": "c2_harbor_sneak_2"
+    },
+    {
+      "id": "c2_harbor_sneak_2",
+      "type": "dialogue",
+      "text": "잠시 후, 제드가 돌아왔다.\n\n그의 손에는 문서 뭉치가 들려 있다.",
+      "nextNodeId": "c2_harbor_sneak_3"
+    },
+    {
+      "id": "c2_harbor_sneak_3",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"마왕군의 보급 계획이야. 그리고...\"\n\n제드의 목소리가 떨렸다.\n\n\"미아... 내 여동생이 모르가나와 함께 있다는 기록이 있어.\"",
+      "nextNodeId": "c2_harbor_sneak_4",
+      "onEnterEffects": {
+        "setFlags": { "supply_plan": true, "sister_with_morgana": true, "info_count": 2 }
+      }
+    },
+    {
+      "id": "c2_harbor_sneak_4",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"이 정보는 귀중해. 왕국에 전달하면 전세를 바꿀 수 있을 거야.\"",
+      "nextNodeId": "c2_convergence",
+      "characterReactions": [
+        {
+          "characterId": "lyra",
+          "text": "\"모르가나... 마왕의 측근 중에서도 특별한 존재래.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_convergence",
+      "type": "dialogue",
+      "text": "밤이 되었다. 여관에서 수집한 정보를 정리했다.",
+      "nextNodeId": "c2_convergence_check"
+    },
+    {
+      "id": "c2_convergence_check",
+      "type": "choice",
+      "text": "지금까지 알아낸 것들을 검토한다.\n\n(수집한 정보에 따라 다음 행동이 달라진다)",
+      "choices": [
+        {
+          "id": "info_3plus",
+          "text": "충분한 정보를 모았다",
+          "nextNodeId": "c2_climax_prepared",
+          "condition": {
+            "type": "flag",
+            "flagKey": "info_count",
+            "flagValue": 2
+          }
+        },
+        {
+          "id": "info_partial",
+          "text": "정보가 부족하다",
+          "nextNodeId": "c2_climax_partial"
+        }
+      ]
+    },
+    {
+      "id": "c2_climax_prepared",
+      "type": "dialogue",
+      "text": "충분한 정보가 모였다.\n\n이제 레이븐을 다시 만나 협상할 차례다.",
+      "nextNodeId": "c2_climax_raven_1"
+    },
+    {
+      "id": "c2_climax_partial",
+      "type": "dialogue",
+      "text": "정보가 부족하지만, 레이븐을 다시 만나볼 수밖에 없다.",
+      "nextNodeId": "c2_climax_raven_1"
+    },
+    {
+      "id": "c2_climax_raven_1",
+      "type": "dialogue",
+      "text": "다시 도적 길드를 찾았다.\n\n레이븐이 기다리고 있었다.",
+      "nextNodeId": "c2_climax_raven_2"
+    },
+    {
+      "id": "c2_climax_raven_2",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"다시 왔군. 뭘 알아냈어?\"",
+      "nextNodeId": "c2_climax_raven_choice"
+    },
+    {
+      "id": "c2_climax_raven_choice",
+      "type": "choice",
+      "text": "레이븐에게 어떻게 대응할까?",
+      "choices": [
+        {
+          "id": "climax_ally",
+          "text": "동맹을 제안한다",
+          "nextNodeId": "c2_climax_ally_1",
+          "condition": {
+            "type": "affection",
+            "characterId": "zed",
+            "min": 2
+          },
+          "effects": {
+            "setFlags": { "raven_alliance": true }
+          }
+        },
+        {
+          "id": "climax_deal",
+          "text": "정보를 거래한다",
+          "nextNodeId": "c2_climax_deal_1"
+        },
+        {
+          "id": "climax_fight",
+          "text": "싸운다 (적대 상태)",
+          "nextNodeId": "c2_climax_fight_1",
+          "condition": {
+            "type": "flag",
+            "flagKey": "raven_hostile"
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2_climax_ally_1",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"레이븐, 우리에게는 공통의 적이 있어. 손을 잡는 게 어때?\"",
+      "nextNodeId": "c2_climax_ally_2"
+    },
+    {
+      "id": "c2_climax_ally_2",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "레이븐이 잠시 생각에 잠겼다.\n\n\"...제드, 이 친구 믿을 만해?\"",
+      "nextNodeId": "c2_climax_ally_3"
+    },
+    {
+      "id": "c2_climax_ally_3",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"적어도 나보다는.\"",
+      "nextNodeId": "c2_climax_ally_4",
+      "characterReactions": [
+        {
+          "characterId": "kairen",
+          "text": "\"도적과 동맹이라... 복잡하군.\""
+        }
+      ]
+    },
+    {
+      "id": "c2_climax_ally_4",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "레이븐이 손을 내밀었다.\n\n\"좋아. 동맹이다. 마왕군에 대한 정보는 전부 공유하지.\"\n\n\"그리고... 제드의 여동생을 구하는 것도 도와주겠어. 내 네트워크가 필요할 테니까.\"",
+      "nextNodeId": "c2_ending_perfect",
+      "onEnterEffects": {
+        "reputation": [{ "factionId": "free_cities", "delta": 2 }],
+        "setFlags": { "raven_ally": true }
+      }
+    },
+    {
+      "id": "c2_climax_deal_1",
+      "type": "dialogue",
+      "speaker": "카이런",
+      "text": "\"우리가 알아낸 것과 네 정보를 교환하자.\"",
+      "nextNodeId": "c2_climax_deal_2"
+    },
+    {
+      "id": "c2_climax_deal_2",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"공정한 거래군. 좋아.\"\n\n레이븐이 고개를 끄덕였다.\n\n\"모르가나는 마왕성의 서쪽 탑에 있어. 네 여동생도 아마 거기 있을 거야.\"",
+      "nextNodeId": "c2_ending_success",
+      "onEnterEffects": {
+        "setFlags": { "morgana_location": true }
+      }
+    },
+    {
+      "id": "c2_climax_fight_1",
+      "type": "dialogue",
+      "speaker": "레이븐",
+      "text": "\"아까 그 일로 아직도 화가 났나 보군. 좋아, 상대해주지.\"",
+      "nextNodeId": "c2_climax_fight_battle"
+    },
+    {
+      "id": "c2_climax_fight_battle",
+      "type": "battle",
+      "battleGroupId": "raven_boss",
+      "nextNodeId": "c2_climax_fight_2",
+      "battleRewards": {
+        "goldRange": { "min": 80, "max": 120 }
+      }
+    },
+    {
+      "id": "c2_climax_fight_2",
+      "type": "dialogue",
+      "text": "레이븐을 쓰러뜨렸다.\n\n그의 품에서 중요한 문서들을 발견했다.",
+      "nextNodeId": "c2_ending_hostile",
+      "onEnterEffects": {
+        "setFlags": { "raven_defeated": true, "forced_info": true },
+        "reputation": [{ "factionId": "free_cities", "delta": -2 }]
+      }
+    },
+    {
+      "id": "c2_ending_perfect",
+      "type": "dialogue",
+      "text": "자유 도시에서 귀중한 동맹을 얻었다.\n\n레이븐의 정보망과 협력하면, 마왕군의 동향을 미리 파악할 수 있을 것이다.\n\n그리고 제드의 여동생에 대한 단서도 확실히 잡았다.",
+      "nextNodeId": "c2_ending_final"
+    },
+    {
+      "id": "c2_ending_success",
+      "type": "dialogue",
+      "text": "레이븐과의 거래는 성공적이었다.\n\n마왕성에서 모르가나를 찾으면, 제드의 여동생도 구할 수 있을 것이다.\n\n아직 갈 길이 멀지만, 한 걸음 전진했다.",
+      "nextNodeId": "c2_ending_final"
+    },
+    {
+      "id": "c2_ending_hostile",
+      "type": "dialogue",
+      "text": "레이븐을 제압하고 정보를 얻었지만, 자유 도시에서 적을 만들었다.\n\n도적 길드가 앞으로 방해가 될 수도 있다.\n\n제드가 한숨을 쉬었다.\n\n\"...다른 방법이 있었을 텐데.\"",
+      "nextNodeId": "c2_ending_final",
+      "onEnterEffects": {
+        "affection": [{ "characterId": "zed", "delta": -1 }]
+      }
+    },
+    {
+      "id": "c2_ending_final",
+      "type": "dialogue",
+      "speaker": "제드",
+      "text": "\"...고마워. 함께 해줘서.\"\n\n제드가 드물게 미소를 지었다.\n\n\"이제 다음 목표는 정해졌어. 마왕성... 그곳에서 미아를 구할 거야.\"",
+      "nextNodeId": "c2_end"
+    },
+    {
+      "id": "c2_end",
+      "type": "chapter_end",
+      "text": "【제2장 완료】\n\n자유 도시의 그림자\n\n다음 장에서 계속..."
+    }
+  ],
+  "rewards": {
+    "gold": 100
+  }
+}
